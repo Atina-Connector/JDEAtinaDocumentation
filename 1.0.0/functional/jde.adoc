@@ -1,4 +1,4 @@
-= *PortX JD Edwards Connector for Mule 4 - User Guide*
+= *Atina JD Edwards Connector for Mule 4 - User Guide*
 :keywords: add_keywords_separated_by_commas
 :imagesdir: images
 :toc: macro
@@ -8,7 +8,7 @@ toc::[]
 
 == *Introduction*
 
-The _PortX JDE Connector_ leverages the internal capabilities of Oracle’s _JD Edwards EnterpriseOne™_ solution to a broader extent, and uses the power of Oracle’s Java Dynamic Connector to provide interoperability with _JD Edwards EnterpriseOne™_ and external systems.
+The _Atina JDE Connector_ leverages the internal capabilities of Oracle’s _JD Edwards EnterpriseOne™_ solution to a broader extent, and uses the power of Oracle’s Java Dynamic Connector to provide interoperability with _JD Edwards EnterpriseOne™_ and external systems.
 
 After reading this guide, you should be able to accomplish the following scenarios:
 
