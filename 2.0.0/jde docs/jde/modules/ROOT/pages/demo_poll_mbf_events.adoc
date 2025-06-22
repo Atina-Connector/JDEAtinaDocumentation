@@ -1,0 +1,383 @@
+= *PortX JD Edwards Connector for Mule 4 – Demo – Poll Transaction (MBF) Events*
+:keywords: add_keywords_separated_by_commas
+:imagesdir: images
+:toc: macro
+:toclevels: 2
+
+toc::[]
+
+== *Introduction*
+
+The _PortX JDE Connector_ leverages the internal capabilities of Oracle’s _JD Edwards EnterpriseOne™_ solution to a broader extent, and uses the power of Oracle’s Java Dynamic Connector to provide interoperability with _JD Edwards EnterpriseOne™_ and external systems.
+
+After reading this guide, you should be able to poll for transaction (Master Business Function) events created on the server.
+
+At design time, the _PortX JDE Connector_ allows you to discover functions by name providing full access to all Business Function signatures. Given that discovery is a heavy duty process, the Connector manages a cache repository for all function’s metadata used at least once.
+
+The results of a function call will be injected into the flow as a Map containing key-value pairs with the invocation’s output values. This approach gives the end user freedom of choice to construct complex flows and manage custom exception strategies.
+
+Furthermore, you can have all functions in the flow, processing within the same transaction, and commit or rollback all changes.
+
+=== Prerequisites
+
+This document assumes that you are familiar with Oracle’s _JD Edwards EnterpriseOne™_ basics, Mule the https://docs.mulesoft.com/anypoint-studio/v/6/download-and-launch-anypoint-studio[Anypoint™ Studio] interface.
+
+=== Requirements
+
+*Review the* link:/[PortX JDE Connector for Mule 4 – Getting Started Guide] for a detailed list of requirements and setup prerequisites.
+
+JDE outbound transactions requires that you set a _*Processing Option*_ specifying a transaction type. Additionally, some entry programs enable you to specify a version of the Master Business Function Processing Options program that, in turn, enables you to specify a version of the Interoperability Processing Options program.
+
+For example, to get customer entered by the application _*Customer Master Information*_ (P03013) it is necessary to setup it’s processing options to enable interoperability. To do this you will need to log into JDE, and change the processing options for this application. Firstly, we need to determine which version of the Master Business Function is being called by the application. To do this, we will need to review the processing options.
+
+image:demo_poll_mbf_events/image1_demo_poll_mbf_events.png[image,width=601,height=332]
+
+image:demo_poll_mbf_events/image2_demo_poll_mbf_events.png[image,width=601,height=347]
+
+The Customer Master Business Function version that is used for the version of the application is ZJDE0002, so we need to now review the Customer Master MBF (P0100042) processing options.
+
+image:demo_poll_mbf_events/image3_demo_poll_mbf_events.png[image,width=601,height=314]
+
+image:demo_poll_mbf_events/image4_demo_poll_mbf_events.png[image,width=601,height=381]
+
+If the Transaction Type is not yet set, we need to set it to the appropriate value.
+
+For more on setting transaction types, please refer to the _Oracle JD Edwards EnterpriseOne_ documentation
+
+== *Demo – Poll Transaction (MBF) Events*
+
+NOTE: It is recommended that you update AnyPoint Studio before starting with a _PortX JDE Connector_ project.
+
+=== Creating a new Mule Project 
+
+Create a new Mule Project with Mule Server 4.1.1 EE or greater as runtime:
+
+image:demo_poll_mbf_events/image5_demo_poll_mbf_events.png[image,width=321,height=423]
+
+=== Project Dependencies
+
+In you pom.xml, add the following to you _repositories_ section :
+[source,xml]
+----
+<repository>
+    <id>portx-repository-releases</id>
+    <name>portx-repository-releases</name>
+    <url>https://portx.jfrog.io/portx/portx-releases</url>
+</repository>
+----
+
+Add the following to you _dependencies_ section :
+
+[source,xml]
+----
+<dependency>
+<groupId>com.modus</groupId>
+    <artifactId>mule-jde-connector</artifactId>
+    <version>2.0.0</version>
+    <classifier>mule-plugin</classifier>
+</dependency>
+<dependency>
+    <groupId>com.jdedwards</groupId>
+    <artifactId>jde-lib-bundle</artifactId>
+    <version>1.0.0</version>
+</dependency>
+----
+
+Add or update the following to you _plugins_ section :
+[source,xml]
+----
+<plugin>
+    <groupId>org.mule.tools.maven</groupId>
+    <artifactId>mule-maven-plugin</artifactId>
+    <version>$\{mule.maven.plugin.version}</version>
+    <extensions>true</extensions>
+    <configuration>
+        <sharedLibraries>
+            <sharedLibrary>
+                <groupId>com.jdedwards</groupId>
+                <artifactId>jde-lib-bundle</artifactId>
+            </sharedLibrary>
+        </sharedLibraries>
+    </configuration>
+</plugin>
+----
+
+=== Required files
+
+Copy the _JD Edwards EntrpriseOne™_ configuration files to the following folders within the project:
+
+* Project Root
+* _src/main/resources_
+
+NOTE: If there is a requirement to use different configuration files per environment, you may create separate folders under _src/main/resources_ corresponding to each environment as shown below.
+
+image:demo_poll_mbf_events/image6_demo_poll_mbf_events.png[image,width=250,height=446]
+
+The _mule-arifact.json_ file needs to be updated per environment as below
+
+[source,json]
+----
+{
+	"minMuleVersion": "4.1.4",
+	"classLoaderModelLoaderDescriptor": {
+		"id": "mule",
+		"attributes": {
+			"exportedResources": [
+				"JDV920/jdeinterop.ini",
+				"JDV920/jdbj.ini",
+				"JDV920/tnsnames.ora",
+				"JDV920/jdelog.properties",
+				"JPY920/jdeinterop.ini",
+				"JPY920/jdbj.ini",
+				"JPY920/tnsnames.ora",
+				"JPY920/jdelog.properties",				
+				"log4j2.xml"
+			],
+			"exportedPackages": [
+				"JDV920",
+				"JPY920"
+			],
+			"includeTestDependencies": "true"
+		}
+	}
+}
+----
+
+=== Other Considerations
+
+To redirect the _JD Edwards EntrpriseOne™_ Logger to Mule Logger (allowing you to see the JDE activity in both Console and JDE files defined in the _jdelog.properties_, you may add the following _Async Loggers_ to _log4j2.xml_ file.
+
+[source,xml]
+<!-- JDE Connector wire logging -->
+<AsyncLogger name="org.mule.modules.jde.handle.MuleHandler" level="INFO" />
+<AsyncLogger name="org.mule.modules.jde.JDEConnector" level="INFO" />
+
+=== Troubleshooting
+
+If you are having trouble resolving all dependencies,
+
+. Shut down AnyPoint Studio
+. Run the following command in the project root folder from the terminal/command prompt,
+
+_mvn clean install_
+
+[start=3]
+. Open AnyPoint Studio and check dependencies again.
+
+=== Configure the Global Element
+
+To use the _PortX JDE Connector_ in your Mule application, you must configure a global element that can be used by the connector (read more about Global Elements).
+
+Open the Mule flow for the project, and select the Global Elements tab at the bottom of the Editor Window.
+
+image:demo_poll_mbf_events/image7_demo_poll_mbf_events.png[image,width=515,height=273]
+
+Click Create
+
+image:demo_poll_mbf_events/image8_demo_poll_mbf_events.png[image,width=511,height=312]
+
+Type “JDE” in the filter edit box, and select “JDE Config”. Click OK
+
+image:demo_poll_mbf_events/image9_demo_poll_mbf_events.png[image,width=386,height=390]
+
+On the _General_ tab, enter the required credential and environment
+
+image:demo_poll_mbf_events/image10_demo_poll_mbf_events.png[image,width=378,height=383]
+
+Click _Test Connection._ You should see the following message appear.
+
+image:demo_poll_mbf_events/image11_demo_poll_mbf_events.png[image,width=513,height=135]
+
+You are now ready to start using the _PortX JDE Connector_ in your project
+
+=== Creating a Scheduler for your flow
+
+*NOTE :* This use case example will create a simple flow to poll for outbound events coming from an application that uses a *Customer Master Business Function* to generate transactions, and write these to files (Please check the requirements section earlier in the document for setup details)
+
+Go back to the _Message Flow_ tab
+
+image:demo_poll_mbf_events/image12_demo_poll_mbf_events.png[image,width=601,height=488]
+
+From the Mule Palette (typically top right), select _Scheduler_, and drag it to the canvas
+
+image:demo_poll_mbf_events/image13_demo_poll_mbf_events.png[image,width=295,height=278]
+
+Select the _Scheduler_ component from the canvas, and inspect the properties window, and change the Frequency to 2msimage:demo_poll_mbf_events/image14_demo_poll_mbf_events.png[image,width=569,height=268]
+
+=== Poll for Transaction (MBF) Events
+
+Locate the *JDE* Connector, and select Poll Events. Drag this to the canvas.
+
+image:demo_poll_mbf_events/image15_demo_poll_mbf_events.png[image,width=190,height=187]
+
+Drag the connector over to the canvas. Select it and review the properties window. Give it a meaningful name eg. Call _Poll Customer Master Events_.
+
+image:demo_poll_mbf_events/image16_demo_poll_mbf_events.png[image,width=601,height=290]
+
+Under the General section, click on the drop-down for Operation Name, and select Capture Event Transactions.
+
+image:demo_poll_mbf_events/image17_demo_poll_mbf_events.png[image,width=601,height=294]
+
+You may now assign the input parameters. You can do this by either entering the payload values manually, or via the “Show Graphical View” button.
+
+image:demo_poll_mbf_events/image18_demo_poll_mbf_events.png[image,width=601,height=294]
+
+Drag the inputs to outputs, or double-click the output parameter to add to your edit window, and change as required.
+
+image:demo_poll_mbf_events/image19_demo_poll_mbf_events.png[image,width=601,height=212]
+
+===== Troubleshooting
+If the operation fails (possibly due to a timeout), you will see the below message
+
+image:demo_poll_mbf_events/troubleshoot_timeout_message.png[image,width=345,height=115]
+
+Please review the timeout settings in _Anypoint Studio_'s Preferences.
+
+To do this go the the _Window > Preferences_ menu
+
+image:demo_poll_mbf_events/troubleshoot_preferences_menu.png[image,width=154,height=199]
+
+Go to _Anypoint Studio > DataSense_ and change the _DataSense Connection Timeout_ setting as below
+
+image:demo_poll_mbf_events/troubleshoot_datasense_timeout.png[image,width=622,height=551]
+
+Go to _Anypoint Studio > Tooling_ and change the _Default Connection Timeout_ and _Default Read Timeout_ settings as below
+
+image:demo_poll_mbf_events/troubleshoot_timeout_tooling.png[image,width=622,height=551]
+
+=== Set Payload Output
+
+In the Mule Palette, you can either select Core, scroll down to Transformers or type “Payload” in the search bar.
+
+image:demo_poll_mbf_events/image20_demo_poll_mbf_events.png[image,width=277,height=209]
+
+Drag and drop the _Set Payload_ to your canvas.
+
+image:demo_poll_mbf_events/image21_demo_poll_mbf_events.png[image,width=360,height=175]
+
+Select the _Set Payload_ component, and review the properties.
+
+image:demo_poll_mbf_events/image22_demo_poll_mbf_events.png[image,width=601,height=157]
+
+Change the payload to reflect the desired output, and save the project
+
+image:demo_poll_mbf_events/image23_demo_poll_mbf_events.png[image,width=601,height=245]
+
+On the _MIME Type_ tab, select _application/xml_
+
+image:demo_poll_mbf_events/image24_demo_poll_mbf_events.png[image,width=399,height=216]
+
+Next we need to check that Transactions were polled, and exist. From the Mule Palette, Select and drag the _Choice_ component.
+
+image:demo_poll_mbf_events/image25_demo_poll_mbf_events.png[image,width=344,height=255]
+
+image:demo_poll_mbf_events/image26_demo_poll_mbf_events.png[image,width=578,height=258]
+
+Select the _When_ statement, and review the properties. Enter the below expression to check that transactions exist.
+
+image:demo_poll_mbf_events/image27_demo_poll_mbf_events.png[image,width=545,height=170]
+
+We also want to see when the Scheduler returned no transactions, so we will add a logger to the _Default_ condition. From you Mule Palette, drag the logger component to the canvas
+
+image:demo_poll_mbf_events/image28_demo_poll_mbf_events.png[image,width=306,height=254]
+
+Select and review the properties, and enter an appropriate message
+
+image:demo_poll_mbf_events/image29_demo_poll_mbf_events.png[image,width=601,height=529]
+
+If transactions were retrieved (_When_ condition is true) we need to iterate over all the transactions that have been retrieved. For this we will drag the _For Each_ component from out palette, to our canvas.
+
+image:demo_poll_mbf_events/image30_demo_poll_mbf_events.png[image,width=207,height=259]
+
+Select the component, and review the properties.
+
+image:demo_poll_mbf_events/image31_demo_poll_mbf_events.png[image,width=601,height=251]
+
+In Collection enter the Transaction Collection as below
+
+image:demo_poll_mbf_events/image32_demo_poll_mbf_events.png[image,width=542,height=265]
+
+Now drag the Set Variable component to your canvas, select and review the properties
+
+image:demo_poll_mbf_events/image33_demo_poll_mbf_events.png[image,width=601,height=283]
+
+Set the variable name and click on _Show Graphical View_
+
+image:demo_poll_mbf_events/image34_demo_poll_mbf_events.png[image,width=601,height=236]
+
+Set the Variable value to the filename we want to create, and click on _Done._
+
+image:demo_poll_mbf_events/image35_demo_poll_mbf_events.png[image,width=601,height=149]
+
+From your Mule Palette, Select the _File > Write_ component, and drag it to the canvas
+
+image:demo_poll_mbf_events/image36_demo_poll_mbf_events.png[image,width=298,height=268]
+
+image:demo_poll_mbf_events/image37_demo_poll_mbf_events.png[image,width=601,height=252]
+
+Select and review the Properties. Under the Basic Settings, Click the _Add_ button next to _Connector configuration_.
+
+image:demo_poll_mbf_events/image38_demo_poll_mbf_events.png[image,width=601,height=294]
+
+In the _Working_ Directory field, enter the path where you want to write the file to, and click OK.
+
+image:demo_poll_mbf_events/image39_demo_poll_mbf_events.png[image,width=601,height=607]
+
+Under the _General_ section, click the _Switch to expression_ button, and enter the variable name.
+
+image:demo_poll_mbf_events/image40_demo_poll_mbf_events.png[image,width=596,height=292]
+
+=== Testing the Mule Flow
+
+To Test your flow, you need to start the Mule application. Go to the _Run_ menu, and select _Run_.
+
+image:demo_poll_mbf_events/image41_demo_poll_mbf_events.png[image,width=567,height=376]
+
+After the project has been deployed, you can test you flow by logging into JDE. Go to the _Customer Master Information_ Application (_P03013 ZJDE0002_)
+
+NOTE: This needs to be a version that has been configured for interoperability (see the Requirements section of this document)
+
+image:demo_poll_mbf_events/image42_demo_poll_mbf_events.png[image,width=601,height=430]
+
+Make a change to the customer, and check your output path for a created file.
+
+image:demo_poll_mbf_events/image43_demo_poll_mbf_events.png[image,width=601,height=98]
+
+The Transaction XML has been write to the file.
+
+image:demo_poll_mbf_events/image44_demo_poll_mbf_events.png[image,width=315,height=280]
+
+=== Handling exceptions
+
+From your Mule Pallete, select and drag the _Error Handler_ to your canvas
+
+image:demo_poll_mbf_events/image45_demo_poll_mbf_events.png[image,width=294,height=334]
+
+image:demo_poll_mbf_events/image46_demo_poll_mbf_events.png[image,width=601,height=424]
+
+Now select and drag the _On Error Continue_ into the _Error Handler_
+
+image:demo_poll_mbf_events/image47_demo_poll_mbf_events.png[image,width=247,height=129]
+
+Select the _On Error Continue_ scope, and under Type enter _JDE:ERROR_PROCESSING_POLL_EVENT_
+
+image:demo_poll_mbf_events/image48_demo_poll_mbf_events.png[image,width=447,height=324]
+
+NOTE : The operation error types can be seen when selecting the operation on your canvas, going to _Error Mapping_, and clicking add. You may also map this error to a aplication specific error.
+
+image:demo_poll_mbf_events/image49_demo_poll_mbf_events.png[image,width=250,height=291]
+
+Drag the _Set Payload_ component to the _Error Handler_, and set an appropriate message
+
+image:demo_poll_mbf_events/image50_demo_poll_mbf_events.png[image,width=442,height=298]
+
+== *PortX JDE Connector – Demo Projects*
+
+=== Additional Demos
+
+There are additional demo applications with step by step guides available for download. These cover all the basic operations, and are
+
+. <<jde.adoc#,Invoke a Business Function>>
+. <<demo_ube.adoc#,Submit a Batch Process>> 
+. <<demo_ube_status.adoc#,Retrieve a Batch Process’s Status>>
+. <<demo_poll_edi_events.adoc#,Poll EDI Events>>

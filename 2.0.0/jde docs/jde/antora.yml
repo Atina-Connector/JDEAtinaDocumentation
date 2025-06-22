@@ -1,0 +1,8 @@
+name: jde
+title: JD Edwards Connector
+version: 'latest'
+start_page: ROOT:jde.adoc
+nav:
+- modules/ROOT/nav.adoc
+
+

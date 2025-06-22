@@ -1,0 +1,4 @@
+* xref:demo_ube.adoc[Demo - Submitting a Batch Job / Report]
+* xref:demo_ube_status.adoc[Demo - Retrieve a Batch Job's status ]
+* xref:demo_poll_edi_events.adoc[Demo - Polling for EDI Events]
+* xref:demo_poll_mbf_events.adoc[Demo - Polling for Master Business Function Events]

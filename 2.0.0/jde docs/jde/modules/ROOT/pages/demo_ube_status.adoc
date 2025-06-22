@@ -1,0 +1,312 @@
+= *PortX JD Edwards Connector for Mule 4 – Demo – Retrieve a UBE’s Job Status*
+:keywords: add_keywords_separated_by_commas
+:imagesdir: images
+:toc: macro
+:toclevels: 2
+
+toc::[]
+
+== *Introduction*
+
+The _PortX JDE Connector_ leverages the internal capabilities of Oracle’s _JD Edwards EnterpriseOne™_ solution to a broader extent, and uses the power of Oracle’s Java Dynamic Connector to provide interoperability with _JD Edwards EnterpriseOne™_ and external systems.
+
+After reading this guide, you should be able to retrieve a bathc process's status from the server by passing it a job id.
+
+At design time, the _PortX JDE Connector_ allows you to discover functions by name providing full access to all Business Function signatures. Given that discovery is a heavy duty process, the Connector manages a cache repository for all function’s metadata used at least once.
+
+The results of a function call will be injected into the flow as a Map containing key-value pairs with the invocation’s output values. This approach gives the end user freedom of choice to construct complex flows and manage custom exception strategies.
+
+Furthermore, you can have all functions in the flow, processing within the same transaction, and commit or rollback all changes.
+
+=== Prerequisites
+
+This document assumes that you are familiar with Oracle’s _JD Edwards EnterpriseOne™_ basics, Mule the https://docs.mulesoft.com/anypoint-studio/v/6/download-and-launch-anypoint-studio[Anypoint™ Studio] interface.
+
+=== Requirements
+
+* *Review the* link:/[PortX JDE Connector for Mule 4 – Getting Started Guide] for a detailed list of requirements and setup prerequisites.
+
+== *Demo - Retrieve a Batch Process's Status*
+
+NOTE: It is recommended that you update AnyPoint Studio before starting with a _PortX JDE Connector_ project.
+
+=== Creating a new Mule Project 
+
+Create a new Mule Project with Mule Server 4.1.1 EE or greater as runtime:
+
+image:demo_ube_status/image1_demo_ube_status.png[image,width=321,height=423]
+
+=== Project Dependencies
+
+In you pom.xml, add the following to you _repositories_ section :
+[source,xml]
+----
+<repository>
+    <id>portx-repository-releases</id>
+    <name>portx-repository-releases</name>
+    <url>https://portx.jfrog.io/portx/portx-releases</url>
+</repository>
+----
+
+Add the following to you _dependencies_ section :
+
+[source,xml]
+----
+<dependency>
+<groupId>com.modus</groupId>
+    <artifactId>mule-jde-connector</artifactId>
+    <version>2.0.0</version>
+    <classifier>mule-plugin</classifier>
+</dependency>
+<dependency>
+    <groupId>com.jdedwards</groupId>
+    <artifactId>jde-lib-bundle</artifactId>
+    <version>1.0.0</version>
+</dependency>
+----
+
+Add or update the following to you _plugins_ section :
+[source,xml]
+----
+<plugin>
+    <groupId>org.mule.tools.maven</groupId>
+    <artifactId>mule-maven-plugin</artifactId>
+    <version>$\{mule.maven.plugin.version}</version>
+    <extensions>true</extensions>
+    <configuration>
+        <sharedLibraries>
+            <sharedLibrary>
+                <groupId>com.jdedwards</groupId>
+                <artifactId>jde-lib-bundle</artifactId>
+            </sharedLibrary>
+        </sharedLibraries>
+    </configuration>
+</plugin>
+----
+=== Required files
+
+Copy the _JD Edwards EntrpriseOne™_ configuration files to the following folders within the project:
+
+* Project Root
+* _src/main/resources_
+
+NOTE: If there is a requirement to use different configuration files per environment, you may create separate folders under _src/main/resources_ corresponding to each environment as shown below.
+
+image:demo_ube_status/image2_demo_ube_status.png[image,width=250,height=446]
+
+The _mule-arifact.json_ file needs to be updated per environment as below
+
+[source,json]
+----
+{
+	"minMuleVersion": "4.1.4",
+	"classLoaderModelLoaderDescriptor": {
+		"id": "mule",
+		"attributes": {
+			"exportedResources": [
+				"JDV920/jdeinterop.ini",
+				"JDV920/jdbj.ini",
+				"JDV920/tnsnames.ora",
+				"JDV920/jdelog.properties",
+				"JPY920/jdeinterop.ini",
+				"JPY920/jdbj.ini",
+				"JPY920/tnsnames.ora",
+				"JPY920/jdelog.properties",				
+				"log4j2.xml"
+			],
+			"exportedPackages": [
+				"JDV920",
+				"JPY920"
+			],
+			"includeTestDependencies": "true"
+		}
+	}
+}
+----
+=== Other Considerations
+
+To redirect the _JD Edwards EntrpriseOne™_ Logger to Mule Logger (allowing you to see the JDE activity in both Console and JDE files defined in the _jdelog.properties_, you may add the following _Async Loggers_ to _log4j2.xml_ file.
+[source,xml]
+----
+_<!-- JDE Connector wire logging -->_
+<AsyncLogger name="org.mule.modules.jde.handle.MuleHandler" level="INFO" />
+<AsyncLogger name="org.mule.modules.jde.JDEConnector" level="INFO" />
+----
+=== Troubleshooting
+
+If you are having trouble resolving all dependencies,
+
+. Shut down AnyPoint Studio
+. Run the following command in the project root folder from the terminal/command prompt,
+
+_mvn clean install_
+
+[start=3]
+. Open AnyPoint Studio and check dependencies again.
+
+=== Configure the Global Element
+
+To use the _PortX JDE Connector_ in your Mule application, you must configure a global element that can be used by the connector (read more about Global Elements).
+
+Open the Mule flow for the project, and select the Global Elements tab at the bottom of the Editor Window.
+
+image:demo_ube_status/image3_demo_ube_status.png[image,width=515,height=273]
+
+Click Create
+
+image:demo_ube_status/image4_demo_ube_status.png[image,width=511,height=312]
+
+Type “JDE” in the filter edit box, and select “JDE Config”. Click OK
+
+image:demo_ube_status/image5_demo_ube_status.png[image,width=386,height=390]
+
+On the _General_ tab, enter the required credential and environment
+
+image:demo_ube_status/image6_demo_ube_status.png[image,width=378,height=383]
+
+Click _Test Connection._ You should see the following message appear.
+
+image:demo_ube_status/image7_demo_ube_status.png[image,width=513,height=135]
+
+You are now ready to start using the _PortX JDE Connector_ in your project
+
+=== Creating a HTTP Listener for your flow
+
+*NOTE :* This use case example will create a simple flow to retrieve the status of UBE R000P_XJDE0001 from the _Oracle’s JDE EnterpriseOne_ Server.
+
+Log into your _JDE EnterpriseOne_, and navigate to submitted jobs. Find a previously submitted job for ube R0008P, version XJDE0001, and note the job number (248 in this case)
+
+image:demo_ube_status/image8_demo_ube_status.png[image,width=601,height=133]
+
+*NOTE :* (You can view the demo application “_*Submit a Batch Process”*_, for detail on how to submit this report from a flow)
+
+Go back to the _Message Flow_ tab
+
+image:demo_ube_status/image9_demo_ube_status.png[image,width=615,height=459]
+
+From the Mule Palette (typically top right), select _HTTP_, and drag Listener to the canvas
+
+image:demo_ube_status/image10_demo_ube_status.png[image,width=263,height=286]
+
+Select the _HTTP Listener_ component from the canvas, and inspect the properties window
+
+image:demo_ube_status/image11_demo_ube_status.png[image,width=655,height=390]
+
+The connector requires a _Connector Configuration_. Click on *Add* to create a connector configuration.
+
+Give the HTTP endpoint a more descriptive name like _get-ubestatus-http-endpoint_ and press *OK* to go back to the global HTTP endpoint dialog box:
+
+image:demo_ube_status/image12_demo_ube_status.png[image,width=404,height=410]
+
+Add a path to the URL eg. _getubestatus_
+
+image:demo_ube_status/image13_demo_ube_status.png[image,width=601,height=223]
+
+Select Mime Type, and add a parameter for job number
+
+image:demo_ube_status/image14_demo_ube_status.png[image,width=601,height=234]
+
+Save the project. The connector will be ready to process requests.
+
+=== Get a UBE’s Status
+
+Locate the _JDE_ Connector, and select _Get batch process information_. Drag this to the canvas.
+
+image:demo_ube_status/image15_demo_ube_status.png[image,width=378,height=234]
+
+Drag the connector over to the canvas. Select it and review the properties window.
+
+image:demo_ube_status/image16_demo_ube_status.png[image,width=463,height=229]
+
+Under the General section, click on the drop-down for UBE Name / Operation
+
+image:demo_ube_status/image17_demo_ube_status.png[image,width=460,height=228]
+
+You may now assign the input parameters. You can do this by either entering the payload values manually, or via the _Show Graphical View_ button.
+
+image:demo_ube_status/image18_demo_ube_status.png[image,width=601,height=231]
+
+Map the query parameter _jobnumber_ to the _Job_ID_ input parameter, and click _Done_
+
+image:demo_ube_status/image19_demo_ube_status.png[image,width=550,height=264]
+
+===== Troubleshooting
+If the operation fails (possibly due to a timeout), you will see the below message
+
+image:demo_ube_status/troubleshoot_timeout_message.png[image,width=345,height=115]
+
+Please review the timeout settings in _Anypoint Studio_'s Preferences.
+
+To do this go the the _Window > Preferences_ menu
+
+image:demo_ube_status/troubleshoot_preferences_menu.png[image,width=154,height=199]
+
+Go to _Anypoint Studio > DataSense_ and change the _DataSense Connection Timeout_ setting as below
+
+image:demo_ube_status/troubleshoot_datasense_timeout.png[image,width=622,height=551]
+
+Go to _Anypoint Studio > Tooling_ and change the _Default Connection Timeout_ and _Default Read Timeout_ settings as below
+
+image:demo_ube_status/troubleshoot_timeout_tooling.png[image,width=622,height=551]
+
+=== Set Payload Output
+
+In the Mule Palette, you can either select Core, scroll down to Transformers or type “Payload” in the search bar.
+
+image:demo_ube_status/image20_demo_ube_status.png[image,width=325,height=246]
+
+Drag and drop the _Set Payload_ to your canvas.
+
+image:demo_ube_status/image21_demo_ube_status.png[image,width=354,height=319]
+
+Select the Set Payload component, and review the properties, and click _Show Graphical View_.
+
+image:demo_ube_status/image22_demo_ube_status.png[image,width=556,height=145]
+
+Change the payload to reflect the desired output, and save the project
+
+image:demo_ube_status/image23_demo_ube_status.png[image,width=559,height=134]
+
+=== Testing the Mule Flow
+
+To Test your flow, you need to start the Mule application. Go to the _Run_ menu, and select _Run_.
+
+image:demo_ube_status/image24_demo_ube_status.png[image,width=461,height=305]
+
+After the project has been deployed, you can test you flow by typing the URL into a web browser eg. http://localhost:8081/getubestatus
+
+image:demo_ube_status/image25_demo_ube_status.png[image,width=403,height=126]
+
+=== Handling exceptions
+
+From your Mule Pallete, select and drag the _Error Handler_ to your canvas
+
+image:demo_ube_status/image26_demo_ube_status.png[image,width=267,height=334]image:demo_ube_status/image27_demo_ube_status.png[image,width=294,height=335]
+
+Now select and drag the _On Error Continue_ into the _Error Handler_
+
+image:demo_ube_status/image28_demo_ube_status.png[image,width=245,height=128]
+
+Select the _On Error Continue_ scope, and under Type enter _JDE:ERROR_GETTING_JOB_STATUS_
+
+image:demo_ube_status/image29_demo_ube_status.png[image,width=601,height=247]
+
+NOTE : The operation error types can be seen when selecting the operation on your canvas, going to _Error Mapping_, and clicking add. You may also map this error to a aplication specific error.
+
+image:demo_ube_status/image30_demo_ube_status.png[image,width=258,height=301]
+
+Drag the _Set Payload_ component to the _Error Handler_, and set an appropriate message
+
+image:demo_ube_status/image31_demo_ube_status.png[image,width=506,height=202]
+
+== *PortX JDE Connector – Demo Projects*
+
+=== Additional Demos
+
+There are additional demo applications with step by step guides available for download. These cover all the basic operations, and are
+
+. <<jde.adoc#,Invoke a Business Function>>
+. <<demo_ube.adoc#,Submit a Batch Process>> 
+. <<demo_poll_mbf_events.adoc#,Poll Transaction (MBF) Events>>
+. <<demo_poll_edi_events.adoc#,Poll EDI Events>>
+ 

@@ -1,0 +1,376 @@
+= *PortX JD Edwards Connector for Mule 4 - Demo - Submit a UBE*
+:keywords: add_keywords_separated_by_commas
+:imagesdir: images
+:toc: macro
+:toclevels: 2
+
+toc::[]
+
+== *Introduction*
+
+The _PortX JDE Connector_ leverages the internal capabilities of Oracle’s _JD Edwards EnterpriseOne™_ solution to a broader extent, and uses the power of Oracle’s Java Dynamic Connector to provide interoperability with _JD Edwards EnterpriseOne™_ and external systems.
+
+After reading this guide, you should be able to submut a batch process on the server.
+
+At design time, the _PortX JDE Connector_ allows you to discover functions by name providing full access to all Business Function signatures. Given that discovery is a heavy duty process, the Connector manages a cache repository for all function’s metadata used at least once.
+
+The results of a function call will be injected into the flow as a Map containing key-value pairs with the invocation’s output values. This approach gives the end user freedom of choice to construct complex flows and manage custom exception strategies.
+
+Furthermore, you can have all functions in the flow, processing within the same transaction, and commit or rollback all changes.
+
+=== Prerequisites
+
+This document assumes that you are familiar with Oracle’s _JD Edwards EnterpriseOne™_ basics, Mule the https://docs.mulesoft.com/anypoint-studio/v/6/download-and-launch-anypoint-studio[Anypoint™ Studio] interface.
+
+=== Requirements
+
+* *Review the* link:/[PortX JDE Connector for Mule 4 – Getting Started Guide] for a detailed list of requirements and setup prerequisites.
+
+== *Demo Project - Submit a Batch Process*
+
+NOTE: It is recommended that you update AnyPoint Studio before starting with a _PortX JDE Connector_ project.
+
+=== Creating a new Mule Project 
+
+Create a new Mule Project with Mule Server 4.1.1 EE or greater as runtime:
+
+image:demo_ube/image1_demo_ube.png[image,width=321,height=423]
+
+=== Project Dependencies
+
+In you pom.xml, add the following to you _repositories_ section :
+[source,xml]
+----
+<repository>
+    <id>portx-repository-releases</id>
+    <name>portx-repository-releases</name>
+    <url>https://portx.jfrog.io/portx/portx-releases</url>
+</repository>
+----
+
+Add the following to you _dependencies_ section :
+
+[source,xml]
+----
+<dependency>
+<groupId>com.modus</groupId>
+    <artifactId>mule-jde-connector</artifactId>
+    <version>2.0.0</version>
+    <classifier>mule-plugin</classifier>
+</dependency>
+<dependency>
+    <groupId>com.jdedwards</groupId>
+    <artifactId>jde-lib-bundle</artifactId>
+    <version>1.0.0</version>
+</dependency>
+----
+
+Add or update the following to you _plugins_ section :
+[source,xml]
+----
+<plugin>
+    <groupId>org.mule.tools.maven</groupId>
+    <artifactId>mule-maven-plugin</artifactId>
+    <version>$\{mule.maven.plugin.version}</version>
+    <extensions>true</extensions>
+    <configuration>
+        <sharedLibraries>
+            <sharedLibrary>
+                <groupId>com.jdedwards</groupId>
+                <artifactId>jde-lib-bundle</artifactId>
+            </sharedLibrary>
+        </sharedLibraries>
+    </configuration>
+</plugin>
+----
+=== Required files
+
+Copy the _JD Edwards EntrpriseOne™_ configuration files to the following folders within the project:
+
+* Project Root
+* _src/main/resources_
+
+NOTE: If there is a requirement to use different configuration files per environment, you may create separate folders under _src/main/resources_ corresponding to each environment as shown below.
+
+image:demo_ube/image2_demo_ube.png[image,width=250,height=446]
+
+The _mule-arifact.json_ file needs to be updated per environment as below
+
+[source,json]
+----
+{
+	"minMuleVersion": "4.1.4",
+	"classLoaderModelLoaderDescriptor": {
+		"id": "mule",
+		"attributes": {
+			"exportedResources": [
+				"JDV920/jdeinterop.ini",
+				"JDV920/jdbj.ini",
+				"JDV920/tnsnames.ora",
+				"JDV920/jdelog.properties",
+				"JPY920/jdeinterop.ini",
+				"JPY920/jdbj.ini",
+				"JPY920/tnsnames.ora",
+				"JPY920/jdelog.properties",				
+				"log4j2.xml"
+			],
+			"exportedPackages": [
+				"JDV920",
+				"JPY920"
+			],
+			"includeTestDependencies": "true"
+		}
+	}
+}
+----
+
+=== Other Considerations
+
+To redirect the _JD Edwards EntrpriseOne™_ Logger to Mule Logger (allowing you to see the JDE activity in both Console and JDE files defined in the _jdelog.properties_, you may add the following _Async Loggers_ to _log4j2.xml_ file.
+
+[source,xml]
+----
+<!-- JDE Connector wire logging -->
+<AsyncLogger name="org.mule.modules.jde.handle.MuleHandler" level="INFO" />
+<AsyncLogger name="org.mule.modules.jde.JDEConnector" level="INFO" />
+----
+=== Troubleshooting
+
+If you are having trouble resolving all dependencies,
+
+. Shut down AnyPoint Studio
+. Run the following command in the project root folder from the terminal/command prompt,
+
+_mvn clean install_
+
+[start=3]
+. Open AnyPoint Studio and check dependencies again.
+
+=== Configure the Global Element
+
+To use the _PortX JDE Connector_ in your Mule application, you must configure a global element that can be used by the connector (read more about Global Elements).
+
+Open the Mule flow for the project, and select the Global Elements tab at the bottom of the Editor Window.
+
+image:demo_ube/image3_demo_ube.png[image,width=515,height=273]
+
+Click Create
+
+image:demo_ube/image4_demo_ube.png[image,width=511,height=312]
+
+Type “JDE” in the filter edit box, and select “JDE Config”. Click OK
+
+image:demo_ube/image5_demo_ube.png[image,width=386,height=390]
+
+On the _General_ tab, enter the required credential and environment
+
+image:demo_ube/image6_demo_ube.png[image,width=378,height=383]
+
+Click _Test Connection._ You should see the following message appear.
+
+image:demo_ube/image7_demo_ube.png[image,width=513,height=135]
+
+You are now ready to start using the _PortX JDE Connector_ in your project
+
+=== Creating a HTTP Listener for your flow
+
+*NOTE :* This use case example will create a simple flow to submit a job for UBE R0008P_XJDE0001 on _Oracle’s JDE EnterpriseOne_ Server.
+
+Go back to the _Message Flow_ tab
+
+image:demo_ube/image8_demo_ube.png[image,width=615,height=459]
+
+From the Mule Palette (typically top right), select _HTTP_, and drag Listener to the canvas
+
+image:demo_ube/image9_demo_ube.png[image,width=263,height=286]
+
+Select the _HTTP Listener_ component from the canvas, and inspect the properties window
+
+image:demo_ube/image10_demo_ube.png[image,width=655,height=390]
+
+The connector requires a _Connector Configuration_. Click on *Add* to create a connector configuration.
+
+Give the HTTP endpoint a more descriptive name like _get-submitR0008P-http-endpoint_ and press *OK* to go back to the global HTTP endpoint dialog box:
+
+image:demo_ube/image11_demo_ube.png[image,width=415,height=420]
+
+Add a path to the URL eg. _submitR0008P_XJDE0001._
+
+image:demo_ube/image12_demo_ube.png[image,width=601,height=252]
+
+Save the project. The connector will be ready to process requests.
+
+=== Submit a Batch Process / Report
+
+Locate the *JDE* Connector, and select Submit batch process. Drag this to the canvas.
+
+image:demo_ube/image13_demo_ube.png[image,width=331,height=232]
+
+Drag the connector over to the canvas. Select it and review the properties window. Give it a meaningful name eg. Submit R0008P_XJDE0001.
+
+Under the General section, click on the drop-down for UBE Name
+
+image:demo_ube/image14_demo_ube.png[image,width=601,height=253]
+
+*NOTE :* If it is the first time you are selecting a UBE, this might take a while, as no information has been cached yet. It will need to build a list of all UBEs available. Please be patient. The status bar (bottom right) will display the following while it is retrieving the metadata.
+
+image:demo_ube/image15_demo_ube.png[image,width=307,height=30]
+
+===== Troubleshooting
+If the operation fails (possibly due to a timeout), you will see the below message
+
+image:demo_ube/troubleshoot_timeout_message.png[image,width=345,height=115]
+
+Please review the timeout settings in _Anypoint Studio_'s Preferences.
+
+To do this go the the _Window > Preferences_ menu
+
+image:demo_ube/troubleshoot_preferences_menu.png[image,width=154,height=199]
+
+Go to _Anypoint Studio > DataSense_ and change the _DataSense Connection Timeout_ setting as below
+
+image:demo_ube/troubleshoot_datasense_timeout.png[image,width=622,height=551]
+
+Go to _Anypoint Studio > Tooling_ and change the _Default Connection Timeout_ and _Default Read Timeout_ settings as below
+
+image:demo_ube/troubleshoot_timeout_tooling.png[image,width=622,height=551]
+
+==== Setting Parameters
+After the system has retrieved the required metadata, select R0008P_XJDE0001 from the list. The specification metadata will be retrieved from the enterprise server, and put into the project metadata repository.
+
+image:demo_ube/image12_demo_ube.png[image,width=601,height=252]
+
+You may now assign the input parameters. You can do this by either entering the payload values manually, or via the “Show Graphical View” button.
+
+image:demo_ube/image16_demo_ube.png[image,width=586,height=225]
+
+Drag the inputs to outputs, or double-click the output parameter to add to your edit window, and change as required. Eg.
+
+*_Job Queue* : [Enter the Job Queue or leave blank for the default job queue
+
+*_Selection* : F0010.CO = ''00000'' (See link:#appendix-a-how-define-data-selection[Appendix A] for data selection details)
+
+*cFiscalDatePattern* : F
+
+image:demo_ube/image17_demo_ube.png[image,width=601,height=218]
+
+=== Set Payload Output
+
+In the Mule Palette, you can either select Core, scroll down to Transformers or type “Payload” in the search bar.
+
+image:demo_ube/image18_demo_ube.png[image,width=325,height=246]
+
+Drag and drop the _Set Payload_ to your canvas.
+
+image:demo_ube/image19_demo_ube.png[image,width=280,height=262]
+
+Select the Set Payload component, and review the properties.
+
+image:demo_ube/image20_demo_ube.png[image,width=601,height=157]
+
+Change the payload to reflect the desired output, and save the project
+
+image:demo_ube/image21_demo_ube.png[image,width=601,height=174]
+
+=== Testing the Mule Flow
+
+To Test your flow, you need to start the Mule application. Go to the _Run_ menu, and select _Run_.
+
+image:demo_ube/image22_demo_ube.png[image,width=461,height=305]
+
+After the project has been deployed, you can test you flow by typing the URL into a web browser eg. http://localhost:8081/submitR0008P_XJDE0001
+
+image:demo_ube/image23_demo_ube.png[image,width=403,height=126]
+
+Log into JD Edwards EnterpriseOne and View Job Status for the user specified in the global element eg. JDE
+
+image:demo_ube/image24_demo_ube.png[image,width=601,height=125]
+
+=== Handling exceptions
+
+From your Mule Pallete, select and drag the _Error Handler_ to your canvas
+
+image:demo_ube/image25_demo_ube.png[image,width=261,height=336]image:demo_ube/image26_demo_ube.png[image,width=294,height=335]
+
+Now select and drag the _On Error Continue_ into the _Error Handler_
+
+image:demo_ube/image27_demo_ube.png[image,width=220,height=118]
+
+Select the _On Error Continue_ scope, and under Type enter _JDE:ERROR_SUBMITTING_UBE_
+
+image:demo_ube/image28_demo_ube.png[image,width=529,height=253]
+
+NOTE : The operation error types can be seen when selecting the operation on your canvas, going to _Error Mapping_, and clicking add. You may also map this error to a aplication specific error.
+
+image:demo_ube/image29_demo_ube.png[image,width=231,height=268]
+
+Drag the _Set Payload_ component to the _Error Handler_, and set an appropriate message
+
+image:demo_ube/image30_demo_ube.png[image,width=506,height=202]
+
+=== Defining Data Selection
+
+* The parameter _Selection_ is used to define UBE Data Selection.
+* The sentence is similar to a WHERE clause of an SQL statement.
+* The _Selection_ syntax is:
+** table.column_name operator [value|table.column_name];
+* The table must be a JDE table that belongs to the main view of the UBE.
+* Column Name must be a JDE Data Item Alias.
+* The following operators can be used in the _Selection_ :
+
+[cols=",",options="header",]
+|===
+|Operator |Description
+|= |Equal
+|<> |Not equal
+|<> |Not equal
+|> |Greater than
+|< |Less than
+|>= |Greater than or equal
+|⇐ |Less than or equal
+|BETWEEN |Between an inclusive range
+|NOT BETWEEN |Not Between an exclusive range
+|IN |To specify multiple possible values for a column
+|NOT IN |To exclude multiple possible values for a column
+|===
+
+* The values can be literals or other table columns.
+* Literals can be String or Number
+* The sentence can include the AND and/or the OR conditions
+* To override the default precedence you need to use parenthesis as
+** C1 AND (C2 OR C3)
+** The sentence only accept one level of Parenthesis.
+
+For example, this is a valid sentence because the maximum level of Parenthesis opened is 1.
+
+_C1 AND (C2 OR C3) AND (C4 OR C5)_
+
+otherwise, this is an invalid sentences because the maximum level of Parenthesis opened is 2.
+
+C1 AND (C2 OR (C3 AND C4))
+
+Examples:
+
+[source,sql]
+----
+F4211.KCOO = '00001' AND F4211.DOCO > 10332
+F4211.KCOO = '00001' AND F4211.DOCO >= 10332
+F4211.KCOO = '00001' AND F4211.DOCO <= 10332
+F4211.KCOO = '00001' AND F4211.DOCO <> 10332
+F4211.KCOO = '00001' AND ( F4211.DCTO = 'SO' OR F4211.DCTO = 'SI' )
+F4211.KCOO = '00001' AND F4211.DCTO IN ('SO','SI')
+F4211.KCOO = '00001' AND F4211.DCTO NOT IN ('SO','SI')
+F4211.KCOO = '00001' AND F4211.DOCO BETWEEN 1022 AND 400
+F4211.KCOO = '00001' AND F4211.DOCO NOT BETWEEN 1022 AND 400
+F4211.MCU = F4211.EMCU AND F4211.DOCO NOT BETWEEN 1022 AND 400
+----
+
+== *_PortX JDE Connector_ – Additional Demo Projects*
+
+There are additional demo applications with step by step guides available for download. These cover all the basic operations, and are
+
+. <<jde.adoc#,Invoke a Business Function>>
+. <<demo_ube_status.adoc#,Retrieve a Batch Process’s Status>>
+. <<demo_poll_mbf_events.adoc#,Poll MBF Events>> 
+. <<demo_poll_edi_events.adoc#,Poll EDI Events>>
+ 
