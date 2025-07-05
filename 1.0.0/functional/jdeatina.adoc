@@ -9,12 +9,21 @@ toc::[]
 
 == *Introduction*
 
-The _Atina JDE Microservices_ leverages the internal capabilities of Oracle’s _JD Edwards EnterpriseOne™_ solution to a broader extent, and uses the power of _JD Edwards EnterpriseOne™_ interoperability with external systems.
+=== What Are Atina JDE Microservices?
 
-This microservice is implemented in Docker containers and operate using Java 8. Their primary function is to act as an intermediary, communicating directly with _JD Edwards EnterpriseOne™_. By running within the client's network, the _Atina JDE Microservices_ resolve latency and DNS resolution issues that previously arose with the older MuleSoft connector in Wide Area Network (WAN) environments, where the socket protocol of JDE libraries proved suboptimal.
+_Atina JDE Microservices_ are Docker-based components designed to interact directly with Oracle’s _JD Edwards EnterpriseOne™_. They serve as a modern intermediary that improves upon legacy integration methods.
 
-Furthermore, for the modernized MuleSoft connector, the _Atina JDE Microservices_ expose a new API via gRPC, leveraging the benefits of the HTTP/2 protocol. This approach eliminates the _MuleSoft™_ connector's dependency on older Oracle libraries that were only compatible with Java 8. This is crucial given _MuleSoft's™_ announcement regarding the end of standard support for Java 8 and 11 for certain Mule versions. By removing this dependency, the _Atina JDE Microservices_ allow compatibility with more recent Java versions (e.g., Java 17), ensuring that integrations remain functional even with MuleSoft runtime updates.
+=== Why Use Them?
 
+By running inside the client’s network, these microservices overcome key issues commonly found in WAN or cloud-based integrations—particularly those stemming from the use of socket-based communication in the original JDE libraries. This deployment approach improves performance, reduces latency, and avoids DNS resolution problems.
+
+Furthermore, the microservices expose a gRPC-based API (using HTTP/2), eliminating the dependency on Java 8-only Oracle libraries. This ensures compatibility with newer Java versions (such as Java 17), aligning with _MuleSoft™_'s roadmap of deprecating older Java support.
+
+=== How is implemented?
+
+The microservice is packaged as a Docker container and runs using Java 8. It communicates directly with the JD Edwards Enterprise Server through Oracle’s interoperability layer and exposes its functionality via a gRPC-based API using the HTTP/2 protocol. This design ensures modern performance while maintaining backward compatibility with JDE tooling.
+
+=== Key Functionalities
 
 The _Atina JDE Microservices_ component specifically provides access to several _JD Edwards EnterpriseOne™_ operations, managing credentials, sessions, connection pooling, and metadata introspection.
 
@@ -30,6 +39,8 @@ Functionally, the _Atina JDE Microservices_ enable the connector for several _JD
 * Monitoring APIs to view open connections and retrieve logs by transaction ID
 * Token APIs for creating and parsing tokens.
 
+=== Tooling Provided
+
 The Atina JDE Microservices suite also includes additional tools to simplify configuration and deployment, such as:
 
 • JD Atina Generate Configuration Files Tool: Helps generate base .ini files (like jdbj.ini, jdeinterop.ini, jdelog.properties) by extracting information from JDE Enterprise Server Manager via its REST API.
@@ -37,9 +48,9 @@ The Atina JDE Microservices suite also includes additional tools to simplify con
 
 Overall, the _Atina JDE Microservices_ provide a robust and modernized solution for integrating _JD Edwards EnterpriseOne™_ with other systems, addressing key technical challenges and aligning with contemporary integration platform requirements
 
-=== Prerequisites
+== *Prerequisites*
 
-This document assumes that you are familiar with:
+This guide assumes that you have a working knowledge of the following topics:
 
 * Oracle’s _JD Edwards EnterpriseOne™_ interoperability.
 * Oracle’s _JD Edwards EnterpriseOne™_ Network Connectivity.
@@ -48,38 +59,47 @@ This document assumes that you are familiar with:
 
 === Software Requirements
 
-* Docker: Essential for deploying Atina microservices, as they are dockerized.
-* Git: Required to obtain the files
-* Java Development Kit (JDK) 8: Required for the configuration file and JAR generation tools if run directly as Java applications
-* https://maven.apache.org/download.cgi[Maven] 3.8.1 or higher
+To install and run the Atina JDE Microservices and accompanying tools, you will need the following software:
+
+* **Docker** — Required to deploy the microservices, which are containerized.
+* **Git** — Used to download configuration and tooling repositories.
+* **Java Development Kit (JDK) 8** — Required if you intend to run the configuration or JAR generation tools as standalone Java applications.
+* **Maven 3.8.1 or higher** — Required for managing dependencies and building artifacts.
 
 === Oracle’s _JD Edwards EnterpriseOne™_ Requirements
 
-* Access to your Oracle’s _JD Edwards EnterpriseOne™_ installation java libraries
-* _Atina JDE Microservices_ builds on Oracle’s interoperability solution, but you **rarely** need to tweak the kernel sections – they’re usually already correct. You should only **verify the** `XMLLookupInfo` **section** (especially the entry for `XMLRequestType7=ube`), as its default values often need adjustment to enable UBE submission. The other kernels typically work out-of-the-box: .
+The following resources and configurations must be available in your JD Edwards environment:
 
-** XML Dispatch Kernel:
-** The XML CallObject kernel
-** The XML Transaction kernel
-** The XML List kernel
-** XMLLookupInfo section for XML Request type 7 inside jde.ini To activate Submit UBE.
+* **Access to local JD Edwards Java libraries** — These libraries must be extracted from your JD Edwards Deployment Server.
 
-* Only enable `PredefinedJDENETPorts` in _jde.ini_ if there’s a firewall between the ESB and the JDE Enterprise Server. If you deploy _Atina JDE Microservices_ **inside** the client’s network (our **recommended** setup), no JDENET port changes are necessary, avoiding WAN-related latency and DNS issues.
+* **INI configuration review (jde.ini)** — The microservice builds upon Oracle’s interoperability architecture, which usually works without modification. However, you must verify the `XMLLookupInfo` section in `jde.ini`, particularly the `XMLRequestType7=ube` entry, as this setting is often required for UBE submissions.
+The following XML kernel sections are usually configured correctly by default:
 
-* Oracle _JD Edwards EnterpriseOne_ Server Manager credentials:
+** XML Dispatch Kernel
+** XML CallObject Kernel
+** XML Transaction Kernel
+** XML List Kernel
+
+* **Firewall considerations (JDENET Ports)** — Enable `PredefinedJDENETPorts` in `jde.ini` **only** if there is a firewall between the JD Edwards Enterprise Server and your integration layer. If the microservices are deployed within the same network (as recommended), this setting is not necessary.
+
+* **Oracle _JD Edwards EnterpriseOne_ Server Manager credentials**:
 Admin user, password, and the Server Manager URL (e.g. `http://server:8999/manage/`).
 
-* Java libraries on Deployment Server folders.
+* **Java libraries on Deployment Server folders**.
 Make sure you include the following directories from your JDE Deployment Server in your project’s resources:
 
-** `//Deplo/E920/MISC`
-** `//Deplo/E920/system/Classes`
-**  `//Deplo/E920/system/JAS/webclient.ear/webclient.war/WEB-INF/lib`
-** `//Deplo/E920/DV920/java/sbfjars`
+- `//Deployment Server/E920/MISC`
+- `//Deployment Server/E920/system/Classes`
+- `//Deployment Server/E920/system/JAS/webclient.ear/webclient.war/WEB-INF/lib`
+- `//Deployment Server/E920/DV920/java/sbfjars`
 
-This configuration will need to be done by the CNC Administrator for your _JD Edwards EnterpriseOne™_ system. For more information, refer to the _JD Edwards EnterpriseOne™ Tools Interoperability Guide_
+[NOTE]
+====
+This configuration must be completed or validated by your CNC administrator.
+Refer to the _JD Edwards EnterpriseOne™ Tools Interoperability Guide_ for further details.
+====
 
-=== Compatibility
+== *Compatibility*
 
 Oracle’s _JD Edwards EnterpriseOne™_ Tools Release 8.98 Update 4 and onwards. For Web Services we recomend Tool Release 9.2.x and onwards due limitations for previous versions.
 
@@ -90,16 +110,15 @@ To ensure the microservice operates correctly, you must complete the following p
 1. **Configure required INI files**
 Set up the standard _JD Edwards EnterpriseOne™_ interoperability INI files ( jdeinterop.ini, jdbj.ini, jdelog.properties, tnsnames.ora ).
 
-2. **Generate library bundles**
-Package the extracted Deployment Server JARs into two single lib bundle.
-
+2. **Generate libraries**
+Package the required JARs from your Deployment Server into two reusable bundles using the provided tooling.
 3. **Verify JDE Server Configuration**
 Review and (if necessary) adjust the `XMLLookupInfo` section in your jde.ini to enable UBE submission. Other kernel settings (XML Dispatch, CallObject, Transaction, List) are typically correct out of the box.
 
 4. **Install the Atina JDE Microservice**
-Deploy and configure the microservice in your server.
+Install and configure the microservice container in your environment using the Docker setup instructions.
 
-=== *Configure required INI files*
+=== Configure required INI files
 
 JDE Atina Microservice needs the following ini files according to your environment:
 
@@ -114,7 +133,10 @@ You can configure it manually following JDE manuals, or you can use **JDE Atina 
 
 We have created a special section where we explain how to use this tool.
 
-NOTE: At the end of this process, We recommend review jdeinterop.ini and jdbj.ini files before deploy it on JD Atina Web Service Microservice using this guide: https://maven.apache.org/download.cgi[Understanding jdeinterop.ini File].
+[NOTE]
+====
+At the end of this process, We recommend review jdeinterop.ini and jdbj.ini files before deploy it on JD Atina Web Service Microservice using this guide: https://maven.apache.org/download.cgi[Understanding jdeinterop.ini File].
+====
 
 _[.underline]#JDELOG.PROPERTIES (optional)#_
 
@@ -155,7 +177,7 @@ COMPONENT=ALL
 APPEND=TRUE
 ----
 
-=== *Generate library bundles*
+=== Generate libraries
 
 JDE Atina Microservice makes use of the libraries of the local JDE Tools release. In order to simplify dependency management for the microservice application, we need to package JDE libraries together into a lib bundle using the provided **JDE Atina Generate Jars Files Tool**.
 
@@ -163,7 +185,7 @@ This tool will generate two jars files need it by JD Web Service Microservice.
 
 Because it is a complex process, we have created an application that makes it easy to create.
 
-=== *Verify JDE Enterprise Server configuration*
+=== Verify JDE Enterprise Server configuration
 
 ==== __JD Edwards EnterpriseOne__™ Server configuration requirements
 
@@ -171,9 +193,16 @@ To ensure correct operation of all of the JDE Connector features the Enterprise 
 
 Please refer to *JD Edwards EnterpriseOne Tools Interoperability Guide* to check updates, and also provides the different .dll extensions for other platforms.
 
-NOTE: The below .dll files, all relate to the _Microsoft Windows_ platform.
 
+[NOTE]
+====
+The below .dll files, all relate to the _Microsoft Windows_ platform.
+====
+
+[IMPORTANT]
+====
 This configuration must be done by CNC administrator. Refer to *JD Edwards EnterpriseOne Tools Interoperability Guide*
+====
 
 . Ensure that sufficient processes are available for the *XML List Kernel*
 
@@ -281,33 +310,34 @@ Please refer to *JD Edwards EnterpriseOne Tools Security Administration Guide* t
 
 == *JDE Atina Generate Configuration Files Tool*
 
-_JDE Atina Microservice_ needs the following ini files according to your environment:
+This tool simplifies the generation of JD Edwards interoperability configuration files required by the microservice.
+It connects to the JD Edwards Server Manager via REST API and automatically extracts settings for a selected HTML instance.
 
-** jdbj.ini
-** jdeinterop.ini
-** jdelog.properties
-** tnsnames.ora" (for Oracle RDBMS based installations only)
+You can use it in two ways:
 
-You can configure it manually following JDE manuals or you can use this tools to help you.
-This tool help to you to generate a base ini files.
+* As a Java CLI application (requires JDK 8)
+* As a Docker container
 
-It takes all information from JDE Enterprise Server Manager using REST API for Server Manager
+The following files will be generated:
 
-The tooll will require to select the HTML Client instance according to your environment.
-.
+- `jdbj.ini`
+- `jdeinterop.ini`
+- `jdelog.properties`
+- `settings.xml`
 
-NOTE: At the end of this process, We recommend review jdeinterop.ini and jdbj.ini files before deploy it on JD Atina Web Service Microservice using this guide: https://maven.apache.org/download.cgi[Understanding jdeinterop.ini File].
+If your environment uses Oracle RDBMS, you must also add the `tnsnames.ora` file manually.
 
-There two way to use this tools
+[NOTE]
+====
+After generation, review the contents of `jdbj.ini` and `jdeinterop.ini` before deploying to production.
+See: https://maven.apache.org/download.cgi[Understanding jdeinterop.ini File].
+====
 
-** Using JAVA APP
-** Using Docker
-
-==== JDE Atina Generate Configuration Files Tool - Using JAVA APP
+==== JDE Atina Generate Configuration Files Tool - Using the Java CLI Application
 
 It will require openjdk 8 installed.
 
-Download JD Atina Generate Configuration Files Tool - latest release:
+Download the latest version:
 
 [source,bash]
 ----
@@ -315,7 +345,7 @@ curl http://157.245.236.175:8081/artifactory/libs-release-local/com/atina/jd-cre
 --output jd-create-ini-files-1.0.0-jar-with-dependencies.jar
 ----
 
-Run jd-create-ini-files command:
+Run the tool:
 
 [source,bash]
 ----
@@ -335,7 +365,7 @@ OPTIONS:
         JDE User for Enterprise Server Manager
 ----
 
-Usage Exampes
+Example
 
 [source,bash]
 ----
@@ -347,12 +377,18 @@ java -jar jd-create-ini-files-1.0.0-jar-with-dependencies.jar \
 ----
 
 
-==== JD Atina Generate Configuration Files Tool - Using Docker instead of Java Application
+==== JD Atina Generate Configuration Files Tool - Using the Docker Image
+
+You can also run the same tool using Docker. This avoids needing Java locally.
 
 [source,bash]
 ----
-curl http://157.245.236.175:8081/artifactory/libs-release-local/com/atina/jd-create-ini-files/1.0.0/jd-create-ini-files-1.0.0-jar-with-dependencies.jar \
---output jd-create-ini-files-1.0.0-jar-with-dependencies.jar
+docker run --rm -v /tmp/build_jde_libs:/output \
+  <docker-image-name> \
+  --user jde_admin \
+  --password secret123 \
+  --server http://server:8999/manage \
+  --environment JDV920
 ----
 
 Reviewing Output
@@ -393,7 +429,7 @@ GENERATION SUCESSS
 ------------------------------------------------------------------------
 ----
 
-It will create the following files:
+The tool will generate:
 
 [source,bash]
 ----
@@ -407,42 +443,37 @@ build_jde_libs
 
 Adding manually "tnsnames.ora" for Oracle RDBMS based installations only.
 
-
 == *JDE Atina Generate Jars Files Tool*
 
-This tool will generate all jars files need it by JDE Atina Microservice.
+This tool packages the JD Edwards libraries into deployable JAR files that are required by the Atina JDE Microservice.
+It simplifies dependency management and ensures that all necessary classes are available at runtime.
 
-Preparing folders
+The tool will generate the following artifacts:
+
+- `jde-lib-wrapped-1.0.0.jar`: Contains core JDE interoperability libraries.
+- `StdWebService-1.0.0.jar`: Contains wrappers for standard JD Edwards web services.
+
+You can use the tool either as a Java CLI or via Docker.
+
+[NOTE]
+====
+Before running the tool, ensure you’ve copied the required files from your JD Edwards Deployment Server into the appropriate folder structure.
+====
+
+**Required Folder Structure**
+
+Create the following directory layout and populate it with the required files:
 
 [source,bash]
 ----
-tmp
-└─build_jde_libs
-      ├─ JDBC_Vendor_Drivers
-      └─ system
-         │─ Classes
-         │─ JAS
-         └─ WS
+/tmp/build_jde_libs/
+├── JDBC_Vendor_Drivers/         # From: //Deployment Server/E920/MISC/
+└── system/
+    ├── Classes/                 # From: //Deployment Server/E920/system/Classes
+    ├── JAS/                     # From: //Deployment Server/E920/system/JAS/webclient.ear/webclient.war/WEB-INF/lib/*
+    └── WS/                      # From: //Deployment Server/E920/DV920/java/sbfjars
 ----
 
-Copy files from JDE Deploment Server to the corresponding folders
-
-|===
-|Destination |Source
-
-|`/tmp/build_jde_libs/JDBC_Vendor_Drivers`
-|`//Deployment Server/E920/MISC/*`
-
-|`/tmp/build_jde_libs/system/Classes`
-|`//Deployment Server/E920/system/Classes*`
-
-|`/tmp/build_jde_libs/system/JAS`
-|`//Deployment Server/E920/system/JAS/webclient.ear/webclient.war/WEB-INF/lib/*`
-
-|`/tmp/build_jde_libs/system/WS`
-|`//Deployment Server/E920\DV920/java/sbfjars/*`
-
-|===
 
 **Define local Repository** (localRepo option)
 
@@ -476,11 +507,11 @@ In this output we see /root/.m2/repository
 [INFO] ------------------------------------------------------------------------
 ----
 
-==== JDE Atina Generate Jars Files Tool - Using Java Application
+==== JDE Atina Generate Jars Files Tool - Using the Java CLI
 
 It will require openjdk 8 installed.
 
-Download JD Atina Generate Jars Files Tool - latest release:
+Download the latest version:
 
 [source,bash]
 ----
@@ -488,7 +519,7 @@ curl http://157.245.236.175:8081/artifactory/libs-release-local/com/atina/jd-cre
 --output jd-create-jar-files-1.0.0-jar-with-dependencies.jar
 ----
 
-Run jd-create-jar-files command:
+Run the tool:
 
 [source,bash]
 ----
@@ -511,7 +542,7 @@ Options category 'startup':
     Enter Version
 ----
 
-Usage Exampes
+Example:
 
 [source,bash]
 ----
@@ -528,8 +559,7 @@ docker run --rm -v /tmp/build_jde_libs:/tmp/build_jde_libs/ \
     -i --name jd-create-jar-files 92455890/jd-create-jar-files:1.0.0
 ----
 
-Reviewing Output
-
+Once completed, the following files will be created:
 
 [source,bash]
 ----
@@ -540,7 +570,6 @@ JDE Library bundle has been copied to: /tmp/build_jde_libs/jde-lib-wrapped-1.0.0
 JDE WS has been copied to: /tmp/build_jde_libs/StdWebService-1.0.0.jar
 ----
 
-It will create the following files:
 
 [source,bash]
 ----
@@ -549,11 +578,16 @@ build_jde_libs
       └─ StdWebService-1.0.0.jar
 ----
 
-== *Deploy artifact to Local Repository - Optional*
+== (Optional) Deploy Artifacts to a Local Maven Repository
 
-This optional. At startup, JD Microservice has the option to get these libraries from an internal repository.
+Atina JDE Microservice can be configured to load its dependencies from a Maven-compatible repository.
+This optional step allows you to publish the generated JARs (`jde-lib-wrapped` and `StdWebService`) to a local or remote Maven repository such as JFrog Artifactory or Nexus.
 
-In case you want to use a local repository, exectute the following command:
+This is useful if:
+- You want to automate dependency resolution during build or deployment
+- Your deployment environment does not allow copying files manually into the container
+
+=== Step 1: Deploy `jde-lib-wrapped`
 
 [source,bash]
 ----
@@ -567,6 +601,8 @@ mvn deploy:deploy-file \
     -Durl=http://localrepo:8081/artifactory/libs-release
 ----
 
+=== Step 2: Deploy `StdWebService`
+
 [source,bash]
 ----
 mvn deploy:deploy-file \
@@ -579,10 +615,20 @@ mvn deploy:deploy-file \
     -Durl=http://localrepo:8081/artifactory/libs-release
 ----
 
+[NOTE]
+====
+Replace `repositoryId` and `url` with the values defined in your Maven `settings.xml`.
+====
 
 == *JDE Atina microservices - Installation*
 
-Download JD Docker Composer Files - latest release:
+This section explains how to deploy the Atina JDE Microservice using Docker and Docker Compose.
+You'll configure environment variables, initialize the container, and run a basic test to validate connectivity with JD Edwards.
+
+
+=== Step 1: Download Docker Compose Files
+
+Download the Docker Compose package:
 
 [source,bash]
 ----
@@ -590,18 +636,18 @@ curl http://157.245.236.175:8081/artifactory/libs-release/com/atina/jd-docker-fi
     --output jd-docker-files-1.0.0.zip
 ----
 
-Unzip JD Docker Composer Files **jd-docker-files-1.0.0.zip** downloaded in a temporal folder.
+Unzip it:
 
 [source,bash]
 ----
 7z e jd-docker-files-1.0.0.zip
 ----
 
-**Configuration**
+=== Step 2: Configure Environment Variables
 
-Edit .env file and change the following values:
+Edit the `.env` file and set the values according to your infrastructure:
 
-under **DNS_SERVERS** section inside jdeinterop.ini files to complete theses values:
+Under **DNS_SERVERS** section inside jdeinterop.ini files to complete theses values:
 
 [source,bash]
 ----
@@ -616,16 +662,18 @@ JDE_MICROSERVER_ENTERPRISE_DB_NAME=JDE-DATABASE
 JDE_MICROSERVER_ENTERPRISE_DB_IP=2.2.2.2
 ----
 
-**Create JDE Atina Microservice container**
+=== Step 3: Initialize the Container
 
-Run following docker commands:
+Create the container without starting it:
 
 [source,bash]
 ----
 docker-compose -f docker-compose-dist.yml up --no-start
 ----
 
-**Copy files Configuration files and jars files into Container**
+=== Step 4: Copy Required Files into the Container
+
+Copy the configuration and JAR files that were previously generated:
 
 [source,bash]
 ----
@@ -634,14 +682,14 @@ docker cp /tmp/build_jde_libs/jde-lib-wrapped-1.0.0.jar jd-atina-microserver:/tm
 docker cp /tmp/build_jde_libs/StdWebService-1.0.0.jar jd-atina-microserver:/tmp/jde
 ----
 
-**Run Containers**
+=== Step 5: Start the Container
 
 [source,bash]
 ----
 docker-compose -f docker-compose-dist.yml start
 ----
 
-**Check starting process for JD Atina WS Microservice**
+Check the microservice startup log:
 
 [source,bash]
 ----
@@ -703,11 +751,9 @@ or if you prefer you can run the following command:
 docker logs jd-atina-microserver
 ----
 
-**Check starting process for JD Atina WS Microservice**
+=== Step 6: Validate with Check Tool
 
-This tool is used to test JD Microservice. It will invoke a simple WS.
-
-Download JD Atina Check Web Service Microservice - latest release:
+Download the test utility:
 
 [source,bash]
 ----
@@ -715,8 +761,7 @@ curl http://157.245.236.175:8081/artifactory/libs-release-local/com/atina/jd-che
     --jd-check-microservice-1.0.0-jar-with-dependencies.jar
 ----
 
-
-Run command:
+Run a basic test:
 
 [source,bash]
 ----
@@ -748,7 +793,7 @@ Usage Exampes
 java -jar jd-check-microservice-1.0.0-jar-with-dependencies.jar -u JDE -w XXXXXX -e JDV920 -r *ALL -s localhost -p 8077 -m TestLoggindAndGetAddressBookWS -a 28
 ----
 
-The output will be
+Expected output:
 
 [source,bash]
 ----
