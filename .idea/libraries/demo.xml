@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="demo">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/1.0.0/demo/demo-portx-jde-bsfn-trans.zip!/" />
+      <root url="jar://$PROJECT_DIR$/1.0.0/demo/demo-portx-jde-bsfn.zip!/" />
+      <root url="jar://$PROJECT_DIR$/1.0.0/demo/demo-portx-jde-ube-status.zip!/" />
+      <root url="jar://$PROJECT_DIR$/1.0.0/demo/demo-portx-jde-poll-edi-events.zip!/" />
+      <root url="jar://$PROJECT_DIR$/1.0.0/demo/demo-portx-jde-submit-ube.zip!/" />
+      <root url="jar://$PROJECT_DIR$/1.0.0/demo/demo-portx-jde-poll-mbf-events.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

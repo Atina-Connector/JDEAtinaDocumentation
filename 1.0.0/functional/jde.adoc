@@ -13,15 +13,15 @@ The _Atina JDE Connector_ leverages the internal capabilities of Oracle’s _JD 
 After reading this guide, you should be able to accomplish the following scenarios:
 
 . Log into _JD Edwards EnterpriseOne™_
+. Invoke Web Services (WS) on the server by passing it parameters.
 . Invoke a Business Function (BSFN) on the server by passing it parameters.
 . Invoke a Business Function (BSFN) on the server using Transaction Processing.
 . Invoke a UBE by name.
 . Check a UBE call’s status asynchronously.
-. Poll Events.
-. Poll EDI Events.
+. MBF Poll Events.
 . Log out.
 
-At design time, the _PortX_ _JDE Connector_ allows you to discover functions by name providing full access to all Business Function signatures. Given that discovery is a heavy duty process, the Connector manages a cache repository for all function’s metadata used at least once.
+At design time, the _JDE Atina_ Connector_ allows you to discover BSFN functions, Web Services by name providing full access to all Business Function and Web Services signatures. Given that discovery is a heavy duty process, the Connector manages a cache repository for all function’s metadata used at least once.
 
 The results of a function call will be injected into the flow as a Map containing key-value pairs with the invocation’s output values. This approach gives the end user freedom of choice to construct complex flows and manage custom exception strategies.
 
@@ -31,8 +31,8 @@ This document assumes that you are familiar with Oracle’s _JD Edwards Enterpri
 
 === Requirements
 
-* Mule 4.1 server Runtime or higher
-* https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html[Java JDK 1.8]
+* Mule 4.4 server Runtime or higher
+* Java JDK 1.8, 11 or 17
 * https://www.mulesoft.com/lp/dl/studio[AnyPoint Studio™ 7.x or higher]
 * https://maven.apache.org/download.cgi[Maven] 3.3.9 or higher (do not use the embedded Maven for AnyPoint Studio)
 ** For a easy installation tutorial see https://www.mkyong.com/maven/how-to-install-maven-in-windows/[How to install Maven for Windows]
