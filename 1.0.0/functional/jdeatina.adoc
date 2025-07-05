@@ -578,7 +578,7 @@ build_jde_libs
       └─ StdWebService-1.0.0.jar
 ----
 
-== (Optional) Deploy Artifacts to a Local Maven Repository
+== *(Optional) Deploy Artifacts to a Local Maven Repository*
 
 Atina JDE Microservice can be configured to load its dependencies from a Maven-compatible repository.
 This optional step allows you to publish the generated JARs (`jde-lib-wrapped` and `StdWebService`) to a local or remote Maven repository such as JFrog Artifactory or Nexus.
@@ -751,9 +751,17 @@ or if you prefer you can run the following command:
 docker logs jd-atina-microserver
 ----
 
-=== Step 6: Validate with Check Tool
+== *Validating the Microservice Deployment*
 
-Download the test utility:
+Once the microservice is deployed and running, you can use the **JD Atina Check Microservice Tool** to validate that it can connect to JD Edwards and invoke a basic web service.
+
+This tool is a standalone Java application that performs the following test:
+
+- Logs in to JD Edwards using provided credentials
+- Invokes the standard Address Book Web Service (`JP010000`)
+- Logs out and displays the result
+
+=== Step 1: Download the Check Tool
 
 [source,bash]
 ----
@@ -761,7 +769,8 @@ curl http://157.245.236.175:8081/artifactory/libs-release-local/com/atina/jd-che
     --jd-check-microservice-1.0.0-jar-with-dependencies.jar
 ----
 
-Run a basic test:
+=== Step 2: Run the Test
+
 
 [source,bash]
 ----
@@ -793,7 +802,9 @@ Usage Exampes
 java -jar jd-check-microservice-1.0.0-jar-with-dependencies.jar -u JDE -w XXXXXX -e JDV920 -r *ALL -s localhost -p 8077 -m TestLoggindAndGetAddressBookWS -a 28
 ----
 
-Expected output:
+=== Step 3: Expected Output
+
+If everything is correctly configured, you will see output like the following:
 
 [source,bash]
 ----
@@ -811,7 +822,3 @@ Address Book Name: Financial/Distribution Company --
 User User: JDE in environment JDV920 with *ALL disconnected. Current session ID 0
 ------------------------------------------------------------------------
 ----
-
-
-
-
