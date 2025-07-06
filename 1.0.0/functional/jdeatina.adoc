@@ -824,12 +824,11 @@ This tool is a standalone Java application that performs the following test:
 
 [source,bash]
 ----
-curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-check-microservice/1.0.0/jd-check-microservice-1.0.0-jar-with-dependencies.jar \
-    --jd-check-microservice-1.0.0-jar-with-dependencies.jar
+curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-check-microservice/1.0.0/jd-check-microservice-1.0.0.jar \
+    --jd-check-microservice-1.0.0.jar
 ----
 
 === Step 2: Run the Test
-
 
 [source,bash]
 ----
@@ -858,7 +857,7 @@ Usage Exampes
 
 [source,bash]
 ----
-java -jar jd-check-microservice-1.0.0-jar-with-dependencies.jar -u JDE -w XXXXXX -e JDV920 -r *ALL -s localhost -p 8077 -m TestLoggindAndGetAddressBookWS -a 28
+java -jar jd-check-microservice-1.0.0.jar -u JDE -w XXXXXX -e JDV920 -r *ALL -s localhost -p 8077 -m TestLoggindAndGetAddressBookWS -a 28
 ----
 
 === Step 3: Expected Output
