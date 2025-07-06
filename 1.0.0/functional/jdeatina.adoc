@@ -337,19 +337,21 @@ See: https://maven.apache.org/download.cgi[Understanding jdeinterop.ini File].
 
 It will require openjdk 8 installed.
 
-Download the latest version:
+Download the latest version (replace `1.0.0` with the latest one):
 
 [source,bash]
 ----
-curl http://157.245.236.175:8081/artifactory/libs-release-local/com/atina/jd-create-ini-files/1.0.0/jd-create-ini-files-1.0.0-jar-with-dependencies.jar \
---output jd-create-ini-files-1.0.0-jar-with-dependencies.jar
+curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-ini-files/1.0.0/jd-create-ini-files-1.0.0.jar \
+--output jd-create-ini-files-1.0.0.jar
 ----
+
+To check for the latest version, visit: https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-ini-files/[jd-create-ini-files repository]
 
 Run the tool:
 
 [source,bash]
 ----
-java -jar jd-create-ini-files-1.0.0-jar-with-dependencies.jar [OPTIONS]
+java -jar jd-create-ini-files-1.0.0.jar [OPTIONS]
 
 OPTIONS:
     Options category 'startup':
@@ -369,7 +371,7 @@ Example
 
 [source,bash]
 ----
-java -jar jd-create-ini-files-1.0.0-jar-with-dependencies.jar \
+java -jar jd-create-ini-files-1.0.0.jar \
     -u jde_admin \
     -p XXXXXXX \
     -s http://server-manager:8999/manage \
@@ -383,12 +385,12 @@ You can also run the same tool using Docker. This avoids needing Java locally.
 
 [source,bash]
 ----
-docker run --rm -v /tmp/build_jde_libs:/output \
-  <docker-image-name> \
-  --user jde_admin \
-  --password secret123 \
-  --server http://server:8999/manage \
-  --environment JDV920
+docker run --rm -v /tmp/build_jde_libs:/tmp/build_jde_libs/ \
+  -i --name jd-create-ini-files 92455890/jd-create-ini-files:1.0.0 \
+  [user ex. jde_admin] \
+  [password ex.secret123] \
+  [environment ex JDV920] \
+  [server ex. http://server:8999/manage]
 ----
 
 Reviewing Output
@@ -515,7 +517,7 @@ Download the latest version:
 
 [source,bash]
 ----
-curl http://157.245.236.175:8081/artifactory/libs-release-local/com/atina/jd-create-jar-files/1.0.0/jd-create-jar-files-1.0.0-jar-with-dependencies.jar \
+curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-jar-files/1.0.0/jd-create-jar-files-1.0.0-jar-with-dependencies.jar \
 --output jd-create-jar-files-1.0.0-jar-with-dependencies.jar
 ----
 
@@ -625,14 +627,68 @@ Replace `repositoryId` and `url` with the values defined in your Maven `settings
 This section explains how to deploy the Atina JDE Microservice using Docker and Docker Compose.
 You'll configure environment variables, initialize the container, and run a basic test to validate connectivity with JD Edwards.
 
+=== Step 1: Create the service-constants.properties File
 
-=== Step 1: Download Docker Compose Files
+In this step, you will create a configuration file that defines certain runtime parameters for BSFN services.
+
+.Using the terminal, create the following file:
+[source,bash]
+----
+mkdir -p /tmp/build_jde_libs
+nano /tmp/build_jde_libs/service-constants.properties
+----
+
+.Copy and paste the following content into the file:
+[source,properties]
+----
+J0100002_MAX_ROWS=10
+J0000110_MAX_ROWS=10
+J0100004_MAX_ROWS=10
+J0400002_MAX_ROWS=10
+J4200010_SOE_MBF_VERSION=
+J4200010_BYPASS_WARNINGS=2
+J4200010_PREFIX_5=ATINA
+J4200010_PREFIX_2=ATINA
+J4200050_MAX_ROWS=10
+J0100022_MAX_ROWS=10
+J0100007_MAX_ROWS=10
+J4300010_PO_MBF_VERSION=ZJDE0001
+J4300010_BYPASS_BSFN_WARNINGS=1
+J4300010_PREFIX_1=
+----
+
+.Press `Ctrl + O`, then `Enter` to save. Press `Ctrl + X` to exit.
+
+[NOTE]
+====
+You may use any text editor you prefer, such as `vim`, `gedit`, or `nano`.
+====
+
+=== Step 3: Download the JDEAtinaOverrideServicesConstants Library
+
+The system requires a supporting library to override default JD Edwards service properties with the values defined in your `service-constants.properties` file. This enables more flexible and file-driven configuration without modifying JDE directly.
+
+.Download the JAR file using the following command:
+[source,bash]
+----
+curl -L https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/JDEAtinaOverrideServicesConstants/1.0.0/JDEAtinaOverrideServicesConstants-1.0.0.jar \
+--output /tmp/build_jde_libs/JDEAtinaOverrideServicesConstants-1.0.0.jar
+----
+
+[NOTE]
+====
+Ensure this JAR file is located in the `/tmp/build_jde_libs/` folder along with the `service-constants.properties` file.
+
+The system will automatically detect the presence of this library and use it to load web service configuration from the local file instead of querying JDE’s internal property store.
+====
+
+=== Step 4: Download Docker Compose Files
 
 Download the Docker Compose package:
 
 [source,bash]
 ----
-curl http://157.245.236.175:8081/artifactory/libs-release/com/atina/jd-docker-files/1.0.0/jd-docker-files-1.0.0.zip \
+curl https://jfrog.atina-connection.com/artifactory/libs-release/com/atina/jd-docker-files/1.0.0/jd-docker-files-1.0.0.zip \
     --output jd-docker-files-1.0.0.zip
 ----
 
@@ -643,11 +699,11 @@ Unzip it:
 7z e jd-docker-files-1.0.0.zip
 ----
 
-=== Step 2: Configure Environment Variables
+=== Step 5: Configure Environment Variables
 
 Edit the `.env` file and set the values according to your infrastructure:
 
-Under **DNS_SERVERS** section inside jdeinterop.ini files to complete theses values:
+Under **DNS_SERVERS** section complete these values:
 
 [source,bash]
 ----
@@ -662,7 +718,7 @@ JDE_MICROSERVER_ENTERPRISE_DB_NAME=JDE-DATABASE
 JDE_MICROSERVER_ENTERPRISE_DB_IP=2.2.2.2
 ----
 
-=== Step 3: Initialize the Container
+=== Step 6: Initialize the Container
 
 Create the container without starting it:
 
@@ -671,18 +727,21 @@ Create the container without starting it:
 docker-compose -f docker-compose-dist.yml up --no-start
 ----
 
-=== Step 4: Copy Required Files into the Container
+=== Step 7: Copy Required Files into the Container
 
 Copy the configuration and JAR files that were previously generated:
 
 [source,bash]
 ----
+docker cp /tmp/build_jde_libs/service-constants.properties jd-atina-microserver:/var/jdeatinaserver
 docker cp /tmp/build_jde_libs/JPS920 jd-atina-microserver:/tmp/jde/config
+docker cp /tmp/build_jde_libs/JDV920 jd-atina-microserver:/tmp/jde/config
+docker cp JDEAtinaOverrideServicesConstants-1.0.0.jar jd-atina-microserver:/tmp/jde
 docker cp /tmp/build_jde_libs/jde-lib-wrapped-1.0.0.jar jd-atina-microserver:/tmp/jde
 docker cp /tmp/build_jde_libs/StdWebService-1.0.0.jar jd-atina-microserver:/tmp/jde
 ----
 
-=== Step 5: Start the Container
+=== Step 8: Start the Container
 
 [source,bash]
 ----
@@ -765,7 +824,7 @@ This tool is a standalone Java application that performs the following test:
 
 [source,bash]
 ----
-curl http://157.245.236.175:8081/artifactory/libs-release-local/com/atina/jd-check-microservice/1.0.0/jd-check-microservice-1.0.0-jar-with-dependencies.jar \
+curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-check-microservice/1.0.0/jd-check-microservice-1.0.0-jar-with-dependencies.jar \
     --jd-check-microservice-1.0.0-jar-with-dependencies.jar
 ----
 
