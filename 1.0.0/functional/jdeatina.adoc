@@ -19,9 +19,13 @@ By running inside the client’s network, these microservices overcome key issue
 
 Furthermore, the microservices expose a gRPC-based API (using HTTP/2), eliminating the dependency on Java 8-only Oracle libraries. This ensures compatibility with newer Java versions (such as Java 17), aligning with _MuleSoft™_'s roadmap of deprecating older Java support.
 
+image:atina_images/atina_image00.png[image]
+
 === How is implemented?
 
 The microservice is packaged as a Docker container and runs using Java 8. It communicates directly with the JD Edwards Enterprise Server through Oracle’s interoperability layer and exposes its functionality via a gRPC-based API using the HTTP/2 protocol. This design ensures modern performance while maintaining backward compatibility with JDE tooling.
+
+image::atina_images/atina_image04.png[width=721,align=center]
 
 === Key Functionalities
 
@@ -39,12 +43,17 @@ Functionally, the _Atina JDE Microservices_ enable the connector for several _JD
 * Monitoring APIs to view open connections and retrieve logs by transaction ID
 * Token APIs for creating and parsing tokens.
 
+image::atina_images/atina_image03.png[width=721,align=center]
+
+
 === Tooling Provided
 
 The Atina JDE Microservices suite also includes additional tools to simplify configuration and deployment, such as:
 
 • JD Atina Generate Configuration Files Tool: Helps generate base .ini files (like jdbj.ini, jdeinterop.ini, jdelog.properties) by extracting information from JDE Enterprise Server Manager via its REST API.
 • JD Atina Generate Jars Files Tool: Generates necessary JAR files, including jde-lib-wrapped-1.0.0.jar and StdWebService-1.0.0.jar
+
+image::atina_images/atina_image01.png[width=521,align=center]
 
 Overall, the _Atina JDE Microservices_ provide a robust and modernized solution for integrating _JD Edwards EnterpriseOne™_ with other systems, addressing key technical challenges and aligning with contemporary integration platform requirements
 
