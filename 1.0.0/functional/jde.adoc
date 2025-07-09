@@ -186,9 +186,7 @@ mvn clean package
 [start=3]
 . Reopen Anypoint Studio and verify that all dependencies are now resolved.
 
-== Using the _Atina JDE Connector_
-
-=== Configure the Global Element
+=== Configure the *Global Element*
 
 To use the Atina JDE Connector in your Mule application, you must first define a global configuration element. This element provides the connection details required to interact with JD Edwards EnterpriseOne™ through the connector.
 
@@ -227,21 +225,17 @@ image:atina_connector_images/jde_03_Config05.png[width=521,opts=border,align=cen
 
 Once confirmed, click OK to save the global configuration.
 
-==== Invoking a *JDE Web Services*
+=== Invoking a *JDE Web Services*
 
+=== Invoking a *Business Function (BSFN)*
 
-==== Invoking a *Business Function (BSFN)*
+=== Invoking a *Business Function (BSFN) with Transaction Processing*
 
+=== Submit an UBE
 
-==== Invoking a *Business Function (BSFN)*
+=== Get an UBE state
 
-==== Invoking a *Business Function (BSFN) with Transaction Processing*
-
-==== Submit an UBE
-
-==== Get an UBE state
-
-==== Capture outbound events
+=== Capture outbound events
 
 
 == *Atina JDE Connector_ – Demo Applications*
@@ -276,7 +270,7 @@ There are additional demo applications with step by step guides available for do
 
 === Tools Releases 9.2 and later
 
- 
+
  
 == *Appendix B : Additional Information*
 
