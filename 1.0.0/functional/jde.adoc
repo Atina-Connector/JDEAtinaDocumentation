@@ -186,6 +186,8 @@ mvn clean package
 [start=3]
 . Reopen Anypoint Studio and verify that all dependencies are now resolved.
 
+== Using the _Atina JDE Connector_
+
 === Configure the Global Element
 
 To use the Atina JDE Connector in your Mule application, you must first define a global configuration element. This element provides the connection details required to interact with JD Edwards EnterpriseOne™ through the connector.
@@ -225,116 +227,24 @@ image:atina_connector_images/jde_03_Config05.png[width=521,opts=border,align=cen
 
 Once confirmed, click OK to save the global configuration.
 
-==== Creating a HTTP Listener for your flow
+==== Invoking a *JDE Web Services*
 
-*NOTE :* This use case example will create a simple flow to get the address book name from the Address Book table (A/B) invoking the Master Business Function (MBF) on _Oracle’s JDE EnterpriseOne_ Server.
 
-Go back to the _Message Flow_ tab
+==== Invoking a *Business Function (BSFN)*
 
-image:demo_getting_started/image9_getting_started.png[image,width=615,height=459]
 
-From the Mule Palette (typically top right), select _HTTP_, and drag Listener to the canvas
+==== Invoking a *Business Function (BSFN)*
 
-image:demo_getting_started/image10_getting_started.png[image,width=263,height=286]
+==== Invoking a *Business Function (BSFN) with Transaction Processing*
 
-Select the _HTTP Listener_ component from the canvas, and inspect the properties window
+==== Submit an UBE
 
-image:demo_getting_started/image11_getting_started.png[image,width=655,height=390]
+==== Get an UBE state
 
-The connector requires a _Connector Configuration_. Click on *Add* to create a connector configuration.
+==== Capture outbound events
 
-Give the HTTP endpoint a more descriptive name like _get-AddressBookName-http-endpoint_ and press *OK* to go back to the global HTTP endpoint dialog box:
 
-image:demo_getting_started/image12_getting_started.png[image,width=436,height=441]
-
-Add a path to the URL eg. _getaddressbookname._
-
-image:demo_getting_started/image13_getting_started.png[image,width=641,height=346]
-
-Click on the MIME Type link, and add a parameter for addressno.
-
-image:demo_getting_started/image14_getting_started.png[image,width=601,height=229]
-
-Save the project. The connector will be ready to process requests.
-
-==== Invoke a Business Functions
-
-Locate the *JDE* Connector, and select Call BSFN. Drag this to the canvas.
-
-image:demo_getting_started/image15_getting_started.png[image,width=332,height=236]
-
-Drag the connector over to the canvas. Select it and review the properties window. Give it a meaningful name eg. Call AddressBookMasterMBF.
-
-Under the General section, click on the drop-down for Business Function Name.
-
-image:demo_getting_started/image16_getting_started.png[image,width=601,height=305]
-
-*NOTE :* If it is the first time you are selecting a function, this might take a while, as no information has been cached yet. It will need to build a list of all functions available. Please be patient. The status bar (bottom right) will display the following while it is retrieving the metadata.
-
-image:demo_getting_started/image17_getting_started.png[image,width=307,height=30]
-
-===== Troubleshooting
-If the operation fails (possibly due to a timeout), you will see the below message
-
-image:demo_getting_started/troubleshoot_timeout_message.png[image,width=345,height=115]
-
-Please review the timeout settings in _Anypoint Studio_'s Preferences.
-
-To do this go the the _Window > Preferences_ menu
-
-image:demo_getting_started/troubleshoot_preferences_menu.png[image,width=154,height=199]
-
-Go to _Anypoint Studio > DataSense_ and change the _DataSense Connection Timeout_ setting as below
-
-image:demo_getting_started/troubleshoot_datasense_timeout.png[image,width=622,height=551]
-
-Go to _Anypoint Studio > Tooling_ and change the _Default Connection Timeout_ and _Default Read Timeout_ settings as below
-
-image:demo_getting_started/troubleshoot_timeout_tooling.png[image,width=622,height=551]
-
-==== Setting Parameters
-
-After the system has retrieved the required metadata, select AddressBookMasterMBF from the list. The specification metadata will be retrieved from the enterprise server, and put into the project metadata repository.
-
-image:demo_getting_started/image18_getting_started.png[image,width=601,height=283]
-
-You may now assign the input parameters. You can do this by either entering the payload values manually, or via the “Show Graphical View” button.
-
-image:demo_getting_started/image19_getting_started.png[image,width=601,height=283]
-
-Drag the inputs to outputs, or double-click the output parameter to add to your edit window, and change as required. Be sure to map your query parameter to the function mnAddressBookNumber
-
-image:demo_getting_started/image20_getting_started.png[image,width=601,height=271]
-
-=== Set Payload Output
-
-In the Mule Palette, you can either select Core, scroll down to Transformers or type “Payload” in the search bar.
-
-image:demo_getting_started/image21_getting_started.png[image,width=325,height=246]
-
-Drag and drop the _Set Payload_ to your canvas.
-
-image:demo_getting_started/image22_getting_started.png[image,width=332,height=211]
-
-Select the Set Payload component, and review the properties.
-
-image:demo_getting_started/image23_getting_started.png[image,width=601,height=157]
-
-Change the payload to reflect the desired output, and save the project
-
-image:demo_getting_started/image24_getting_started.png[image,width=601,height=178]
-
-=== Testing the Mule Flow
-
-To Test your flow, you need to start the Mule application. Go to the _Run_ menu, and select _Run_.
-
-image:demo_getting_started/image25_getting_started.png[image,width=567,height=376]
-
-After the project has been deployed, you can test you flow by typing the URL into a web browser eg. http://localhost:8081/getaddressbookname?addressno=1
-
-image:demo_getting_started/image26_getting_started.png[image,width=601,height=88]
-
-== *_PortX JDE Connector_ – Demo Applications*
+== *Atina JDE Connector_ – Demo Applications*
 
 === Example Project
 
@@ -354,142 +264,19 @@ There are additional demo applications with step by step guides available for do
 
 === Tools Release 8.98
 
-Copy these files:
 
-* ApplicationAPIs_JAR.jar
-* ApplicationLogic_JAR.jar
-* Base_JAR.jar
-* BizLogicContainer_JAR.jar
-* BizLogicContainerClient_JAR.jar
-* BusinessLogicServices_JAR.jar
-* castor.jar
-* commons-httpclient-3.0.jar
-* commons-logging.jar
-* Connector.jar
-* EventProcessor_JAR.jar
-* Generator.jar
-* j2ee1_3.jar
-* JdbjBase_JAR.jar
-* JdbjInterfaces_JAR.jar
-* JdeNet_JAR.jar
-* jmxremote.jar
-* jmxremote_optional.jar
-* jmxri.jar
-* log4j.jar
-* ManagementAgent_JAR.jar
-* Metadata.jar
-* MetadataInterface.jar
-* PMApi_JAR.jar
-* Spec_JAR.jar
-* System_JAR.jar
-* SystemInterfaces_JAR.jar
-* xmlparserv2.jar
 
 === Tools Releases 9.1 prior Update 4
 
-Copy these files:
 
-* ApplicationAPIs_JAR.jar
-* ApplicationLogic_JAR.jar
-* Base_JAR.jar
-* BizLogicContainer_JAR.jar
-* BizLogicContainerClient_JAR.jar
-* BusinessLogicServices_JAR.jar
-* castor.jar
-* commons-httpclient-3.0.jar
-* commons-logging.jar
-* Connector_JAR.jar
-* EventProcessor_JAR.jar
-* Generator.jar
-* JdbjBase_JAR.jar
-* JdbjInterfaces_JAR.jar
-* JdeNet_JAR.jar
-* jmxremote.jar
-* jmxremote_optional.jar
-* jmxri.jar
-* ManagementAgent_JAR.jar
-* Metadata.jar
-* MetadataInterface.jar
-* PMApi_JAR.jar
-* Spec_JAR.jar
-* System_JAR.jar
-* SystemInterfaces_JAR.jar
-* xmlparserv2.jar
 
 === Tools Releases 9.1 Update 4 and later updates
 
-Copy these files:
 
-* ApplicationAPIs_JAR.jar
-* ApplicationLogic_JAR.jar
-* Base_JAR.jar
-* BizLogicContainer_JAR.jar
-* BizLogicContainerClient_JAR.jar
-* BusinessLogicServices_JAR.jar
-* castor.jar
-* commons-codec.jar
-* commons-lang2.6.jar
-* commons-logging.jar
-* Connector.jar
-* EventProcessor_JAR.jar
-* Generator_JAR.jar
-* httpclient.jar
-* httpcore.jar
-* httpmime.jar
-* j2ee1_3.jar
-* JdbjBase_JAR.jar
-* JdbjInterfaces_JAR.jar
-* JdeNet_JAR.jar
-* jmxremote.jar
-* jmxremote_optional.jar
-* jmxri.jar
-* ManagementAgent_JAR.jar
-* Metadata.jar
-* MetadataInterface.jar
-* PMApi_JAR.jar
-* Spec_JAR.jar
-* System_JAR.jar
-* SystemInterfaces_JAR.jar
-* xml-apis.jar
-* xmlparserv2.jar
 
 === Tools Releases 9.2 and later
 
-Copy these files:
-
-* ApplicationAPIs_JAR.jar
-* ApplicationLogic_JAR.jar
-* Base_JAR.jar
-* BizLogicContainer_JAR.jar
-* BizLogicContainerClient_JAR.jar
-* BusinessLogicServices_JAR.jar
-* commons-codec.jar
-* castor.jar
-* commons-lang2.6.jar
-* commons-logging.jar
-* Connector.jar
-* EventProcessor_JAR.jar
-* Generator.jar
-* httpclient.jar
-* httpcore.jar
-* httpmime.jar
-* j2ee1_3.jar
-* JdbjBase_JAR.jar
-* JdbjInterfaces_JAR.jar
-* JdeNet_JAR.jar
-* jmxremote.jar
-* jmxremote_optional.jar
-* jmxri.jar
-* ManagementAgent_JAR.jar
-* Metadata.jar
-* MetadataInterface.jar
-* PMApi_JAR.jar
-* Spec_JAR.jar
-* System_JAR.jar
-* SystemInterfaces_JAR.jar
-* xerces.jar
-* xml-apis.jar
-* xmlparserv2.jar
+ 
  
 == *Appendix B : Additional Information*
 
