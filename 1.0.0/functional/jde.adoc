@@ -192,7 +192,8 @@ To use the Atina JDE Connector in your Mule application, you must first define a
 
 Follow these steps:
 
-* Open the Mule flow file (e.g., demo-jde-atina-connector.xml).
+* Create a ne  Mule flow file (e.g., demo-jde-config.xml.xml).
+* Open this new Mule flow file.
 * Click the Global Elements tab located at the bottom of the editor window.
 
 image:atina_connector_images/jde_03_Config01.png[width=521,opts=border,align=center]
@@ -225,17 +226,46 @@ image:atina_connector_images/jde_03_Config05.png[width=521,opts=border,align=cen
 
 Once confirmed, click OK to save the global configuration.
 
+*Optional*: Create a Second Configuration for Non Web Services Operations
+
+If you also plan to execute non-Web Service operations (such as BSFN, UBE Execution, or MBF Events) using the same connector, you must create an additional global configuration where the WS Connection field is set to False.
+
+image:atina_connector_images/jde_03_Config06.png[width=521,opts=border,align=center]
+
+To do this:
+
+. Repeat the steps above to create a new configuration.
+. Choose a different name for the global element (e.g., JDE_Atina_Config_for_BSFN).
+. Set WS Connection to False.
+. Keep the remaining connection values consistent with your environment.
+
+This approach allows you to define and use multiple configurations within the same project, referencing the appropriate one depending on the type of operation.
+
 === Invoking a *JDE Web Services*
+
+oracle.e1.bssv.JP010000.AddressBookManager.getAddressBook
+
+output application/java
+---
+{
+"JDE Token": payload."JDE Token",
+"Transaction ID": 0,
+entityName: 'Prueba - Argentina - 28                 ',
+entity: {
+entityId: 28
+}
+}
+
 
 === Invoking a *Business Function (BSFN)*
 
-=== Invoking a *Business Function (BSFN) with Transaction Processing*
+=== Invoking a *Business Function (BSFN)* with *Transaction Processing*
 
-=== Submit an UBE
+=== Submit an *UBE*
 
-=== Get an UBE state
+=== Get an *UBE State*
 
-=== Capture outbound events
+=== Capture *MBF Outbound Events*
 
 
 == *Atina JDE Connector_ – Demo Applications*

@@ -66,6 +66,56 @@ This guide assumes that you have a working knowledge of the following topics:
 * Dockers basis.
 * Maven basis.
 
+=== Hardware Requirements for jd-atina-microserver Microservice
+
+This document outlines the minimum and recommended hardware specifications for the jd-atina-microserver microservice when deployed within a Docker container. These requirements apply to the resources that should be allocated to the Docker container itself, regardless of the host operating system (Windows or Linux).
+
+==== Processor Architecture (CPU)
+
+* *Type*: x86-64 or ARM64. Ensure your Docker image matches or is compatible with the host CPU architecture.
+
+* *Clarification*: The microservice must be packaged into a Docker image compatible with the host's architecture. If the image is x86-64 and the host is ARM64 (e.g., an Apple M-series Mac), Docker Desktop can emulate it, but this will incur a performance penalty. The preferred approach is to use an image that is native to the host's architecture.
+
+* *Minimum (Container)*: 2 vCPUs
+
+* *Recommended (Container)*: 4 vCPUs+ (at least 2.5 GHz per core)
+
+==== Memory (RAM)
+
+* *Minimum Allocated to Container*: 8 GB of RAM.
+
+* *Recommended Allocated to Container*: 16 GB of RAM or more. This is crucial for handling peak loads, in-memory data processing, and ensuring service stability under demand.
+
+* *Host Consideration*: The host operating system (Windows or Linux) will require additional RAM for its own operations and for the Docker engine. Therefore, the physical or virtual machine hosting the container should have more RAM than what's allocated directly to the container.
+
+==== Storage (Disk)
+
+* *Minimum Space within Container*: 20 GB of free disk space. This includes space for the Docker image, microservice logs, temporary data, and any other persistence the microservice may require.
+
+* *Host Disk Type*:
+
+** Minimum: SSD (Solid State Drive).
+
+** Recommended: NVMe SSD for the host. The host's disk speed directly impacts the container's I/O performance, especially when starting the container, writing logs, or interacting with mounted volumes.
+
+==== Network Requirements
+
+* *Host Bandwidth*: 1 Gbps (Gigabit Ethernet) for the host's network interface.
+
+* *Latency*: Low latency (< 1 ms) for communication between the container and any external dependencies (databases, other microservices, JDE systems).
+
+* *Exposed Ports*:  The microservice's primary listening port (e.g., $JDE_MICROSERVER_PORT - 8077).
+
+==== Additional Docker Considerations
+
+* *Resource Limits in Docker*: It's essential to configure CPU and memory limits for the container in your Docker setup (either via docker run --cpus <X> --memory <Y> or in your docker-compose.yml file). This ensures the microservice has the dedicated resources it needs and does not excessively consume host resources.
+
+* *Persistent Volumes*: If the microservice needs to persist data (logs, configurations, etc.), using Docker volumes is highly recommended to ensure data is not lost when the container is removed or recreated.
+
+* *Host Operating System*: While the microservice runs in Docker, the host OS (Windows or Linux) must be stable and have sufficient resources to run the Docker Engine and the container's base operating system.
+
+
+
 === Software Requirements
 
 To install and run the Atina JDE Microservices and accompanying tools, you will need the following software:
@@ -712,20 +762,151 @@ Unzip it:
 
 Edit the `.env` file and set the values according to your infrastructure:
 
-Under **DNS_SERVERS** section complete these values:
+=== Repository Configuration
 
+[source,env]
+----
+ATINA_REPOSITORY_PROTOCOL=https
+ATINA_REPOSITORY_URL=jfrog.atina-connection.com/artifactory/libs-release
+
+CUSTOMER_REPOSITORY_PROTOCOL=https
+CUSTOMER_REPOSITORY_URL=jfrog.atina-connection.com/artifactory/libs-release
+----
+
+These variables define the main Maven-compatible repositories used during the build and runtime process:
+
+* `ATINA_REPOSITORY`: Location of the official Atina repository used to download `com.atina:JDEAtinaServer`.
+* `CUSTOMER_REPOSITORY`: Optional repository for customer-specific artifacts, including:
+** `com.jdedwards:StdWebService`
+** `com.jdedwards:jde-lib-wrapped`
+
+This allows the customer to override or update web services or JDE Tools libraries.
+
+=== JDE Microserver Configuration
+
+[source,env]
+----
+JDE_MICROSERVER_IP=172.28.0.2
+JDE_MICROSERVER_PORT=8077
+JDE_MICROSERVER_DEBUG_PORT=5005
+JDE_MICROSERVER_CODE=demo
+----
+
+Defines the IP address, port, and debug settings for the JDE Microservice container:
+
+* `JDE_MICROSERVER_IP`: Internal IP used by Docker.
+* `JDE_MICROSERVER_PORT`: Port exposed by the service.
+* `JDE_MICROSERVER_DEBUG_PORT`: Java remote debug port (used during development).
+* `JDE_MICROSERVER_CODE`: The JDE_MICROSERVER_CODE is a unique license code assigned to the customer when the microservice is provisioned. It identifies the licensed instance of the JDE Microservice and may be used for validation, tracking, and environment separation.
+
+[NOTE]
+
+Each customer must use the license code provided by Atina. This value is mandatory for the service to start correctly.
+
+=== Microservice Versioning
+
+[source,env]
+----
+JDE_ATINA_SERVER_VERSION=1.0.0
+STD_WEB_SERVICE_CONSTANTS_VERSION=1.0.0
+----
+
+* `JDE_ATINA_SERVER_VERSION`: Version of the `JDEAtinaServer` artifact.
+* `STD_WEB_SERVICE_CONSTANTS_VERSION`: Version of the constants JAR used by the service.
+
+=== Security & Token Settings
+
+[source,env]
+----
+JDE_MICROSERVER_SECRET_KEY=123456789012345678901234567890123456789012345678901234567890
+JDE_MICROSERVER_TOKEN_EXPIRATION=3000000
+----
+
+* `JDE_MICROSERVER_SECRET_KEY`: Secret key used to generate and validate JWT tokens.
+* `JDE_MICROSERVER_TOKEN_EXPIRATION`: Expiration time in milliseconds (e.g., `3000000` = 50 minutes).
+
+=== Volume Mounts
+
+[source,env]
+----
+Volume_DataLogs=/home/jde/data/logs
+Volume_JDETmp=/home/jde/data/tmp
+Volume_JDELog=/home/jde/data/jdelog
+----
+
+Local folders mounted into the container:
+
+* `Volume_DataLogs`: General logs.
+* `Volume_JDETmp`: Temporary files.
+* `Volume_JDELog`: Logs specific to JDE libraries.
+
+=== External Library Configuration
+
+[source,env]
+----
+JDE_GET_LIB_WRAPPED_UPDATE_FROM_REPOSITORY=1
+JDE_LIB_WRAPPED_VERSION=1.0.0
+
+JDE_GET_LIB_WEB_SERVICE_FROM_REPOSITORY=1
+STD_WEB_SERVICE_VERSION=1.0.0
+----
+
+Defines versions and update policies for external JDE libraries:
+
+* `JDE_LIB_WRAPPED_VERSION`: Version of `jde-lib-wrapped`.
+* `JDE_GET_LIB_WRAPPED_UPDATE_FROM_REPOSITORY`: Enables (`1`) or disables (`0`) remote update.
+* `STD_WEB_SERVICE_VERSION`: Version of `jStdWebService`.
+* `JDE_GET_LIB_WEB_SERVICE_FROM_REPOSITORY`: Enables (`1`) or disables (`0`) remote update.
+
+=== Time Zone Configuration
+
+[source,env]
+----
+TZ=America/Buenos_Aires
+----
+
+Sets the time zone inside the container.
+
+This is critical to ensure correct timestamps in logs and for time-based calculations.
+
+You can find a valid list of time zone names at:
+
+* https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+* Or run on Linux:
++
 [source,bash]
 ----
-#
-# ====================================
-# ETC/HOST
-# ====================================
-#
-JDE_MICROSERVER_ENTERPRISE_SERVER_NAME=JDE-ENT
-JDE_MICROSERVER_ENTERPRISE_SERVER_IP=1.1.1.1
-JDE_MICROSERVER_ENTERPRISE_DB_NAME=JDE-DATABASE
-JDE_MICROSERVER_ENTERPRISE_DB_IP=2.2.2.2
+timedatectl list-timezones
 ----
+* You can also check the `/usr/share/zoneinfo` directory on most Linux distributions.
+
+[NOTE]
+====
+Use only valid IANA time zone identifiers (e.g., `America/New_York`, `Europe/Madrid`).
+====
+
+=== JDE Enterprise Server & Database Hosts
+
+[source,env]
+----
+JDE_MICROSERVER_ENTERPRISE_SERVER_NAME=JDE-ALPHA-ENT
+JDE_MICROSERVER_ENTERPRISE_SERVER_IP=138.91.73.161
+JDE_MICROSERVER_ENTERPRISE_DB_NAME=JDE-ALPHA-SQL
+JDE_MICROSERVER_ENTERPRISE_DB_IP=65.52.119.187
+----
+
+This section defines the network and database endpoints used by the microservice to interact with the JDE EnterpriseOne system.
+
+** *JDE_MICROSERVER_ENTERPRISE_SERVER_NAME*: The logical name of the JDE Enterprise Server.
+** *JDE_MICROSERVER_ENTERPRISE_SERVER_IP*: The server’s IP address or DNS-resolvable name.
+** *JDE_MICROSERVER_ENTERPRISE_DB_NAME*: The name of the database as defined in JDE’s OCM (Object Configuration Manager) as a Data Source.
+** *JDE_MICROSERVER_ENTERPRISE_DB_IP*: The database server’s IP address.
+
+[IMPORTANT]
+
+The database name must match the Data Source name defined in the JDE OCM. Incorrect names may lead to failed connections or incorrect environment targeting.
+
+---
 
 === Step 6: Initialize the Container
 
