@@ -243,21 +243,105 @@ This approach allows you to define and use multiple configurations within the sa
 
 === Invoking a *JDE Web Services*
 
-oracle.e1.bssv.JP010000.AddressBookManager.getAddressBook
+From the following RAML definition, we will build an endpoint that invokes the JDE Web Service `oracle.e1.bssv.JP010000.AddressBookManager.getAddressBook`.
 
-output application/java
----
-{
-"JDE Token": payload."JDE Token",
-"Transaction ID": 0,
-entityName: 'Prueba - Argentina - 28                 ',
-entity: {
-entityId: 28
-}
-}
+==== RAML Definition
+
+[source,yaml]
+----
+#%RAML 1.0
+title: ATINA JDE Connector
+version: v1
+
+/v1:
+  /getAdressBookUsingWS:
+    get:
+      description: >
+        Get Address Book using Web Service
+        JP010000 AddressBookManager method getAddressBook.
+      queryParameters:
+        entityID:
+          displayName: Address Book No
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          body:
+            application/json:
+              example: |
+                {
+                }
+----
+
+Based on this RAML, the following endpoint will be exposed:
+
+[source,http]
+----
+GET /v1/getAdressBookUsingWS?entityID=28
+----
+
+==== Creating a HTTP Listener from RAML
+
+This section explains how to generate a fully configured **HTTP Listener** and the corresponding flows in *Anypoint Studio*, using a RAML file stored in your project’s `src/main/resources` folder.
+
+image:atina_connector_images/jde_04_RAML01.png[width=521,opts=border,align=center]
+
+
+. Create the file `demo-jde-atina-connector.raml` under the directory `src/main/resources/api` or a similar path.
+. Paste the RAML definition described in the previous section into this file.
+. Right-click on the RAML file and select:
++
+`Mule → Generate Flows from Local REST API…`
+
+This option will automatically:
+
+* Parse the RAML structure.
+* Generate a set of flows corresponding to each HTTP method and resource.
+* Create a global **HTTP Listener Configuration** if one does not already exist.
+
+Inside this file, write the previous RAML Definition.
+
+**Right-click** the RAML file and navigate to:
+`*Mule* → *Generate Flows from Local REST API*…`
+
+Once the generation is complete:
+
+* A flow will be created for each RAML endpoint.
+* A listener will be configured to expose them on the specified base path and port.
+
+image:atina_connector_images/jde_04_RAML02.png[width=521,opts=border,align=center]
+
+[NOTE]
+====
+This method provides a quick and consistent way to align your Mule flows with the API contract defined in the RAML.
+All examples in this manual are generated using this approach.
+====
+
+==== Invoke Web Service operation
+
+From the Mule Palette (typically top right), Locate the *Atina JDE Connector*, and select *Invoke ws*.
+
+image:atina_connector_images/jde_05_WS01.png[width=521,opts=border,align=center]
+
+Drag the connector over to the canvas. Select it and review the properties window.
+Give it a meaningful name eg. `Invoke WS Address Book Manager`.
+
+Define the Connector Configurarion too
+
+
+
+
+
 
 
 === Invoking a *Business Function (BSFN)*
+
+
+
+
+
+
 
 === Invoking a *Business Function (BSFN)* with *Transaction Processing*
 
