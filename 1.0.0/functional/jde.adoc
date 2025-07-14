@@ -23,7 +23,7 @@ After reading this guide, you should be able to accomplish the following scenari
 . MBF Poll Events.
 . Log out.
 
-image:atina_connector_images/jde_01_arch.png[image]
+image::atina_connector_images/jde_01_arch.png[image]
 
 At design time, the _JDE Atina Connector_ allows you to discover BSFN functions, Web Services by name providing full access to all Business Function and Web Services signatures. Given that discovery is a heavy duty process, the Connector manages a cache repository for all function’s metadata used at least once.
 
@@ -96,7 +96,7 @@ You can use the connector to
 
 Create a new Mule Project with Mule Server 4.6.0 EE or greater as runtime:
 
-image:atina_connector_images/jde_02_muleprj.png[width=521,align=center]
+image::atina_connector_images/jde_02_muleprj.png[width=521,align=center]
 
 === Project Dependencies
 
@@ -196,15 +196,15 @@ Follow these steps:
 * Open this new Mule flow file.
 * Click the Global Elements tab located at the bottom of the editor window.
 
-image:atina_connector_images/jde_03_Config01.png[width=521,opts=border,align=center]
+image::atina_connector_images/jde_03_Config01.png[width=521,opts=border,align=center]
 
 * Click the Create button.
 
-image:atina_connector_images/jde_03_Config02.png[width=521,opts=border,align=center]
+image::atina_connector_images/jde_03_Config02.png[width=521,opts=border,align=center]
 
 * In the dialog that appears, type JDE in the search box or navigate to Connector Configuration and select JDE Atina Config. Then click OK.
 
-image:atina_connector_images/jde_03_Config03.png[width=521,opts=border,align=center]
+image::atina_connector_images/jde_03_Config03.png[width=521,opts=border,align=center]
 
 * Fill in the required fields under the General tab:
 
@@ -216,13 +216,13 @@ image:atina_connector_images/jde_03_Config03.png[width=521,opts=border,align=cen
 •	*Microservice Name or IP*: IP address or hostname of the JD Atina Microservice
 •	*Microservice Port*: Port used by the microservice
 
-image:atina_connector_images/jde_03_Config04.png[width=521,opts=border,align=center]
+image::atina_connector_images/jde_03_Config04.png[width=521,opts=border,align=center]
 
 * Click Test Connection to verify that the connector can successfully reach the microservice and validate the credentials.
 
 If successful, you will see the following confirmation message:
 
-image:atina_connector_images/jde_03_Config05.png[width=521,opts=border,align=center]
+image::atina_connector_images/jde_03_Config05.png[width=521,opts=border,align=center]
 
 Once confirmed, click OK to save the global configuration.
 
@@ -230,7 +230,7 @@ Once confirmed, click OK to save the global configuration.
 
 If you also plan to execute non-Web Service operations (such as BSFN, UBE Execution, or MBF Events) using the same connector, you must create an additional global configuration where the WS Connection field is set to False.
 
-image:atina_connector_images/jde_03_Config06.png[width=521,opts=border,align=center]
+image::atina_connector_images/jde_03_Config06.png[width=521,opts=border,align=center]
 
 To do this:
 
@@ -285,7 +285,7 @@ GET /v1/getAdressBookUsingWS?entityID=28
 
 This section explains how to generate a fully configured **HTTP Listener** and the corresponding flows in *Anypoint Studio*, using a RAML file stored in your project’s `src/main/resources` folder.
 
-image:atina_connector_images/jde_04_RAML01.png[width=521,opts=border,align=center]
+image::atina_connector_images/jde_04_RAML01.png[width=521,opts=border,align=center]
 
 
 . Create the file `demo-jde-atina-connector.raml` under the directory `src/main/resources/api` or a similar path.
@@ -310,7 +310,7 @@ Once the generation is complete:
 * A flow will be created for each RAML endpoint.
 * A listener will be configured to expose them on the specified base path and port.
 
-image:atina_connector_images/jde_04_RAML02.png[width=521,opts=border,align=center]
+image::atina_connector_images/jde_04_RAML02.png[width=521,opts=border,align=center]
 
 [NOTE]
 ====
@@ -325,8 +325,8 @@ To invoke a JDE Web Service using the Atina JDE Connector, follow the steps belo
 ===== 1. Add the Connector to the Flow
 
 From the *Mule Palette*, locate the **JDE Atina** module and drag the `Invoke ws` operation onto the flow canvas.
-
-image:atina_connector_images/jde_05_WS01.png[width=521,opts=border,align=center]
+ 
+image::atina_connector_images/jde_05_WS01.png[width=521,align=center]
 
 From the Mule Palette (typically top right), Locate the *Atina JDE Connector*, and select *Invoke ws*.
 
@@ -342,7 +342,7 @@ image::atina_connector_images/jde_05_WS02.png[width=521,align=center]
 Under the *General* section, locate the field labeled **Ws name**.
 Click the dropdown icon to retrieve the available Web Services from the microserver.
 
-image:atina_connector_images/jde_05_WS03.png[width=521,opts=border,align=center]
+image::atina_connector_images/jde_05_WS03.png[width=521,align=center]
 
 From the list, choose: *oracle.e1.bssv.JP010000.AddressBookManager.getAddressBook*
 
@@ -367,7 +367,7 @@ Click the fx icon next to **Input parameters**, and use either:
 
 * Or graphical mapping: drag `attributes.queryParams.entityID` to `entity.entityId`.
 
-image:atina_connector_images/jde_05_WS04.png[width=521,opts=border,align=center]
+image::atina_connector_images/jde_05_WS04.png[width=521,align=center] 
 
 ===== 4. Add a Transform Message (Optional)
 
