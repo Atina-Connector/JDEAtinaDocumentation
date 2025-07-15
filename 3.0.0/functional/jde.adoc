@@ -453,7 +453,7 @@ To invoke the BSFN in your Mule flow, follow the same initial steps explained in
 
 image::atina_connector_images/jde_06_BSFN01.png[width=521,align=center]
 
-To invoke a JDE Web Service using the Atina JDE Connector, follow the steps below:
+To invoke a JDE BSFN using the Atina JDE Connector, follow the steps below:
 
 ===== 1. Add the Connector to the Flow
 
@@ -535,12 +535,270 @@ The BSFN operation is executed dynamically by the microservice. If the service i
 Always ensure your `.env` file and connector configuration are correctly set.
 ====
 
-
 === Invoking a *Business Function (BSFN)* with *Transaction Processing*
 
-=== Submit an *UBE*
+This use case example will reuse the previous flow to add a Customer. In this case, we will need to invoke two Master Business Function (MBF) on Oracle’s JDE EnterpriseOne Server in the same transaction.
 
-=== Get an *UBE State*
+Just as we did with BSFN, we start from a **RAML** contract and generate a Mule endpoint that create a Customer using BSFN.
+In this example we add **`MBFCustomerMaster`** to create Address Book and Customer information.
+
+==== RAML Definition
+
+[source,yaml]
+----
+#%RAML 1.0
+title: ATINA JDE Connector
+version: v1
+
+/v1:
+...
+  /createCustomerUsingBSFNs:
+    post:
+      description: Create Customer using BSFN AddressBookMasterMBF and MBFCustomerMaster.
+      body:
+        application/json:
+          type: |
+            {
+              "type": "object",
+              "properties": {
+                "customerName": {
+                  "type": "string",
+                  "displayName": "Customer Name"
+                },
+                "customerAddress": {
+                  "type": "string",
+                  "displayName": "Customer Address"
+                },
+                "customerCity": {
+                  "type": "string",
+                  "displayName": "Customer Address"
+                },
+                "customerState": {
+                  "type": "string",
+                  "displayName": "Customer Address"
+                },
+                "paymentCurrency": {
+                  "type": "string",
+                  "displayName": "Payment Currency",
+                  "pattern": "^[A-Z]{3}$",
+                  "description": "3-letter currency code (e.g., USD, EUR, ARS)"
+                }
+              }
+            }
+          example: |
+            {
+              "customerName": "John Doe",
+              "customerAddress": "123 Main St",
+              "customerCity": "Denver",
+              "customerState": "CO",
+              "paymentCurrency": "USD"
+            }
+      responses:
+        200:
+          description: OK
+          body:
+            application/json:
+              example: |
+                {
+                  "status": "Customer created successfully",
+                  "customerId": "12345"
+                }
+
+----
+
+Based on this RAML, the following endpoint will be exposed:
+
+[source,http]
+----
+POST /v1/createCustomerUsingBSFNs
+----
+
+==== Configure the BSFN Create Customer Invocation
+
+To invoke the BSFN in your Mule flow, follow the same initial steps explained in the section *Creating a HTTP Listener from RAML*.
+
+image::atina_connector_images/jde_06_BSFN01.png[width=521,align=center]
+
+To invoke a JDE BSFN using the Atina JDE Connector, follow the steps below:
+
+===== 1. Add the Two BSFN Connector to the Flow
+
+Add the two BSFN
+
+image::atina_connector_images/jde_07_TRANS01.png[width=521,align=center]
+
+Invoke BSFN Create Address Book
+
+[source,xml]
+----
+<jdeatina:invoke-bsfn wsName="AddressBookMasterMBF" doc:name="Invoke BSFN Create Address Book" config-ref="JDE_Atina_Config_Non_WS_Operation" target="addressBookRecord">
+<jdeatina:input-parameters><![CDATA[#[output application/json
+---
+{
+cActionCode: 'A',
+cUpdateMasterFile: '1',
+cSuppressErrorMessages: '1',
+szVersion: 'ZJDE0001',
+mnAddressBookNumber: 0,
+szSearchType: 'C',
+szAlphaName: payload.customerName,
+szMailingName: payload.customerName,
+szBusinessUnit: '           1',
+szAddressLine1: payload.customerAddress,
+szAddressLine2: '',
+szAddressLine3: '',
+szAddressLine4: '',
+szCity: payload.customerCity,
+szState: payload.customerState,
+cPayablesYNM: 'N',
+cReceivablesYN: 'Y',
+cARAPNettingY: 'N',
+cIndicatorFlg: 'A'
+}]]]></jdeatina:input-parameters>
+</jdeatina:invoke-bsfn>
+----
+Invoke BSFN Create Customer
+
+[source,xml]
+----
+<jdeatina:invoke-bsfn doc:name="Invoke BSFN Create Customer" doc:id="0c65eb38-ecd4-4777-96fd-a00b8911c5f4" config-ref="JDE_Atina_Config_Non_WS_Operation" wsName="MBFCustomerMaster" target="customerRecord">
+<jdeatina:input-parameters ><![CDATA[#[output application/json
+---
+{
+cActionCode: 'A',
+cUpdateMasterFile: '1',
+szVersion: 'ZJDE00002',
+szCompany: '00000',
+szCurrencyCodeFrom: payload.paymentCurrency,
+szTaxArea1: 'DEN',
+szTaxExplanationCode1: 'S',
+mnAmountCreditLimit: 200000,
+szPaymentTermsAR: '',
+szCurrencyCodeAmounts: payload.paymentCurrency,
+mnAmountHighBalance: 300000,
+cBatchProcessingMode: '',
+mnCustomerNumber: vars.addressBookRecord.mnAddressBookNumber,
+cPersonCorporationCode: '',
+szVersionconsolidated: 'ZJDE00002',
+DateEntered: |2025-07-15T14:00:00-03:00|
+}]]]></jdeatina:input-parameters>
+</jdeatina:invoke-bsfn>
+----
+
+Transform Message. Set response.
+
+[source,xml]
+----
+
+<ee:transform doc:name="Transform Message">
+<ee:message>
+<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+status: "Customer created successfully",
+customerId: vars.addressBookRecord.mnAddressBookNumber as String
+} ]]></ee:set-payload>
+</ee:message>
+</ee:transform>
+----
+
+===== 2. Wrap this Operation with Transaction
+
+From the *Mule Palette*, locate the **JDE Atina** module and drag the `Transaction` operation onto the flow canvas.
+
+Once the operation is placed, select it and review the configuration panel on the right.
+
+* Change the **Display Name** to something meaningful, such as `Transaction - Start`.
+* In the **Basic Settings**, select the appropriate connector configuration (e.g. `JDE_Atina_Config_Non_WS_Operation`).
+* Under the *General* section, locate the field labeled **Transaction operation**.
+* From the list, choose: *Start Transaction*. This metadata is fetched directly from the running microserver instance and stored in your project metadata.
+
+image::atina_connector_images/jde_07_TRANS02.png[width=521,align=center]
+
+===== 3. Set the Input Parameters for Transaction operation
+
+You can now configure the input parameters using DataWeave or the graphical mapping interface.
+
+Click the fx icon next to **Input parameters**, and use either:
+
+* Manual expression:
++
+[source,json]
+----
+{
+
+}
+----
+
+* Or graphical mapping: drag `attributes.queryParams.entityID` to `mnAddressBookNumber`.
+
+image::atina_connector_images/jde_07_TRANS03.png[width=521,align=center]
+
+Assing the payload to a variable
+
+image::atina_connector_images/jde_07_TRANS04.png[width=521,align=center]
+
+===== 4. Assign the transaction ID to BSFNs
+
+image::atina_connector_images/jde_07_TRANS05.png[width=521,align=center]
+
+image::atina_connector_images/jde_07_TRANS06.png[width=521,align=center]
+
+===== 5. Close Transaction with Commit and Rollback
+
+image::atina_connector_images/jde_07_TRANS07.png[width=521,align=center]
+
+Commit Transaction
+
+[source,xml]
+----
+<jdeatina:transaction transactionOperation="Commit Transaction" doc:name="Transaction - Commit" config-ref="JDE_Atina_Config_Non_WS_Operation" target="commit">
+			<jdeatina:input-parameters ><![CDATA[#[output application/java
+---
+{
+	"Transaction ID": vars.transaction."Transaction ID"
+}]]]></jdeatina:input-parameters>
+		</jdeatina:transaction>
+----
+
+Rollback Transaction
+
+[source,xml]
+----
+<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate"
+                when='#[vars.transaction."Transaction ID" != 0]'>
+				<jdeatina:transaction transactionOperation="Rollback Transaction" doc:name="Transaction - Rollback" doc:id="9dea4c9a-1158-4de6-bd52-b427cf2f244e" config-ref="JDE_Atina_Config_Non_WS_Operation" target="commit" >
+					<jdeatina:input-parameters ><![CDATA[#[output application/java
+---
+{
+	"Transaction ID": vars.transaction."Transaction ID"
+}]]]></jdeatina:input-parameters>
+				</jdeatina:transaction>
+			</on-error-propagate>
+		</error-handler>
+----
+
+===== 6. Run and Test the Flow
+
+Start your Mule application using the **Run** button or `Run → Run Project`.
+
+Once deployed, you can test the endpoint using the **API Console** or an HTTP client such as `curl` or Postman.
+
+image::atina_connector_images/jde_06_BSFN05.png[width=521,align=center]
+image::atina_connector_images/jde_06_BSFN06.png[width=521,align=center]
+
+You should receive a `200 OK` response with the JSON format.
+
+[NOTE]
+====
+The BSFN operation is executed dynamically by the microservice. If the service is not available or misconfigured, you will receive a `500 Internal Server Error`.
+Always ensure your `.env` file and connector configuration are correctly set.
+====
+
+=== Submit an *UBE* and an *UBE State*
+
 
 === Capture *MBF Outbound Events*
 
