@@ -569,6 +569,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_prerequisites"><strong>Prerequisites</strong></a>
 <ul class="sectlevel2">
+<li><a href="#_hardware_requirements_for_jd_atina_microserver_microservice">Hardware Requirements for jd-atina-microserver Microservice</a></li>
 <li><a href="#_software_requirements">Software Requirements</a></li>
 <li><a href="#_oracles_jd_edwards_enterpriseone_requirements">Oracle’s <em>JD Edwards EnterpriseOne™</em> Requirements</a></li>
 </ul>
@@ -605,6 +606,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_step_3_download_the_jdeatinaoverrideservicesconstants_library">Step 3: Download the JDEAtinaOverrideServicesConstants Library</a></li>
 <li><a href="#_step_4_download_docker_compose_files">Step 4: Download Docker Compose Files</a></li>
 <li><a href="#_step_5_configure_environment_variables">Step 5: Configure Environment Variables</a></li>
+<li><a href="#_repository_configuration">Repository Configuration</a></li>
+<li><a href="#_jde_microserver_configuration">JDE Microserver Configuration</a></li>
+<li><a href="#_microservice_versioning">Microservice Versioning</a></li>
+<li><a href="#_security_token_settings">Security &amp; Token Settings</a></li>
+<li><a href="#_volume_mounts">Volume Mounts</a></li>
+<li><a href="#_external_library_configuration">External Library Configuration</a></li>
+<li><a href="#_time_zone_configuration">Time Zone Configuration</a></li>
+<li><a href="#_jde_enterprise_server_database_hosts">JDE Enterprise Server &amp; Database Hosts</a></li>
 <li><a href="#_step_6_initialize_the_container">Step 6: Initialize the Container</a></li>
 <li><a href="#_step_7_copy_required_files_into_the_container">Step 7: Copy Required Files into the Container</a></li>
 <li><a href="#_step_8_start_the_container">Step 8: Start the Container</a></li>
@@ -745,6 +754,102 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Maven basis.</p>
 </li>
 </ul>
+</div>
+<div class="sect2">
+<h3 id="_hardware_requirements_for_jd_atina_microserver_microservice">Hardware Requirements for jd-atina-microserver Microservice</h3>
+<div class="paragraph">
+<p>This document outlines the minimum and recommended hardware specifications for the jd-atina-microserver microservice when deployed within a Docker container. These requirements apply to the resources that should be allocated to the Docker container itself, regardless of the host operating system (Windows or Linux).</p>
+</div>
+<div class="sect3">
+<h4 id="_processor_architecture_cpu">Processor Architecture (CPU)</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Type</strong>: x86-64 or ARM64. Ensure your Docker image matches or is compatible with the host CPU architecture.</p>
+</li>
+<li>
+<p><strong>Clarification</strong>: The microservice must be packaged into a Docker image compatible with the host&#8217;s architecture. If the image is x86-64 and the host is ARM64 (e.g., an Apple M-series Mac), Docker Desktop can emulate it, but this will incur a performance penalty. The preferred approach is to use an image that is native to the host&#8217;s architecture.</p>
+</li>
+<li>
+<p><strong>Minimum (Container)</strong>: 2 vCPUs</p>
+</li>
+<li>
+<p><strong>Recommended (Container)</strong>: 4 vCPUs+ (at least 2.5 GHz per core)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_memory_ram">Memory (RAM)</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Minimum Allocated to Container</strong>: 8 GB of RAM.</p>
+</li>
+<li>
+<p><strong>Recommended Allocated to Container</strong>: 16 GB of RAM or more. This is crucial for handling peak loads, in-memory data processing, and ensuring service stability under demand.</p>
+</li>
+<li>
+<p><strong>Host Consideration</strong>: The host operating system (Windows or Linux) will require additional RAM for its own operations and for the Docker engine. Therefore, the physical or virtual machine hosting the container should have more RAM than what&#8217;s allocated directly to the container.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_storage_disk">Storage (Disk)</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Minimum Space within Container</strong>: 20 GB of free disk space. This includes space for the Docker image, microservice logs, temporary data, and any other persistence the microservice may require.</p>
+</li>
+<li>
+<p><strong>Host Disk Type</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Minimum: SSD (Solid State Drive).</p>
+</li>
+<li>
+<p>Recommended: NVMe SSD for the host. The host&#8217;s disk speed directly impacts the container&#8217;s I/O performance, especially when starting the container, writing logs, or interacting with mounted volumes.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_network_requirements">Network Requirements</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Host Bandwidth</strong>: 1 Gbps (Gigabit Ethernet) for the host&#8217;s network interface.</p>
+</li>
+<li>
+<p><strong>Latency</strong>: Low latency (&lt; 1 ms) for communication between the container and any external dependencies (databases, other microservices, JDE systems).</p>
+</li>
+<li>
+<p><strong>Exposed Ports</strong>:  The microservice&#8217;s primary listening port (e.g., $JDE_MICROSERVER_PORT - 8077).</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_additional_docker_considerations">Additional Docker Considerations</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Resource Limits in Docker</strong>: It&#8217;s essential to configure CPU and memory limits for the container in your Docker setup (either via docker run --cpus &lt;X&gt; --memory &lt;Y&gt; or in your docker-compose.yml file). This ensures the microservice has the dedicated resources it needs and does not excessively consume host resources.</p>
+</li>
+<li>
+<p><strong>Persistent Volumes</strong>: If the microservice needs to persist data (logs, configurations, etc.), using Docker volumes is highly recommended to ensure data is not lost when the container is removed or recreated.</p>
+</li>
+<li>
+<p><strong>Host Operating System</strong>: While the microservice runs in Docker, the host OS (Windows or Linux) must be stable and have sufficient resources to run the Docker Engine and the container&#8217;s base operating system.</p>
+</li>
+</ul>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_software_requirements">Software Requirements</h3>
@@ -1668,22 +1773,273 @@ J4300010_PREFIX_1=</code></pre>
 <div class="paragraph">
 <p>Edit the <code>.env</code> file and set the values according to your infrastructure:</p>
 </div>
-<div class="paragraph">
-<p>Under <strong>DNS_SERVERS</strong> section complete these values:</p>
 </div>
+<div class="sect2">
+<h3 id="_repository_configuration">Repository Configuration</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#
-# ====================================
-# ETC/HOST
-# ====================================
-#
-JDE_MICROSERVER_ENTERPRISE_SERVER_NAME=JDE-ENT
-JDE_MICROSERVER_ENTERPRISE_SERVER_IP=1.1.1.1
-JDE_MICROSERVER_ENTERPRISE_DB_NAME=JDE-DATABASE
-JDE_MICROSERVER_ENTERPRISE_DB_IP=2.2.2.2</code></pre>
+<pre class="highlightjs highlight"><code class="language-env hljs" data-lang="env">ATINA_REPOSITORY_PROTOCOL=https
+ATINA_REPOSITORY_URL=jfrog.atina-connection.com/artifactory/libs-release
+
+CUSTOMER_REPOSITORY_PROTOCOL=https
+CUSTOMER_REPOSITORY_URL=jfrog.atina-connection.com/artifactory/libs-release</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>These variables define the main Maven-compatible repositories used during the build and runtime process:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ATINA_REPOSITORY</code>: Location of the official Atina repository used to download <code>com.atina:JDEAtinaServer</code>.</p>
+</li>
+<li>
+<p><code>CUSTOMER_REPOSITORY</code>: Optional repository for customer-specific artifacts, including:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>com.jdedwards:StdWebService</code></p>
+</li>
+<li>
+<p><code>com.jdedwards:jde-lib-wrapped</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This allows the customer to override or update web services or JDE Tools libraries.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_jde_microserver_configuration">JDE Microserver Configuration</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-env hljs" data-lang="env">JDE_MICROSERVER_IP=172.28.0.2
+JDE_MICROSERVER_PORT=8077
+JDE_MICROSERVER_DEBUG_PORT=5005
+JDE_MICROSERVER_CODE=demo</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Defines the IP address, port, and debug settings for the JDE Microservice container:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>JDE_MICROSERVER_IP</code>: Internal IP used by Docker.</p>
+</li>
+<li>
+<p><code>JDE_MICROSERVER_PORT</code>: Port exposed by the service.</p>
+</li>
+<li>
+<p><code>JDE_MICROSERVER_DEBUG_PORT</code>: Java remote debug port (used during development).</p>
+</li>
+<li>
+<p><code>JDE_MICROSERVER_CODE</code>: The JDE_MICROSERVER_CODE is a unique license code assigned to the customer when the microservice is provisioned. It identifies the licensed instance of the JDE Microservice and may be used for validation, tracking, and environment separation.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+Each customer must use the license code provided by Atina. This value is mandatory for the service to start correctly.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_microservice_versioning">Microservice Versioning</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-env hljs" data-lang="env">JDE_ATINA_SERVER_VERSION=1.0.0
+STD_WEB_SERVICE_CONSTANTS_VERSION=1.0.0</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>JDE_ATINA_SERVER_VERSION</code>: Version of the <code>JDEAtinaServer</code> artifact.</p>
+</li>
+<li>
+<p><code>STD_WEB_SERVICE_CONSTANTS_VERSION</code>: Version of the constants JAR used by the service.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_security_token_settings">Security &amp; Token Settings</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-env hljs" data-lang="env">JDE_MICROSERVER_SECRET_KEY=123456789012345678901234567890123456789012345678901234567890
+JDE_MICROSERVER_TOKEN_EXPIRATION=3000000</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>JDE_MICROSERVER_SECRET_KEY</code>: Secret key used to generate and validate JWT tokens.</p>
+</li>
+<li>
+<p><code>JDE_MICROSERVER_TOKEN_EXPIRATION</code>: Expiration time in milliseconds (e.g., <code>3000000</code> = 50 minutes).</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_volume_mounts">Volume Mounts</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-env hljs" data-lang="env">Volume_DataLogs=/home/jde/data/logs
+Volume_JDETmp=/home/jde/data/tmp
+Volume_JDELog=/home/jde/data/jdelog</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Local folders mounted into the container:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Volume_DataLogs</code>: General logs.</p>
+</li>
+<li>
+<p><code>Volume_JDETmp</code>: Temporary files.</p>
+</li>
+<li>
+<p><code>Volume_JDELog</code>: Logs specific to JDE libraries.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_external_library_configuration">External Library Configuration</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-env hljs" data-lang="env">JDE_GET_LIB_WRAPPED_UPDATE_FROM_REPOSITORY=1
+JDE_LIB_WRAPPED_VERSION=1.0.0
+
+JDE_GET_LIB_WEB_SERVICE_FROM_REPOSITORY=1
+STD_WEB_SERVICE_VERSION=1.0.0</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Defines versions and update policies for external JDE libraries:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>JDE_LIB_WRAPPED_VERSION</code>: Version of <code>jde-lib-wrapped</code>.</p>
+</li>
+<li>
+<p><code>JDE_GET_LIB_WRAPPED_UPDATE_FROM_REPOSITORY</code>: Enables (<code>1</code>) or disables (<code>0</code>) remote update.</p>
+</li>
+<li>
+<p><code>STD_WEB_SERVICE_VERSION</code>: Version of <code>jStdWebService</code>.</p>
+</li>
+<li>
+<p><code>JDE_GET_LIB_WEB_SERVICE_FROM_REPOSITORY</code>: Enables (<code>1</code>) or disables (<code>0</code>) remote update.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_time_zone_configuration">Time Zone Configuration</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-env hljs" data-lang="env">TZ=America/Buenos_Aires</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Sets the time zone inside the container.</p>
+</div>
+<div class="paragraph">
+<p>This is critical to ensure correct timestamps in logs and for time-based calculations.</p>
+</div>
+<div class="paragraph">
+<p>You can find a valid list of time zone names at:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones" class="bare">https://en.wikipedia.org/wiki/List_of_tz_database_time_zones</a></p>
+</li>
+<li>
+<p>Or run on Linux:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">timedatectl list-timezones</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>You can also check the <code>/usr/share/zoneinfo</code> directory on most Linux distributions.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Use only valid IANA time zone identifiers (e.g., <code>America/New_York</code>, <code>Europe/Madrid</code>).</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_jde_enterprise_server_database_hosts">JDE Enterprise Server &amp; Database Hosts</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-env hljs" data-lang="env">JDE_MICROSERVER_ENTERPRISE_SERVER_NAME=JDE-ALPHA-ENT
+JDE_MICROSERVER_ENTERPRISE_SERVER_IP=138.91.73.161
+JDE_MICROSERVER_ENTERPRISE_DB_NAME=JDE-ALPHA-SQL
+JDE_MICROSERVER_ENTERPRISE_DB_IP=65.52.119.187</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This section defines the network and database endpoints used by the microservice to interact with the JDE EnterpriseOne system.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>JDE_MICROSERVER_ENTERPRISE_SERVER_NAME</strong>: The logical name of the JDE Enterprise Server.</p>
+</li>
+<li>
+<p><strong>JDE_MICROSERVER_ENTERPRISE_SERVER_IP</strong>: The server’s IP address or DNS-resolvable name.</p>
+</li>
+<li>
+<p><strong>JDE_MICROSERVER_ENTERPRISE_DB_NAME</strong>: The name of the database as defined in JDE’s OCM (Object Configuration Manager) as a Data Source.</p>
+</li>
+<li>
+<p><strong>JDE_MICROSERVER_ENTERPRISE_DB_IP</strong>: The database server’s IP address.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+The database name must match the Data Source name defined in the JDE OCM. Incorrect names may lead to failed connections or incorrect environment targeting.
+</td>
+</tr>
+</table>
+</div>
+<hr>
 </div>
 <div class="sect2">
 <h3 id="_step_6_initialize_the_container">Step 6: Initialize the Container</h3>
@@ -1878,7 +2234,7 @@ User User: JDE in environment JDV920 with *ALL disconnected. Current session ID 
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-07-06 21:51:09 -0300
+Last updated 2025-07-14 11:00:08 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

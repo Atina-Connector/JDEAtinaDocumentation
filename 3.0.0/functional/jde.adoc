@@ -45,6 +45,7 @@ This document assumes that the reader has prior knowledge and access to the foll
 * https://maven.apache.org/download.cgi[*Maven*] 3.9.6 or higher (do not use the embedded Maven for AnyPoint Studio)
 * *Atina JDE Microservices*: The connector requires access to the Atina JDE Microservices deployed in the target network. Ensure the service is reachable (credentials provided).
 
+See the <<jdeatina#,Atina JDE Microservices Manual>> for detailed setup and deployment instructions.
 
 == *Preliminary Setup*
 
