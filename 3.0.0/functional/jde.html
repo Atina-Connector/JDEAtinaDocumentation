@@ -1387,7 +1387,200 @@ Always ensure your <code>.env</code> file and connector configuration are correc
 </div>
 <div class="sect2">
 <h3 id="_invoking_a_business_function_bsfn">Invoking a <strong>Business Function (BSFN)</strong></h3>
+<div class="paragraph">
+<p>Just as we did with Web Services, we start from a <strong>RAML</strong> contract and generate a Mule endpoint that calls a JDE Business Function (BSFN).
+In this example we invoke <strong><code>AddressBookMasterMBF</code></strong> to retrieve Address Book information.</p>
+</div>
+<div class="sect3">
+<h4 id="_raml_definition_2">RAML Definition</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">#%RAML 1.0
+title: ATINA JDE Connector
+version: v1
 
+/v1:
+...
+  /getAdressBookUsingBSFN:
+    get:
+      description: Get Address Book using BSFN AddressBookMasterMBF .
+      queryParameters:
+        entityID:
+          displayName: Address Book No
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          body:
+            application/json:
+              example: |
+                {
+                }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Based on this RAML, the following endpoint will be exposed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-http hljs" data-lang="http">GET /v1/getAdressBookUsingBSFN?entityID=28</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_configure_the_bsfn_invocation">Configure the BSFN Invocation</h4>
+<div class="paragraph">
+<p>To invoke the BSFN in your Mule flow, follow the same initial steps explained in the section <strong>Creating a HTTP Listener from RAML</strong>.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_06_BSFN01.png" alt="jde 06 BSFN01" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>To invoke a JDE Web Service using the Atina JDE Connector, follow the steps below:</p>
+</div>
+<div class="sect4">
+<h5 id="_1_add_the_connector_to_the_flow_2">1. Add the Connector to the Flow</h5>
+<div class="paragraph">
+<p>From the <strong>Mule Palette</strong>, locate the <strong>JDE Atina</strong> module and drag the <code>Invoke bsfn</code> operation onto the flow canvas.</p>
+</div>
+<div class="paragraph">
+<p>Once the operation is placed, select it and review the configuration panel on the right.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Change the <strong>Display Name</strong> to something meaningful, such as <code>Invoke BSFN MBSFN Address Book</code>.</p>
+</li>
+<li>
+<p>In the <strong>Basic Settings</strong>, select the appropriate connector configuration (e.g. <code>JDE_Atina_Config_Non_WS_Operation</code>).</p>
+</li>
+</ul>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_06_BSFN02.png" alt="jde 06 BSFN02" width="521">
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_2_select_the_bsfn_to_invoke">2. Select the BSFN to Invoke</h5>
+<div class="paragraph">
+<p>Under the <strong>General</strong> section, locate the field labeled <strong>Ws name</strong>.
+Click the dropdown icon to retrieve the available BSFN from the microserver.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_06_BSFN03.png" alt="jde 06 BSFN03" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>From the list, choose: <strong>AddressBookMasterMBF</strong></p>
+</div>
+<div class="paragraph">
+<p>This metadata is fetched directly from the running microserver instance and stored in your project metadata.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_3_set_the_input_parameters_2">3. Set the Input Parameters</h5>
+<div class="paragraph">
+<p>You can now configure the input parameters using DataWeave or the graphical mapping interface.</p>
+</div>
+<div class="paragraph">
+<p>Click the fx icon next to <strong>Input parameters</strong>, and use either:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Manual expression:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
+	cActionCode: 'I',
+	cSuppressErrorMessages: '1',
+	szVersion: 'ZJDE0001',
+	mnAddressBookNumber: attributes.queryParams.entityID as Number
+}</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Or graphical mapping: drag <code>attributes.queryParams.entityID</code> to <code>mnAddressBookNumber</code>.</p>
+</li>
+</ul>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_05_WS04.png" alt="jde 05 WS04" width="521">
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_4_add_a_transform_message_optional_2">4. Add a Transform Message (Optional)</h5>
+<div class="paragraph">
+<p>After the WS invocation, you can format the response.</p>
+</div>
+<div class="paragraph">
+<p>From the <strong>Mule Palette</strong>, search for <strong>Transform Message</strong> and drag it next to the connector.
+This will allow you to format the output as needed, such as converting it to <code>application/json</code>.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_06_BSFN04.png" alt="jde 06 BSFN04" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>Typical output for passthrough:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-datweave hljs" data-lang="datweave">%dw 2.0
+output application/json
+---
+payload</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_5_run_and_test_the_flow_2">5. Run and Test the Flow</h5>
+<div class="paragraph">
+<p>Start your Mule application using the <strong>Run</strong> button or <code>Run → Run Project</code>.</p>
+</div>
+<div class="paragraph">
+<p>Once deployed, you can test the endpoint using the <strong>API Console</strong> or an HTTP client such as <code>curl</code> or Postman.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_06_BSFN05.png" alt="jde 06 BSFN05" width="521">
+</div>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_06_BSFN06.png" alt="jde 06 BSFN06" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>You should receive a <code>200 OK</code> response with the JSON format.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The BSFN operation is executed dynamically by the microservice. If the service is not available or misconfigured, you will receive a <code>500 Internal Server Error</code>.
+Always ensure your <code>.env</code> file and connector configuration are correctly set.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_invoking_a_business_function_bsfn_with_transaction_processing">Invoking a <strong>Business Function (BSFN)</strong> with <strong>Transaction Processing</strong></h3>
@@ -1716,7 +1909,7 @@ F4211.MCU = F4211.EMCU AND F4211.DOCO NOT BETWEEN 1022 AND 400</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-07-15 10:46:07 -0300
+Last updated 2025-07-15 12:24:53 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

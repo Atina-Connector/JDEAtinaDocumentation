@@ -408,10 +408,132 @@ Always ensure your `.env` file and connector configuration are correctly set.
 
 === Invoking a *Business Function (BSFN)*
 
+Just as we did with Web Services, we start from a **RAML** contract and generate a Mule endpoint that calls a JDE Business Function (BSFN).
+In this example we invoke **`AddressBookMasterMBF`** to retrieve Address Book information.
 
+==== RAML Definition
 
+[source,yaml]
+----
+#%RAML 1.0
+title: ATINA JDE Connector
+version: v1
 
+/v1:
+...
+  /getAdressBookUsingBSFN:
+    get:
+      description: Get Address Book using BSFN AddressBookMasterMBF .
+      queryParameters:
+        entityID:
+          displayName: Address Book No
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          body:
+            application/json:
+              example: |
+                {
+                }
 
+----
+
+Based on this RAML, the following endpoint will be exposed:
+
+[source,http]
+----
+GET /v1/getAdressBookUsingBSFN?entityID=28
+----
+
+==== Configure the BSFN Invocation
+
+To invoke the BSFN in your Mule flow, follow the same initial steps explained in the section *Creating a HTTP Listener from RAML*.
+
+image::atina_connector_images/jde_06_BSFN01.png[width=521,align=center]
+
+To invoke a JDE Web Service using the Atina JDE Connector, follow the steps below:
+
+===== 1. Add the Connector to the Flow
+
+From the *Mule Palette*, locate the **JDE Atina** module and drag the `Invoke bsfn` operation onto the flow canvas.
+
+Once the operation is placed, select it and review the configuration panel on the right.
+
+* Change the **Display Name** to something meaningful, such as `Invoke BSFN MBSFN Address Book`.
+* In the **Basic Settings**, select the appropriate connector configuration (e.g. `JDE_Atina_Config_Non_WS_Operation`).
+
+image::atina_connector_images/jde_06_BSFN02.png[width=521,align=center]
+
+===== 2. Select the BSFN to Invoke
+
+Under the *General* section, locate the field labeled **Ws name**.
+Click the dropdown icon to retrieve the available BSFN from the microserver.
+
+image::atina_connector_images/jde_06_BSFN03.png[width=521,align=center]
+
+From the list, choose: *AddressBookMasterMBF*
+
+This metadata is fetched directly from the running microserver instance and stored in your project metadata.
+
+===== 3. Set the Input Parameters
+
+You can now configure the input parameters using DataWeave or the graphical mapping interface.
+
+Click the fx icon next to **Input parameters**, and use either:
+
+* Manual expression:
++
+[source,json]
+----
+{
+	cActionCode: 'I',
+	cSuppressErrorMessages: '1',
+	szVersion: 'ZJDE0001',
+	mnAddressBookNumber: attributes.queryParams.entityID as Number
+}
+----
+
+* Or graphical mapping: drag `attributes.queryParams.entityID` to `mnAddressBookNumber`.
+
+image::atina_connector_images/jde_05_WS04.png[width=521,align=center]
+
+===== 4. Add a Transform Message (Optional)
+
+After the WS invocation, you can format the response.
+
+From the *Mule Palette*, search for **Transform Message** and drag it next to the connector.
+This will allow you to format the output as needed, such as converting it to `application/json`.
+
+image::atina_connector_images/jde_06_BSFN04.png[width=521,align=center]
+
+Typical output for passthrough:
+
+[source,datweave]
+----
+%dw 2.0
+output application/json
+---
+payload
+----
+
+===== 5. Run and Test the Flow
+
+Start your Mule application using the **Run** button or `Run → Run Project`.
+
+Once deployed, you can test the endpoint using the **API Console** or an HTTP client such as `curl` or Postman.
+
+image::atina_connector_images/jde_06_BSFN05.png[width=521,align=center]
+image::atina_connector_images/jde_06_BSFN06.png[width=521,align=center]
+
+You should receive a `200 OK` response with the JSON format.
+
+[NOTE]
+====
+The BSFN operation is executed dynamically by the microservice. If the service is not available or misconfigured, you will receive a `500 Internal Server Error`.
+Always ensure your `.env` file and connector configuration are correctly set.
+====
 
 
 === Invoking a *Business Function (BSFN)* with *Transaction Processing*
