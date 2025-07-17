@@ -727,7 +727,6 @@ Click the fx icon next to **Input parameters**, and use either:
 [source,json]
 ----
 {
-
 }
 ----
 
@@ -786,8 +785,7 @@ Start your Mule application using the **Run** button or `Run → Run Project`.
 
 Once deployed, you can test the endpoint using the **API Console** or an HTTP client such as `curl` or Postman.
 
-image::atina_connector_images/jde_06_BSFN05.png[width=521,align=center]
-image::atina_connector_images/jde_06_BSFN06.png[width=521,align=center]
+image::atina_connector_images/jde_07_TRANS08.png[width=521,align=center]
 
 You should receive a `200 OK` response with the JSON format.
 
