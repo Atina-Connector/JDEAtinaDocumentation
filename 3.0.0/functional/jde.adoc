@@ -611,6 +611,13 @@ Based on this RAML, the following endpoint will be exposed:
 [source,http]
 ----
 POST /v1/createCustomerUsingBSFNs
+{
+  "customerName": "John Doe",
+  "customerAddress": "123 Main St",
+  "customerCity": "Denver",
+  "customerState": "CO",
+  "paymentCurrency": "USD"
+}
 ----
 
 ==== Configure the BSFN Create Customer Invocation
@@ -797,6 +804,203 @@ Always ensure your `.env` file and connector configuration are correctly set.
 
 === Submit an *UBE* and an *UBE State*
 
+Just as we did with Web Services, we start from a **RAML** contract and generate a Mule endpoint that submit UBEs.
+In this example we invoke **`R01010Z-ZJDE0001`**  Address Book Batch Upload.
+
+==== RAML Definition
+
+[source,yaml]
+----
+#%RAML 1.0
+title: ATINA JDE Connector
+version: v1
+
+/v1:
+...
+  /submitUBER01010Z:
+    post:
+      description: Sumbit UBE R01010Z-ZJDE0001 Address Book Batch Upload.
+      body:
+        application/json:
+          type: |
+            {
+              "type": "object",
+              "properties": {
+                "PO_ProcessMode": {
+                  "type": "string",
+                  "pattern": "^[0,1]{1}$",
+                  "displayName": "Process Mode",
+                  "description": "Blank = Proof mode  or 1 = Final mode"
+                },
+                "DataSelection_EDUS": {
+                  "type": "string",
+                  "displayName": "EDUS User Transaction"
+                }
+              }
+            }
+          example: |
+            {
+              "PO_ProcessMode": "0",
+              "DataSelection_EDUS": "JDE"
+            }
+      responses:
+        200:
+          description: OK
+          body:
+            application/json:
+              example: |
+                {
+                  "status": "UBE Submited",
+                  "jobId": "12345"
+                }
+
+----
+
+Based on this RAML, the following endpoint will be exposed:
+
+[source,http]
+----
+POST /v1/submitUBER01010Z
+{
+  "PO_ProcessMode": "0",
+  "DataSelection_EDUS": "JDE"
+}
+----
+
+==== Configure the UBE Invocation
+
+To invoke the BSFN in your Mule flow, follow the same initial steps explained in the section *Creating a HTTP Listener from RAML*.
+
+image::atina_connector_images/jde_08_UBE01.png[width=521,align=center]
+
+To invoke a JDE UBE using the Atina JDE Connector, follow the steps below:
+
+===== 1. Add the UBE Connector to the Flow
+
+From the *Mule Palette*, locate the **JDE Atina** module and drag the `Submit batch process` operation onto the flow canvas.
+
+Once the operation is placed, select it and review the configuration panel on the right.
+
+* Change the **Display Name** to something meaningful, such as `Submit Batch Upload`.
+* In the **Basic Settings**, select the appropriate connector configuration (e.g. `JDE_Atina_Config_Non_WS_Operation`).
+
+image::atina_connector_images/jde_08_UBE02.png[width=521,align=center]
+
+===== 2. Select the UBE to Invoke
+
+Under the *General* section, locate the field labeled **Ube name**.
+Write UBE and Version
+
+image::atina_connector_images/jde_08_BSFN03.png[width=521,align=center]
+
+This metadata is fetched directly from the running microserver instance and stored in your project metadata.
+
+===== 3. Set the Input Parameters
+
+You can now configure the input parameters using DataWeave or the graphical mapping interface.
+
+Report Interconnect and Processing Options are optional. In case you enter one value, this value will override the existing value.
+For example, Processing Options has two parameters. In this case, we will override only Proof Mode. The version will mantein the current value in the UBE version.
+The same logic will apply to Report Interconnect.
+In this example will use PO and Data Selection.
+To write Data Selection please see Anexo  Defining Data Selection
+
+Click the fx icon next to **Input parameters**, and use either:
+
+* Manual expression:
++
+[source,json]
+----
+{
+	"Processing Options": {
+		cProofFinalFlag: payload.PO_ProcessMode
+	},
+	"Data Selection": "F0101Z2.EDUS = '" ++ (payload.DataSelection_EDUS as String) ++ "' AND F0101Z2.EDTN>'001'"
+}
+----
+
+* Or graphical mapping: drag `attributes.queryParams.entityID` to `mnAddressBookNumber`.
+
+image::atina_connector_images/jde_08_BSFN04.png[width=521,align=center]
+
+Assing the response to a variable
+
+image::atina_connector_images/jde_08_BSFN05.png[width=521,align=center]
+
+===== 4. Add the Get Batch Process Information Connector to the Flow
+
+From the *Mule Palette*, locate the **JDE Atina** module and drag the `Get batch process information` operation onto the flow canvas.
+
+Once the operation is placed, select it and review the configuration panel on the right.
+
+* Change the **Display Name** to something meaningful, such as `Get Batch Status`.
+* In the **Basic Settings**, select the appropriate connector configuration (e.g. `JDE_Atina_Config_Non_WS_Operation`).
+
+image::atina_connector_images/jde_08_BSFN06.png[width=521,align=center]
+
+===== 5. Set the Input Parameters
+
+You can now configure the input parameters using DataWeave or the graphical mapping interface.
+
+Click the fx icon next to **Input parameters**, and use either:
+
+* Manual expression:
++
+[source,json]
+----
+output application/java
+---
+{
+	"JOB Number": vars.ubeSubmited."JOB Number" as String
+}
+----
+
+* Or graphical mapping: drag `attributes.queryParams.entityID` to `mnAddressBookNumber`.
+
+image::atina_connector_images/jde_08_BSFN07.png[width=521,align=center]
+
+Assing the response to a variable
+
+image::atina_connector_images/jde_08_BSFN08.png[width=521,align=center]
+
+===== 6. Add a Transform Message
+
+After the WS invocation, you can format the response.
+
+From the *Mule Palette*, search for **Transform Message** and drag it next to the connector.
+This will allow you to format the output as needed, such as converting it to `application/json`.
+
+image::atina_connector_images/jde_08_BSFN09.png[width=521,align=center]
+
+Typical output for passthrough:
+
+[source,datweave]
+----
+%dw 2.0
+output application/json
+---
+{
+	status: "UBE submite with ID " ++ (vars.ubeSubmited."JOB Number" as String) ,
+	jobId: vars.getStatus."JOB Status"
+}
+----
+
+===== 7. Run and Test the Flow
+
+Start your Mule application using the **Run** button or `Run → Run Project`.
+
+Once deployed, you can test the endpoint using the **API Console** or an HTTP client such as `curl` or Postman.
+
+image::atina_connector_images/jde_08_BSFN10.png[width=521,align=center]
+
+
+You should receive a `200 OK` response with the JSON format.
+
+This is the JDE detail
+
+image::atina_connector_images/jde_08_BSFN11.png[width=521,align=center]
+image::atina_connector_images/jde_08_BSFN12.png[width=521,align=center]
+image::atina_connector_images/jde_08_BSFN13.png[width=521,align=center]
 
 === Capture *MBF Outbound Events*
 
