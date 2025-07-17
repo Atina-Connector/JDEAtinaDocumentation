@@ -804,8 +804,9 @@ Always ensure your `.env` file and connector configuration are correctly set.
 
 === Submit an *UBE* and an *UBE State*
 
-Just as we did with Web Services, we start from a **RAML** contract and generate a Mule endpoint that submit UBEs.
-In this example we invoke **`R01010Z-ZJDE0001`**  Address Book Batch Upload.
+Just like with Web Services, we start from a RAML contract to generate a MuleSoft endpoint that submits UBEs.
+
+In this example, we will invoke R01010Z-ZJDE0001 (Address Book Batch Upload).
 
 ==== RAML Definition
 
@@ -869,29 +870,31 @@ POST /v1/submitUBER01010Z
 
 ==== Configure the UBE Invocation
 
-To invoke the BSFN in your Mule flow, follow the same initial steps explained in the section *Creating a HTTP Listener from RAML*.
+Follow the initial steps described in Creating an HTTP Listener from RAML to generate the Mule Flow.
 
 image::atina_connector_images/jde_08_UBE01.png[width=521,align=center]
 
-To invoke a JDE UBE using the Atina JDE Connector, follow the steps below:
+To invoke a JDE UBE using the Atina JDE Connector:
 
-===== 1. Add the UBE Connector to the Flow
+===== 1. Add the Submit batch process Operation
 
-From the *Mule Palette*, locate the **JDE Atina** module and drag the `Submit batch process` operation onto the flow canvas.
+From the Mule Palette, drag the Submit batch process operation from the JDE Atina module into the flow.
 
-Once the operation is placed, select it and review the configuration panel on the right.
-
-* Change the **Display Name** to something meaningful, such as `Submit Batch Upload`.
-* In the **Basic Settings**, select the appropriate connector configuration (e.g. `JDE_Atina_Config_Non_WS_Operation`).
+•	Set a meaningful Display Name, e.g., Submit Batch Upload.
+•	Under Basic Settings, choose the proper connector configuration (e.g., JDE_Atina_Config_Non_WS_Operation).
 
 image::atina_connector_images/jde_08_UBE02.png[width=521,align=center]
 
-===== 2. Select the UBE to Invoke
+===== 2. Set the UBE Name and Version
 
-Under the *General* section, locate the field labeled **Ube name**.
-Write UBE and Version
+In the General section, fill in the UBE Name and Version:
 
-image::atina_connector_images/jde_08_BSFN03.png[width=521,align=center]
+•	UBE Name: R01010Z
+•	UBE Version: ZJDE0001
+
+This metadata is retrieved from the running microserver and cached in your project.
+
+image::atina_connector_images/jde_08_UBE03.png[width=521,align=center]
 
 This metadata is fetched directly from the running microserver instance and stored in your project metadata.
 
@@ -899,11 +902,10 @@ This metadata is fetched directly from the running microserver instance and stor
 
 You can now configure the input parameters using DataWeave or the graphical mapping interface.
 
-Report Interconnect and Processing Options are optional. In case you enter one value, this value will override the existing value.
-For example, Processing Options has two parameters. In this case, we will override only Proof Mode. The version will mantein the current value in the UBE version.
-The same logic will apply to Report Interconnect.
-In this example will use PO and Data Selection.
-To write Data Selection please see Anexo  Defining Data Selection
+Optional fields like Processing Options and Report Interconnect can override specific runtime values without affecting the entire version configuration.
+
+For reference on how to construct the Data Selection, see <<data-selection,Appendix A - Defining Data Selection>>.
+
 
 Click the fx icon next to **Input parameters**, and use either:
 
@@ -921,13 +923,13 @@ Click the fx icon next to **Input parameters**, and use either:
 
 * Or graphical mapping: drag `attributes.queryParams.entityID` to `mnAddressBookNumber`.
 
-image::atina_connector_images/jde_08_BSFN04.png[width=521,align=center]
+image::atina_connector_images/jde_08_UBE04.png[width=521,align=center]
 
-Assing the response to a variable
+Assign the response to a variable (e.g., vars.ubeSubmited).
 
-image::atina_connector_images/jde_08_BSFN05.png[width=521,align=center]
+image::atina_connector_images/jde_08_UBE05.png[width=521,align=center]
 
-===== 4. Add the Get Batch Process Information Connector to the Flow
+===== 4. Add the Get batch process information Operation
 
 From the *Mule Palette*, locate the **JDE Atina** module and drag the `Get batch process information` operation onto the flow canvas.
 
@@ -936,9 +938,11 @@ Once the operation is placed, select it and review the configuration panel on th
 * Change the **Display Name** to something meaningful, such as `Get Batch Status`.
 * In the **Basic Settings**, select the appropriate connector configuration (e.g. `JDE_Atina_Config_Non_WS_Operation`).
 
-image::atina_connector_images/jde_08_BSFN06.png[width=521,align=center]
+image::atina_connector_images/jde_08_UBE06.png[width=521,align=center]
 
-===== 5. Set the Input Parameters
+===== 5. Provide the Job ID Parameter
+
+This operation requires the JOB Number as input.
 
 You can now configure the input parameters using DataWeave or the graphical mapping interface.
 
@@ -957,22 +961,22 @@ output application/java
 
 * Or graphical mapping: drag `attributes.queryParams.entityID` to `mnAddressBookNumber`.
 
-image::atina_connector_images/jde_08_BSFN07.png[width=521,align=center]
+image::atina_connector_images/jde_08_UBE07.png[width=521,align=center]
 
 Assing the response to a variable
 
-image::atina_connector_images/jde_08_BSFN08.png[width=521,align=center]
+image::atina_connector_images/jde_08_UBE08.png[width=521,align=center]
 
 ===== 6. Add a Transform Message
 
-After the WS invocation, you can format the response.
+After receiving the batch status response, you may want to format the output.
 
 From the *Mule Palette*, search for **Transform Message** and drag it next to the connector.
 This will allow you to format the output as needed, such as converting it to `application/json`.
 
-image::atina_connector_images/jde_08_BSFN09.png[width=521,align=center]
+image::atina_connector_images/jde_08_UBE09.png[width=521,align=center]
 
-Typical output for passthrough:
+Here is a sample transformation using DataWeave:
 
 [source,datweave]
 ----
@@ -991,16 +995,18 @@ Start your Mule application using the **Run** button or `Run → Run Project`.
 
 Once deployed, you can test the endpoint using the **API Console** or an HTTP client such as `curl` or Postman.
 
-image::atina_connector_images/jde_08_BSFN10.png[width=521,align=center]
+image::atina_connector_images/jde_08_UBE10.png[width=521,align=center]
 
 
 You should receive a `200 OK` response with the JSON format.
 
-This is the JDE detail
+===== 8 Sample Output in JDE
 
-image::atina_connector_images/jde_08_BSFN11.png[width=521,align=center]
-image::atina_connector_images/jde_08_BSFN12.png[width=521,align=center]
-image::atina_connector_images/jde_08_BSFN13.png[width=521,align=center]
+These images show how the submitted UBE appears in JDE, including job logs and status:
+
+image::atina_connector_images/jde_08_UBE11.png[width=521,align=center]
+image::atina_connector_images/jde_08_UBE12.png[width=521,align=center]
+image::atina_connector_images/jde_08_UBE13.png[width=521,align=center]
 
 === Capture *MBF Outbound Events*
 
@@ -1021,106 +1027,30 @@ There are additional demo applications with step by step guides available for do
 . <<demo_poll_mbf_events.adoc#,Poll MBF Events>>
 . <<demo_poll_edi_events.adoc#,Poll EDI Events>>
 
-== *Appendix A : Required JARs by Tools Release*
-
-=== Tools Release 8.98
-
-
-
-=== Tools Releases 9.1 prior Update 4
-
-
-
-=== Tools Releases 9.1 Update 4 and later updates
-
-
-
-=== Tools Releases 9.2 and later
-
-
  
-== *Appendix B : Additional Information*
+== *Appendix A : Additional Information*
 
-=== Common Call Business Function parameters
-
-There is four common parameters used to invoke a Business Function:
-
-|===
-|*Parameter*|*Input/Output*|*Type*|*Description*
-|_BSFNThrowExceptionWithErrorsYN
-|Input
-|STRING
-|Values: Y, The flow will throw Runtime Exception with cause: org.mule.modules.jde.exceptions.CallBSFNException.
-
-|_BSFNReturnCode
-|Output
-|INTEGER
-|Values: 0: Processed Correctly, 1: There is warnings, 2: There is errors.
-
-|_BSFNNumberOfErrors
-|Output
-|INTEGER
-|Number of errors
-
-|_BSFNDetailErrors
-|Output
-|STRING
-|Detail of the error. It return a XML representation of CallObjectErrorList
-|===
-
-Usage :
-
-=== Handling Errors 
-
-In Mule 4, all thrown errors  will be displayed in the _Type_ selection of the Error Handler. Simple select the errors you want to handle, and process them. 
-
-NOTE : All JD Edwards related errors will start with _JDE:_
-
-image:demo_getting_started/image1_ctl.png[image,width=563,height=446]
-
-This is an example of CallObjectErrorItem object:
-[source,xml]
-<com.jdedwards.system.kernel.JdeNetCallObjectErrorList>
-  <mErrors>
-    <com.jdedwards.system.kernel.CallObjectErrorItem>
-      <mErrorId>0</mErrorId>
-      <mDDItem>1212</mDDItem>
-      <mLineNumber>315</mLineNumber>
-      <mFileName>b0100094.c</mFileName>
-      <mSubText>&#x0;</mSubText>
-      <mAlphaDescription>Error: Address Number Already Assigned</mAlphaDescription>
-      <mGlossaryText>CAUSE . . . .  The Address Number entered is already assigned.&#xd;
-       RESOLUTION. .  Enter an Address Number that is not already assigned.&#xd;
-      </mGlossaryText>
-      <mErrorLevel>1</mErrorLevel>
-    </com.jdedwards.system.kernel.CallObjectErrorItem>
-    <com.jdedwards.system.kernel.CallObjectErrorItem>
-      <mErrorId>11</mErrorId>
-      <mDDItem>018A</mDDItem>
-      <mLineNumber>544</mLineNumber>
-      <mFileName>rtk_ddvl.c</mFileName>
-      <mSubText>Search Type|Y|01|ST&#x0;</mSubText>
-      <mAlphaDescription>Error: Y not found in User Defined Code 01 ST&#x0;</mAlphaDescription>
-      <mGlossaryText>CAUSE . . . .  Search Type Y was not found in User Defined Code&#xd;
-               for system 01 , type ST&#x0; .&#xd;
-              RESOLUTION. .  Enter a valid Search Type or use Visual Assist to search&#xd;
-               for a valid value.
-      </mGlossaryText>
-      <mErrorLevel>1</mErrorLevel>
-    </com.jdedwards.system.kernel.CallObjectErrorItem>
-  </mErrors>
-  <mBsfnErrorCode>2</mBsfnErrorCode>
-</com.jdedwards.system.kernel.JdeNetCallObjectErrorList>
 
 === Defining Data Selection
 
-* The parameter _Selection_ is used to define UBE Data Selection.
-* The sentence is similar to a WHERE clause of an SQL statement.
-* The _Selection_ syntax is:
-** table.column_name operator [value|table.column_name];
-* The table must be a JDE table that belongs to the main view of the UBE.
-* Column Name must be a JDE Data Item Alias.
-* The following operators can be used in the _Selection_ :
+The _Selection_ parameter is used to define the Data Selection criteria for a UBE (Universal Batch Engine).
+
+This expression follows a syntax similar to the WHERE clause in SQL statements.
+
+==== Syntax
+
+The general structure is:
+
+[source,text]
+
+table.column_name operator [value | table.column_name]
+
+	•	table: Must be a valid JDE table name that belongs to the main view of the UBE.
+	•	column_name: Must be a JDE Data Item Alias (not the physical database column name).
+	•	value: Can be a string or number literal, or another column.
+
+
+==== Supported Operators
 
 [cols=",",options="header",]
 |===
@@ -1138,22 +1068,27 @@ This is an example of CallObjectErrorItem object:
 |NOT IN |To exclude multiple possible values for a column
 |===
 
+==== Additional Rules
+
 * The values can be literals or other table columns.
 * Literals can be String or Number
-* The sentence can include the AND and/or the OR conditions
+* You may combine conditions using AND and OR.
 * To override the default precedence you need to use parenthesis as
 ** C1 AND (C2 OR C3)
-** The sentence only accept one level of Parenthesis.
+** Use parentheses to override operator precedence, but only one level of nesting is allowed.
+
 
 For example, this is a valid sentence because the maximum level of Parenthesis opened is 1.
 
+[source,sql]
 _C1 AND (C2 OR C3) AND (C4 OR C5)_
 
 otherwise, this is an invalid sentences because the maximum level of Parenthesis opened is 2.
 
+[source,sql]
 C1 AND (C2 OR (C3 AND C4))
 
-Examples:
+==== Examples
 
 [source,sql]
 ----
@@ -1169,4 +1104,4 @@ F4211.KCOO = '00001' AND F4211.DOCO NOT BETWEEN 1022 AND 400
 F4211.MCU = F4211.EMCU AND F4211.DOCO NOT BETWEEN 1022 AND 400
 ----
 
-
+NOTE: The parser for Selection enforces these constraints at runtime. If a sentence is invalid, you will receive an error from the JDE microservice.
