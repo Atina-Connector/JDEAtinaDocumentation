@@ -583,9 +583,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_invoking_a_jde_web_services">Invoking a <strong>JDE Web Services</strong></a></li>
 <li><a href="#_invoking_a_business_function_bsfn">Invoking a <strong>Business Function (BSFN)</strong></a></li>
 <li><a href="#_invoking_a_business_function_bsfn_with_transaction_processing">Invoking a <strong>Business Function (BSFN)</strong> with <strong>Transaction Processing</strong></a></li>
-<li><a href="#_submit_an_ube">Submit an <strong>UBE</strong></a></li>
-<li><a href="#_get_an_ube_state">Get an <strong>UBE State</strong></a></li>
+<li><a href="#_submit_an_ube_and_an_ube_state">Submit an <strong>UBE</strong> and an <strong>UBE State</strong></a></li>
 <li><a href="#_capture_mbf_outbound_events">Capture <strong>MBF Outbound Events</strong></a></li>
+<li><a href="#_capture_mbf_outbound_events_2">Capture <strong>MBF Outbound Events</strong></a></li>
 </ul>
 </li>
 <li><a href="#_atina_jde_connector_demo_applications"><strong>Atina JDE Connector_ – Demo Applications</strong></a>
@@ -594,19 +594,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_additional_demos">Additional Demos</a></li>
 </ul>
 </li>
-<li><a href="#_appendix_a_required_jars_by_tools_release"><strong>Appendix A : Required JARs by Tools Release</strong></a>
+<li><a href="#_appendix_a_additional_information"><strong>Appendix A : Additional Information</strong></a>
 <ul class="sectlevel2">
-<li><a href="#_tools_release_8_98">Tools Release 8.98</a></li>
-<li><a href="#_tools_releases_9_1_prior_update_4">Tools Releases 9.1 prior Update 4</a></li>
-<li><a href="#_tools_releases_9_1_update_4_and_later_updates">Tools Releases 9.1 Update 4 and later updates</a></li>
-<li><a href="#_tools_releases_9_2_and_later">Tools Releases 9.2 and later</a></li>
+<li><a href="#data-selection">Defining Data Selection</a></li>
 </ul>
 </li>
-<li><a href="#_appendix_b_additional_information"><strong>Appendix B : Additional Information</strong></a>
+<li><a href="#_appendix_b_jde_configuration"><strong>Appendix B: JDE Configuration</strong></a>
 <ul class="sectlevel2">
-<li><a href="#_common_call_business_function_parameters">Common Call Business Function parameters</a></li>
-<li><a href="#_handling_errors">Handling Errors</a></li>
-<li><a href="#_defining_data_selection">Defining Data Selection</a></li>
+<li><a href="#jde-events-config">JDEdwards Events configuration</a></li>
 </ul>
 </li>
 </ul>
@@ -1439,7 +1434,7 @@ version: v1
 </div>
 </div>
 <div class="paragraph">
-<p>To invoke a JDE Web Service using the Atina JDE Connector, follow the steps below:</p>
+<p>To invoke a JDE BSFN using the Atina JDE Connector, follow the steps below:</p>
 </div>
 <div class="sect4">
 <h5 id="_1_add_the_connector_to_the_flow_2">1. Add the Connector to the Flow</h5>
@@ -1584,19 +1579,901 @@ Always ensure your <code>.env</code> file and connector configuration are correc
 </div>
 <div class="sect2">
 <h3 id="_invoking_a_business_function_bsfn_with_transaction_processing">Invoking a <strong>Business Function (BSFN)</strong> with <strong>Transaction Processing</strong></h3>
+<div class="paragraph">
+<p>This use case example will reuse the previous flow to add a Customer. In this case, we will need to invoke two Master Business Function (MBF) on Oracle’s JDE EnterpriseOne Server in the same transaction.</p>
+</div>
+<div class="paragraph">
+<p>Just as we did with BSFN, we start from a <strong>RAML</strong> contract and generate a Mule endpoint that create a Customer using BSFN.
+In this example we add <strong><code>MBFCustomerMaster</code></strong> to create Address Book and Customer information.</p>
+</div>
+<div class="sect3">
+<h4 id="_raml_definition_3">RAML Definition</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">#%RAML 1.0
+title: ATINA JDE Connector
+version: v1
 
+/v1:
+...
+  /createCustomerUsingBSFNs:
+    post:
+      description: Create Customer using BSFN AddressBookMasterMBF and MBFCustomerMaster.
+      body:
+        application/json:
+          type: |
+            {
+              "type": "object",
+              "properties": {
+                "customerName": {
+                  "type": "string",
+                  "displayName": "Customer Name"
+                },
+                "customerAddress": {
+                  "type": "string",
+                  "displayName": "Customer Address"
+                },
+                "customerCity": {
+                  "type": "string",
+                  "displayName": "Customer Address"
+                },
+                "customerState": {
+                  "type": "string",
+                  "displayName": "Customer Address"
+                },
+                "paymentCurrency": {
+                  "type": "string",
+                  "displayName": "Payment Currency",
+                  "pattern": "^[A-Z]{3}$",
+                  "description": "3-letter currency code (e.g., USD, EUR, ARS)"
+                }
+              }
+            }
+          example: |
+            {
+              "customerName": "John Doe",
+              "customerAddress": "123 Main St",
+              "customerCity": "Denver",
+              "customerState": "CO",
+              "paymentCurrency": "USD"
+            }
+      responses:
+        200:
+          description: OK
+          body:
+            application/json:
+              example: |
+                {
+                  "status": "Customer created successfully",
+                  "customerId": "12345"
+                }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Based on this RAML, the following endpoint will be exposed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-http hljs" data-lang="http">POST /v1/createCustomerUsingBSFNs
+{
+  "customerName": "John Doe",
+  "customerAddress": "123 Main St",
+  "customerCity": "Denver",
+  "customerState": "CO",
+  "paymentCurrency": "USD"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_configure_the_bsfn_create_customer_invocation">Configure the BSFN Create Customer Invocation</h4>
+<div class="paragraph">
+<p>To invoke the BSFN in your Mule flow, follow the same initial steps explained in the section <strong>Creating a HTTP Listener from RAML</strong>.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_06_BSFN01.png" alt="jde 06 BSFN01" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>To invoke a JDE BSFN using the Atina JDE Connector, follow the steps below:</p>
+</div>
+<div class="sect4">
+<h5 id="_1_add_the_two_bsfn_connector_to_the_flow">1. Add the Two BSFN Connector to the Flow</h5>
+<div class="paragraph">
+<p>Add the two BSFN</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_07_TRANS01.png" alt="jde 07 TRANS01" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>Invoke BSFN Create Address Book</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;jdeatina:invoke-bsfn wsName="AddressBookMasterMBF" doc:name="Invoke BSFN Create Address Book" config-ref="JDE_Atina_Config_Non_WS_Operation" target="addressBookRecord"&gt;
+&lt;jdeatina:input-parameters&gt;&lt;![CDATA[#[output application/json
+---
+{
+cActionCode: 'A',
+cUpdateMasterFile: '1',
+cSuppressErrorMessages: '1',
+szVersion: 'ZJDE0001',
+mnAddressBookNumber: 0,
+szSearchType: 'C',
+szAlphaName: payload.customerName,
+szMailingName: payload.customerName,
+szBusinessUnit: '           1',
+szAddressLine1: payload.customerAddress,
+szAddressLine2: '',
+szAddressLine3: '',
+szAddressLine4: '',
+szCity: payload.customerCity,
+szState: payload.customerState,
+cPayablesYNM: 'N',
+cReceivablesYN: 'Y',
+cARAPNettingY: 'N',
+cIndicatorFlg: 'A'
+}]]]&gt;&lt;/jdeatina:input-parameters&gt;
+&lt;/jdeatina:invoke-bsfn&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Invoke BSFN Create Customer</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;jdeatina:invoke-bsfn doc:name="Invoke BSFN Create Customer" doc:id="0c65eb38-ecd4-4777-96fd-a00b8911c5f4" config-ref="JDE_Atina_Config_Non_WS_Operation" wsName="MBFCustomerMaster" target="customerRecord"&gt;
+&lt;jdeatina:input-parameters &gt;&lt;![CDATA[#[output application/json
+---
+{
+cActionCode: 'A',
+cUpdateMasterFile: '1',
+szVersion: 'ZJDE00002',
+szCompany: '00000',
+szCurrencyCodeFrom: payload.paymentCurrency,
+szTaxArea1: 'DEN',
+szTaxExplanationCode1: 'S',
+mnAmountCreditLimit: 200000,
+szPaymentTermsAR: '',
+szCurrencyCodeAmounts: payload.paymentCurrency,
+mnAmountHighBalance: 300000,
+cBatchProcessingMode: '',
+mnCustomerNumber: vars.addressBookRecord.mnAddressBookNumber,
+cPersonCorporationCode: '',
+szVersionconsolidated: 'ZJDE00002',
+DateEntered: |2025-07-15T14:00:00-03:00|
+}]]]&gt;&lt;/jdeatina:input-parameters&gt;
+&lt;/jdeatina:invoke-bsfn&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Transform Message. Set response.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;ee:transform doc:name="Transform Message"&gt;
+&lt;ee:message&gt;
+&lt;ee:set-payload&gt;&lt;![CDATA[%dw 2.0
+output application/json
+---
+{
+status: "Customer created successfully",
+customerId: vars.addressBookRecord.mnAddressBookNumber as String
+} ]]&gt;&lt;/ee:set-payload&gt;
+&lt;/ee:message&gt;
+&lt;/ee:transform&gt;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_2_wrap_this_operation_with_transaction">2. Wrap this Operation with Transaction</h5>
+<div class="paragraph">
+<p>From the <strong>Mule Palette</strong>, locate the <strong>JDE Atina</strong> module and drag the <code>Transaction</code> operation onto the flow canvas.</p>
+</div>
+<div class="paragraph">
+<p>Once the operation is placed, select it and review the configuration panel on the right.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Change the <strong>Display Name</strong> to something meaningful, such as <code>Transaction - Start</code>.</p>
+</li>
+<li>
+<p>In the <strong>Basic Settings</strong>, select the appropriate connector configuration (e.g. <code>JDE_Atina_Config_Non_WS_Operation</code>).</p>
+</li>
+<li>
+<p>Under the <strong>General</strong> section, locate the field labeled <strong>Transaction operation</strong>.</p>
+</li>
+<li>
+<p>From the list, choose: <strong>Start Transaction</strong>. This metadata is fetched directly from the running microserver instance and stored in your project metadata.</p>
+</li>
+</ul>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_07_TRANS02.png" alt="jde 07 TRANS02" width="521">
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_3_set_the_input_parameters_for_transaction_operation">3. Set the Input Parameters for Transaction operation</h5>
+<div class="paragraph">
+<p>You can now configure the input parameters using DataWeave or the graphical mapping interface.</p>
+</div>
+<div class="paragraph">
+<p>Click the fx icon next to <strong>Input parameters</strong>, and use either:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Manual expression:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
+}</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Or graphical mapping: drag <code>attributes.queryParams.entityID</code> to <code>mnAddressBookNumber</code>.</p>
+</li>
+</ul>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_07_TRANS03.png" alt="jde 07 TRANS03" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>Assing the payload to a variable</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_07_TRANS04.png" alt="jde 07 TRANS04" width="521">
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_4_assign_the_transaction_id_to_bsfns">4. Assign the transaction ID to BSFNs</h5>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_07_TRANS05.png" alt="jde 07 TRANS05" width="521">
+</div>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_07_TRANS06.png" alt="jde 07 TRANS06" width="521">
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_5_close_transaction_with_commit_and_rollback">5. Close Transaction with Commit and Rollback</h5>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_07_TRANS07.png" alt="jde 07 TRANS07" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>Commit Transaction</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;jdeatina:transaction transactionOperation="Commit Transaction" doc:name="Transaction - Commit" config-ref="JDE_Atina_Config_Non_WS_Operation" target="commit"&gt;
+			&lt;jdeatina:input-parameters &gt;&lt;![CDATA[#[output application/java
+---
+{
+	"Transaction ID": vars.transaction."Transaction ID"
+}]]]&gt;&lt;/jdeatina:input-parameters&gt;
+		&lt;/jdeatina:transaction&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Rollback Transaction</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;error-handler &gt;
+			&lt;on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate"
+                when='#[vars.transaction."Transaction ID" != 0]'&gt;
+				&lt;jdeatina:transaction transactionOperation="Rollback Transaction" doc:name="Transaction - Rollback" doc:id="9dea4c9a-1158-4de6-bd52-b427cf2f244e" config-ref="JDE_Atina_Config_Non_WS_Operation" target="commit" &gt;
+					&lt;jdeatina:input-parameters &gt;&lt;![CDATA[#[output application/java
+---
+{
+	"Transaction ID": vars.transaction."Transaction ID"
+}]]]&gt;&lt;/jdeatina:input-parameters&gt;
+				&lt;/jdeatina:transaction&gt;
+			&lt;/on-error-propagate&gt;
+		&lt;/error-handler&gt;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_6_run_and_test_the_flow">6. Run and Test the Flow</h5>
+<div class="paragraph">
+<p>Start your Mule application using the <strong>Run</strong> button or <code>Run → Run Project</code>.</p>
+</div>
+<div class="paragraph">
+<p>Once deployed, you can test the endpoint using the <strong>API Console</strong> or an HTTP client such as <code>curl</code> or Postman.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_07_TRANS08.png" alt="jde 07 TRANS08" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>You should receive a <code>200 OK</code> response with the JSON format.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The BSFN operation is executed dynamically by the microservice. If the service is not available or misconfigured, you will receive a <code>500 Internal Server Error</code>.
+Always ensure your <code>.env</code> file and connector configuration are correctly set.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_submit_an_ube">Submit an <strong>UBE</strong></h3>
-
+<h3 id="_submit_an_ube_and_an_ube_state">Submit an <strong>UBE</strong> and an <strong>UBE State</strong></h3>
+<div class="paragraph">
+<p>Just like with Web Services, we start from a RAML contract to generate a MuleSoft endpoint that submits UBEs.</p>
 </div>
-<div class="sect2">
-<h3 id="_get_an_ube_state">Get an <strong>UBE State</strong></h3>
+<div class="paragraph">
+<p>In this example, we will invoke R01010Z-ZJDE0001 (Address Book Batch Upload).</p>
+</div>
+<div class="sect3">
+<h4 id="_raml_definition_4">RAML Definition</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">#%RAML 1.0
+title: ATINA JDE Connector
+version: v1
 
+/v1:
+...
+  /submitUBER01010Z:
+    post:
+      description: Sumbit UBE R01010Z-ZJDE0001 Address Book Batch Upload.
+      body:
+        application/json:
+          type: |
+            {
+              "type": "object",
+              "properties": {
+                "PO_ProcessMode": {
+                  "type": "string",
+                  "pattern": "^[0,1]{1}$",
+                  "displayName": "Process Mode",
+                  "description": "Blank = Proof mode  or 1 = Final mode"
+                },
+                "DataSelection_EDUS": {
+                  "type": "string",
+                  "displayName": "EDUS User Transaction"
+                }
+              }
+            }
+          example: |
+            {
+              "PO_ProcessMode": "0",
+              "DataSelection_EDUS": "JDE"
+            }
+      responses:
+        200:
+          description: OK
+          body:
+            application/json:
+              example: |
+                {
+                  "status": "UBE Submited",
+                  "jobId": "12345"
+                }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Based on this RAML, the following endpoint will be exposed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-http hljs" data-lang="http">POST /v1/submitUBER01010Z
+{
+  "PO_ProcessMode": "0",
+  "DataSelection_EDUS": "JDE"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_configure_the_ube_invocation">Configure the UBE Invocation</h4>
+<div class="paragraph">
+<p>Follow the initial steps described in Creating an HTTP Listener from RAML to generate the Mule Flow.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_08_UBE01.png" alt="jde 08 UBE01" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>To invoke a JDE UBE using the Atina JDE Connector:</p>
+</div>
+<div class="sect4">
+<h5 id="_1_add_the_submit_batch_process_operation">1. Add the Submit batch process Operation</h5>
+<div class="paragraph">
+<p>From the Mule Palette, drag the Submit batch process operation from the JDE Atina module into the flow.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Set a meaningful Display Name, e.g., Submit Batch Upload.</p>
+</li>
+<li>
+<p>Under Basic Settings, choose the proper connector configuration (e.g., JDE_Atina_Config_Non_WS_Operation).</p>
+</li>
+</ul>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_08_UBE02.png" alt="jde 08 UBE02" width="521">
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_2_set_the_ube_name_and_version">2. Set the UBE Name and Version</h5>
+<div class="paragraph">
+<p>In the General section, fill in the UBE Name and Version:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>UBE Name: R01010Z</p>
+</li>
+<li>
+<p>UBE Version: ZJDE0001</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This metadata is retrieved from the running microserver and cached in your project.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_08_UBE03.png" alt="jde 08 UBE03" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>This metadata is fetched directly from the running microserver instance and stored in your project metadata.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_3_set_the_input_parameters_3">3. Set the Input Parameters</h5>
+<div class="paragraph">
+<p>You can now configure the input parameters using DataWeave or the graphical mapping interface.</p>
+</div>
+<div class="paragraph">
+<p>Optional fields like Processing Options and Report Interconnect can override specific runtime values without affecting the entire version configuration.</p>
+</div>
+<div class="paragraph">
+<p>For reference on how to construct the Data Selection, see <a href="#data-selection">Appendix A - Defining Data Selection</a>.</p>
+</div>
+<div class="paragraph">
+<p>Click the fx icon next to <strong>Input parameters</strong>, and use either:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Manual expression:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
+	"Processing Options": {
+		cProofFinalFlag: payload.PO_ProcessMode
+	},
+	"Data Selection": "F0101Z2.EDUS = '" ++ (payload.DataSelection_EDUS as String) ++ "' AND F0101Z2.EDTN&gt;'001'"
+}</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Or graphical mapping: drag <code>attributes.queryParams.entityID</code> to <code>mnAddressBookNumber</code>.</p>
+</li>
+</ul>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_08_UBE04.png" alt="jde 08 UBE04" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>Assign the response to a variable (e.g., vars.ubeSubmited).</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_08_UBE05.png" alt="jde 08 UBE05" width="521">
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_4_add_the_get_batch_process_information_operation">4. Add the Get batch process information Operation</h5>
+<div class="paragraph">
+<p>From the <strong>Mule Palette</strong>, locate the <strong>JDE Atina</strong> module and drag the <code>Get batch process information</code> operation onto the flow canvas.</p>
+</div>
+<div class="paragraph">
+<p>Once the operation is placed, select it and review the configuration panel on the right.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Change the <strong>Display Name</strong> to something meaningful, such as <code>Get Batch Status</code>.</p>
+</li>
+<li>
+<p>In the <strong>Basic Settings</strong>, select the appropriate connector configuration (e.g. <code>JDE_Atina_Config_Non_WS_Operation</code>).</p>
+</li>
+</ul>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_08_UBE06.png" alt="jde 08 UBE06" width="521">
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_5_provide_the_job_id_parameter">5. Provide the Job ID Parameter</h5>
+<div class="paragraph">
+<p>This operation requires the JOB Number as input.</p>
+</div>
+<div class="paragraph">
+<p>You can now configure the input parameters using DataWeave or the graphical mapping interface.</p>
+</div>
+<div class="paragraph">
+<p>Click the fx icon next to <strong>Input parameters</strong>, and use either:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Manual expression:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">output application/java
+---
+{
+	"JOB Number": vars.ubeSubmited."JOB Number" as String
+}</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Or graphical mapping: drag <code>attributes.queryParams.entityID</code> to <code>mnAddressBookNumber</code>.</p>
+</li>
+</ul>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_08_UBE07.png" alt="jde 08 UBE07" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>Assing the response to a variable</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_08_UBE08.png" alt="jde 08 UBE08" width="521">
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_6_add_a_transform_message">6. Add a Transform Message</h5>
+<div class="paragraph">
+<p>After receiving the batch status response, you may want to format the output.</p>
+</div>
+<div class="paragraph">
+<p>From the <strong>Mule Palette</strong>, search for <strong>Transform Message</strong> and drag it next to the connector.
+This will allow you to format the output as needed, such as converting it to <code>application/json</code>.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_08_UBE09.png" alt="jde 08 UBE09" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>Here is a sample transformation using DataWeave:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-datweave hljs" data-lang="datweave">%dw 2.0
+output application/json
+---
+{
+	status: "UBE submite with ID " ++ (vars.ubeSubmited."JOB Number" as String) ,
+	jobId: vars.getStatus."JOB Status"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_7_run_and_test_the_flow">7. Run and Test the Flow</h5>
+<div class="paragraph">
+<p>Start your Mule application using the <strong>Run</strong> button or <code>Run → Run Project</code>.</p>
+</div>
+<div class="paragraph">
+<p>Once deployed, you can test the endpoint using the <strong>API Console</strong> or an HTTP client such as <code>curl</code> or Postman.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_08_UBE10.png" alt="jde 08 UBE10" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>You should receive a <code>200 OK</code> response with the JSON format.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_8_sample_output_in_jde">8 Sample Output in JDE</h5>
+<div class="paragraph">
+<p>These images show how the submitted UBE appears in JDE, including job logs and status:</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_08_UBE11.png" alt="jde 08 UBE11" width="521">
+</div>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_08_UBE12.png" alt="jde 08 UBE12" width="521">
+</div>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_08_UBE13.png" alt="jde 08 UBE13" width="521">
+</div>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_capture_mbf_outbound_events">Capture <strong>MBF Outbound Events</strong></h3>
 
+</div>
+<div class="sect2">
+<h3 id="_capture_mbf_outbound_events_2">Capture <strong>MBF Outbound Events</strong></h3>
+<div class="paragraph">
+<p>This use case demonstrates how to create a simple Mule flow to retrieve outbound events generated by an application that uses a Master Business Function (MBF) to trigger events.</p>
+</div>
+<div class="paragraph">
+<p>JDE Outbound Transactions require the configuration of a Processing Option that specifies the transaction type. Additionally, some entry-point programs allow you to define a specific version of the Master Business Function Processing Options program, which in turn allows you to configure a version of the Interoperability Processing Options program.</p>
+</div>
+<div class="paragraph">
+<p>The following example shows how to capture Customer Master records created through application P03013 (Work With Customer Master).</p>
+</div>
+<div class="paragraph">
+<p>For information on how to configure outbound events in JD Edwards, refer to the section <a href="#jde-events-config">JDEdwards Events Configuration</a> under <strong>Appendix B: JDE Configuration</strong>.</p>
+</div>
+<div class="paragraph">
+<p>To simplify testing, we will expose the flow via an HTTP endpoint rather than using a scheduled poller, allowing results to be easily displayed in the console.</p>
+</div>
+<div class="sect3">
+<h4 id="_raml_definition_5">RAML Definition</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">#%RAML 1.0
+title: ATINA JDE Connector
+version: v1
+
+/v1:
+...
+  /getCustomerCreated:
+    get:
+      description: Get Gustomer using outbound events.
+      queryParameters:
+        qtyRecords:
+          displayName: Qty Records to poll (Max. 100)
+          type: number
+          required: true
+      responses:
+        200:
+          description: OK
+          body:
+            application/json:
+              example: |
+                {
+                }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Based on this RAML, the following endpoint will be exposed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-http hljs" data-lang="http">GET /v1/getCustomerCreated?qtyRecords=1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This request will retrieve up to 1 outbound customer record created through MBF processing.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_raml_definition_6">RAML Definition</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">#%RAML 1.0
+title: ATINA JDE Connector
+version: v1
+
+/v1:
+...
+  /getCustomerCreated:
+    get:
+      description: Get Gustomer using outbound events.
+      queryParameters:
+        qtyRecords:
+          displayName: Qty Records to poll (Max. 100)
+          type: number
+          required: true
+      responses:
+        200:
+          description: OK
+          body:
+            application/json:
+              example: |
+                {
+                }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Based on this RAML, the following endpoint will be exposed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-http hljs" data-lang="http">GET /v1/getCustomerCreated?qtyRecords=1</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_configure_the_poll_events">Configure the Poll Events</h4>
+<div class="paragraph">
+<p>To invoke the Poll Events in your Mule flow, follow the same initial steps explained in the section <strong>Creating a HTTP Listener from RAML</strong>.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_09_EVE01.png" alt="jde 09 EVE01" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>To poll events using the Atina JDE Connector, follow the steps below:</p>
+</div>
+<div class="sect4">
+<h5 id="_1_add_the_connector_to_the_flow_3">1. Add the Connector to the Flow</h5>
+<div class="paragraph">
+<p>From the <strong>Mule Palette</strong>, locate the <strong>JDE Atina</strong> module and drag the <code>Poll events</code> operation onto the flow canvas.</p>
+</div>
+<div class="paragraph">
+<p>Once the operation is placed, select it and review the configuration panel on the right.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Change the <strong>Display Name</strong> to something meaningful, such as <code>Get Customers Created</code>.</p>
+</li>
+<li>
+<p>In the <strong>Basic Settings</strong>, select the appropriate connector configuration (e.g. <code>JDE_Atina_Config_Non_WS_Operation</code>).</p>
+</li>
+</ul>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_09_EVE02.png" alt="jde 09 EVE02" width="521">
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_2_set_the_input_parameters">2. Set the Input Parameters</h5>
+<div class="paragraph">
+<p>You can now configure the input parameters using DataWeave or the graphical mapping interface.</p>
+</div>
+<div class="paragraph">
+<p>Click the fx icon next to <strong>Input parameters</strong>, and use either:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Manual expression:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
+	"Transaction Code": 'JDECM',
+	"Last Batch Number (EDBT)": '',
+	"Max Qty Transactions to Read": attributes.queryParams.qtyRecords,
+	"Lock Events": 'N',
+	"Update Events": 'N',
+	"Match Interop Line Number": false
+}</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Or graphical mapping: drag <code>attributes.queryParams.entityID</code> to <code>mnAddressBookNumber</code>.</p>
+</li>
+</ul>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_09_EVE03.png" alt="jde 09 EVE03" width="521">
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_3_add_a_transform_message_optional">3. Add a Transform Message (Optional)</h5>
+<div class="paragraph">
+<p>After the poll event invocation, you can format the response.</p>
+</div>
+<div class="paragraph">
+<p>From the <strong>Mule Palette</strong>, search for <strong>Transform Message</strong> and drag it next to the connector.
+This will allow you to format the output as needed, such as converting it to <code>application/json</code>.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_09_EVE04.png" alt="jde 09 EVE04" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>Typical output for passthrough:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-datweave hljs" data-lang="datweave">%dw 2.0
+output application/json
+---
+read(payload."Event Transactions" as String,'application/xml')</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_4_run_and_test_the_flow">4. Run and Test the Flow</h5>
+<div class="paragraph">
+<p>Start your Mule application using the <strong>Run</strong> button or <code>Run → Run Project</code>.</p>
+</div>
+<div class="paragraph">
+<p>Once deployed, you can test the endpoint using the <strong>API Console</strong> or an HTTP client such as <code>curl</code> or Postman.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_09_EVE05.png" alt="jde 09 EVE05" width="521">
+</div>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_09_EVE06.png" alt="jde 09 EVE06" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>You should receive a <code>200 OK</code> response with the JSON format.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The Get Poll operation is executed dynamically by the microservice. If the service is not available or misconfigured, you will receive a <code>500 Internal Server Error</code>.
+Always ensure your <code>.env</code> file and connector configuration are correctly set.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -1637,159 +2514,42 @@ Always ensure your <code>.env</code> file and connector configuration are correc
 </div>
 </div>
 <div class="sect1">
-<h2 id="_appendix_a_required_jars_by_tools_release"><strong>Appendix A : Required JARs by Tools Release</strong></h2>
+<h2 id="_appendix_a_additional_information"><strong>Appendix A : Additional Information</strong></h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_tools_release_8_98">Tools Release 8.98</h3>
-
-</div>
-<div class="sect2">
-<h3 id="_tools_releases_9_1_prior_update_4">Tools Releases 9.1 prior Update 4</h3>
-
-</div>
-<div class="sect2">
-<h3 id="_tools_releases_9_1_update_4_and_later_updates">Tools Releases 9.1 Update 4 and later updates</h3>
-
-</div>
-<div class="sect2">
-<h3 id="_tools_releases_9_2_and_later">Tools Releases 9.2 and later</h3>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_appendix_b_additional_information"><strong>Appendix B : Additional Information</strong></h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_common_call_business_function_parameters">Common Call Business Function parameters</h3>
+<h3 id="data-selection">Defining Data Selection</h3>
 <div class="paragraph">
-<p>There is four common parameters used to invoke a Business Function:</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
-</colgroup>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Parameter</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Input/Output</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Type</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Description</strong></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">_BSFNThrowExceptionWithErrorsYN</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Input</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">STRING</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Values: Y, The flow will throw Runtime Exception with cause: org.mule.modules.jde.exceptions.CallBSFNException.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">_BSFNReturnCode</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Output</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">INTEGER</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Values: 0: Processed Correctly, 1: There is warnings, 2: There is errors.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">_BSFNNumberOfErrors</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Output</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">INTEGER</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of errors</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">_BSFNDetailErrors</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Output</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">STRING</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Detail of the error. It return a XML representation of CallObjectErrorList</p></td>
-</tr>
-</tbody>
-</table>
-<div class="paragraph">
-<p>Usage :</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_handling_errors">Handling Errors</h3>
-<div class="paragraph">
-<p>In Mule 4, all thrown errors  will be displayed in the <em>Type</em> selection of the Error Handler. Simple select the errors you want to handle, and process them.</p>
+<p>The <em>Selection</em> parameter is used to define the Data Selection criteria for a UBE (Universal Batch Engine).</p>
 </div>
 <div class="paragraph">
-<p>NOTE : All JD Edwards related errors will start with <em>JDE:</em></p>
+<p>This expression follows a syntax similar to the WHERE clause in SQL statements.</p>
 </div>
+<div class="sect3">
+<h4 id="_syntax">Syntax</h4>
 <div class="paragraph">
-<p><span class="image"><img src="images/demo_getting_started/image1_ctl.png" alt="image" width="563" height="446"></span></p>
-</div>
-<div class="paragraph">
-<p>This is an example of CallObjectErrorItem object:</p>
+<p>The general structure is:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;com.jdedwards.system.kernel.JdeNetCallObjectErrorList&gt;
-  &lt;mErrors&gt;
-    &lt;com.jdedwards.system.kernel.CallObjectErrorItem&gt;
-      &lt;mErrorId&gt;0&lt;/mErrorId&gt;
-      &lt;mDDItem&gt;1212&lt;/mDDItem&gt;
-      &lt;mLineNumber&gt;315&lt;/mLineNumber&gt;
-      &lt;mFileName&gt;b0100094.c&lt;/mFileName&gt;
-      &lt;mSubText&gt;&amp;#x0;&lt;/mSubText&gt;
-      &lt;mAlphaDescription&gt;Error: Address Number Already Assigned&lt;/mAlphaDescription&gt;
-      &lt;mGlossaryText&gt;CAUSE . . . .  The Address Number entered is already assigned.&amp;#xd;
-       RESOLUTION. .  Enter an Address Number that is not already assigned.&amp;#xd;
-      &lt;/mGlossaryText&gt;
-      &lt;mErrorLevel&gt;1&lt;/mErrorLevel&gt;
-    &lt;/com.jdedwards.system.kernel.CallObjectErrorItem&gt;
-    &lt;com.jdedwards.system.kernel.CallObjectErrorItem&gt;
-      &lt;mErrorId&gt;11&lt;/mErrorId&gt;
-      &lt;mDDItem&gt;018A&lt;/mDDItem&gt;
-      &lt;mLineNumber&gt;544&lt;/mLineNumber&gt;
-      &lt;mFileName&gt;rtk_ddvl.c&lt;/mFileName&gt;
-      &lt;mSubText&gt;Search Type|Y|01|ST&amp;#x0;&lt;/mSubText&gt;
-      &lt;mAlphaDescription&gt;Error: Y not found in User Defined Code 01 ST&amp;#x0;&lt;/mAlphaDescription&gt;
-      &lt;mGlossaryText&gt;CAUSE . . . .  Search Type Y was not found in User Defined Code&amp;#xd;
-               for system 01 , type ST&amp;#x0; .&amp;#xd;
-              RESOLUTION. .  Enter a valid Search Type or use Visual Assist to search&amp;#xd;
-               for a valid value.
-      &lt;/mGlossaryText&gt;
-      &lt;mErrorLevel&gt;1&lt;/mErrorLevel&gt;
-    &lt;/com.jdedwards.system.kernel.CallObjectErrorItem&gt;
-  &lt;/mErrors&gt;
-  &lt;mBsfnErrorCode&gt;2&lt;/mBsfnErrorCode&gt;
-&lt;/com.jdedwards.system.kernel.JdeNetCallObjectErrorList&gt;</code></pre>
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">table.column_name operator [value | table.column_name]</code></pre>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_defining_data_selection">Defining Data Selection</h3>
 <div class="ulist">
 <ul>
 <li>
-<p>The parameter <em>Selection</em> is used to define UBE Data Selection.</p>
+<p>table: Must be a valid JDE table name that belongs to the main view of the UBE.</p>
 </li>
 <li>
-<p>The sentence is similar to a WHERE clause of an SQL statement.</p>
+<p>column_name: Must be a JDE Data Item Alias (not the physical database column name).</p>
 </li>
 <li>
-<p>The <em>Selection</em> syntax is:</p>
-<div class="ulist">
-<ul>
-<li>
-<p>table.column_name operator [value|table.column_name];</p>
+<p>value: Can be a string or number literal, or another column.</p>
 </li>
 </ul>
 </div>
-</li>
-<li>
-<p>The table must be a JDE table that belongs to the main view of the UBE.</p>
-</li>
-<li>
-<p>Column Name must be a JDE Data Item Alias.</p>
-</li>
-<li>
-<p>The following operators can be used in the <em>Selection</em> :</p>
-</li>
-</ul>
 </div>
+<div class="sect3">
+<h4 id="_supported_operators">Supported Operators</h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 50%;">
@@ -1848,6 +2608,9 @@ Always ensure your <code>.env</code> file and connector configuration are correc
 </tr>
 </tbody>
 </table>
+</div>
+<div class="sect3">
+<h4 id="_additional_rules">Additional Rules</h4>
 <div class="ulist">
 <ul>
 <li>
@@ -1857,7 +2620,7 @@ Always ensure your <code>.env</code> file and connector configuration are correc
 <p>Literals can be String or Number</p>
 </li>
 <li>
-<p>The sentence can include the AND and/or the OR conditions</p>
+<p>You may combine conditions using AND and OR.</p>
 </li>
 <li>
 <p>To override the default precedence you need to use parenthesis as</p>
@@ -1867,7 +2630,7 @@ Always ensure your <code>.env</code> file and connector configuration are correc
 <p>C1 AND (C2 OR C3)</p>
 </li>
 <li>
-<p>The sentence only accept one level of Parenthesis.</p>
+<p>Use parentheses to override operator precedence, but only one level of nesting is allowed.</p>
 </li>
 </ul>
 </div>
@@ -1877,18 +2640,22 @@ Always ensure your <code>.env</code> file and connector configuration are correc
 <div class="paragraph">
 <p>For example, this is a valid sentence because the maximum level of Parenthesis opened is 1.</p>
 </div>
-<div class="paragraph">
-<p><em>C1 AND (C2 OR C3) AND (C4 OR C5)</em></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sql hljs" data-lang="sql">_C1 AND (C2 OR C3) AND (C4 OR C5)_</code></pre>
+</div>
 </div>
 <div class="paragraph">
 <p>otherwise, this is an invalid sentences because the maximum level of Parenthesis opened is 2.</p>
 </div>
-<div class="paragraph">
-<p>C1 AND (C2 OR (C3 AND C4))</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sql hljs" data-lang="sql">C1 AND (C2 OR (C3 AND C4))</code></pre>
 </div>
-<div class="paragraph">
-<p>Examples:</p>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_examples">Examples</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-sql hljs" data-lang="sql">F4211.KCOO = '00001' AND F4211.DOCO &gt; 10332
@@ -1903,13 +2670,122 @@ F4211.KCOO = '00001' AND F4211.DOCO NOT BETWEEN 1022 AND 400
 F4211.MCU = F4211.EMCU AND F4211.DOCO NOT BETWEEN 1022 AND 400</code></pre>
 </div>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+The parser for Selection enforces these constraints at runtime. If a sentence is invalid, you will receive an error from the JDE microservice.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_appendix_b_jde_configuration"><strong>Appendix B: JDE Configuration</strong></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="jde-events-config">JDEdwards Events configuration</h3>
+<div class="paragraph">
+<p>To enable JDE Outbound Transactions, you must configure Processing Options that specify the transaction type. In addition, certain entry programs allow you to assign a version of the Master Business Function (MBF) Processing Options program, which itself enables a version of the Interoperability Processing Options.</p>
+</div>
+<div class="paragraph">
+<p>This configuration is required, for example, to capture customers entered through the Customer Master (P03013) application.</p>
+</div>
+<div class="paragraph">
+<p>Follow the steps below to enable outbound interoperability:</p>
+</div>
+<div class="sect3">
+<h4 id="_1_configure_customer_master_mbf_po_p0100042">1. Configure 'Customer Master MBF - PO' (P0100042)</h4>
+<div class="paragraph">
+<p>Set up the version of the Customer Master MBF that includes outbound processing.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_10_JDE01.png" alt="jde 10 JDE01" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>In the Outbound tab, ensure that the Transaction Type is set (e.g., JDECM).</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_10_JDE02.png" alt="jde 10 JDE02" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>This enables outbound interoperability for Customer Master transactions.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_2_configure_customer_master_p03013">2. Configure 'Customer Master' (P03013)</h4>
+<div class="paragraph">
+<p>Next, assign the MBF version to be used when the Customer Master application runs.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_10_JDE03.png" alt="jde 10 JDE03" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>In the Versions tab, set the version of the MBF that was configured in the previous step (e.g., ZJDE0002).</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_10_JDE04.png" alt="jde 10 JDE04" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>This ensures the application will trigger the proper outbound process when adding a customer.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_3_configure_flat_file_cross_reference_p47002">3. Configure 'Flat File Cross-Reference' (P47002)</h4>
+<div class="paragraph">
+<p>Finally, inform JD Edwards which table is used to store outbound transactions.</p>
+</div>
+<div class="paragraph">
+<p>Using the Flat File Cross-Reference (P47002) program, add a record indicating the transaction type and corresponding table.
+Using <strong>Flat File Cross-Reference (P47002)</strong> form <strong>Work With Flat File Cross-Reference</strong> adds the following record:</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_10_JDE05.png" alt="jde 10 JDE05" width="521">
+</div>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_connector_images/jde_10_JDE06.png" alt="jde 10 JDE06" width="521">
+</div>
+</div>
+<div class="paragraph">
+<p>This tells the connector where to poll outbound events for the selected transaction (e.g., table F03012Z1 for JDECM).</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+For more outbound interoperability alternatives, refer to the official guide: JD Edwards EnterpriseOne Applications Interoperability Fundamentals Implementation Guide
+</td>
+</tr>
+</table>
+</div>
+</div>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-07-15 12:24:53 -0300
+Last updated 2025-07-17 18:31:27 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
