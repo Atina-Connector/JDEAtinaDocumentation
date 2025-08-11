@@ -1,20 +1,20 @@
-= JD Edwards™ Connector Release Notes
-:keywords: JDE, JDEdwards, EnterpriseOne, Oracle, JD Edwards
+= Atina JD Edwards™ Connector Release Notes
+:keywords: JDE, JDEdwards, EnterpriseOne, Oracle, JD Edwards, ATINA
 
-The ModusBox’s _JD Edwards Connector_ aims to provide integration from and to Oracle’s _JD Edwards™ EnterpriseOne™_.
-It leverages the power of Oracle's Java Dynamic Connector and XML List to provide interoperability with Oracle’s _JD Edwards EnterpriseOne™_ and external systems.
+The Atina’s _JD Edwards Connector_ aims to provide integration from and to Oracle’s _JD Edwards™ EnterpriseOne™_.
+It leverages the power of Oracle's Web Services, Java Dynamic Connector and XML List to provide interoperability with Oracle’s _JD Edwards EnterpriseOne™_ and external systems.
 
 link:/http://modusintegration.github.io/mule-connector-JDE/[JDE Connector user guide].
 
-== JD Edwards™ Connector 2.0.0 - June 20, 2019
+== JD Edwards™ Connector 3.0.0 - August 10, 2025
 
-=== Version 2.0.0 Compatibility
+=== Version 3.0.0 Compatibility
 
 [width="100%", cols=",", options="header"]
 |===
 |Software |Version
-|Mule Runtime |Mule 4.1 server Runtime or higher
-|Java |JDK 1.8
+|Mule Runtime |Mule 4.3 server Runtime or higher
+|Java |JDK 1.8, 11 and 17
 |AnyPoint Studio™ |AnyPoint Studio™ 7.x or higher
 |Oracle's JDE Enterprise Server|This connector works with Oracles's JDE Edwards Enterprise One Tool Release Tool Release 8.98 Update 4 onwards
 |===
@@ -30,14 +30,14 @@ link:/http://modusintegration.github.io/mule-connector-JDE/[JDE Connector user g
 * Invoke a UBE by name / version. It allows use of data selection using SQL syntax
 * Check for UBEs status
 * Poll MBF Events.
-* Poll EDI Events.
+* Invoke Web Services
 * Log out.
 
-=== Version 2.0.0 Fixed in this Release
+=== Version 3.0.0 Fixed in this Release
 
 None
 
-=== Version 2.0.0 Known Issues
+=== Version 3.0.0 Known Issues
 
 None
 
