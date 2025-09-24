@@ -693,7 +693,6 @@ In this step, you will create a configuration file that defines certain runtime 
 .Using the terminal, create the following file:
 [source,bash]
 ----
-mkdir -p /tmp/build_jde_libs
 nano /tmp/build_jde_libs/service-constants.properties
 ----
 
@@ -723,7 +722,7 @@ J4300010_PREFIX_1=
 You may use any text editor you prefer, such as `vim`, `gedit`, or `nano`.
 ====
 
-=== Step 3: Download the JDEAtinaOverrideServicesConstants Library
+=== Step 2: Download the JDEAtinaOverrideServicesConstants Library
 
 The system requires a supporting library to override default JD Edwards service properties with the values defined in your `service-constants.properties` file. This enables more flexible and file-driven configuration without modifying JDE directly.
 
@@ -741,7 +740,7 @@ Ensure this JAR file is located in the `/tmp/build_jde_libs/` folder along with 
 The system will automatically detect the presence of this library and use it to load web service configuration from the local file instead of querying JDE’s internal property store.
 ====
 
-=== Step 4: Download Docker Compose Files
+=== Step 3: Download Docker Compose Files
 
 Download the Docker Compose package:
 
@@ -758,7 +757,7 @@ Unzip it:
 7z e jd-docker-files-1.0.0.zip
 ----
 
-=== Step 5: Configure Environment Variables
+=== Step 4: Configure Environment Variables
 
 Edit the `.env` file and set the values according to your infrastructure:
 
@@ -908,7 +907,7 @@ The database name must match the Data Source name defined in the JDE OCM. Incorr
 
 ---
 
-=== Step 6: Initialize the Container
+=== Step 5: Initialize the Container
 
 Create the container without starting it:
 
@@ -917,7 +916,7 @@ Create the container without starting it:
 docker-compose -f docker-compose-dist.yml up --no-start
 ----
 
-=== Step 7: Copy Required Files into the Container
+=== Step 6: Copy Required Files into the Container
 
 Copy the configuration and JAR files that were previously generated:
 
@@ -926,12 +925,12 @@ Copy the configuration and JAR files that were previously generated:
 docker cp /tmp/build_jde_libs/service-constants.properties jd-atina-microserver:/var/jdeatinaserver
 docker cp /tmp/build_jde_libs/JPS920 jd-atina-microserver:/tmp/jde/config
 docker cp /tmp/build_jde_libs/JDV920 jd-atina-microserver:/tmp/jde/config
-docker cp JDEAtinaOverrideServicesConstants-1.0.0.jar jd-atina-microserver:/tmp/jde
+docker cp /tmp/build_jde_libsJDEAtinaOverrideServicesConstants-1.0.0.jar jd-atina-microserver:/tmp/jde
 docker cp /tmp/build_jde_libs/jde-lib-wrapped-1.0.0.jar jd-atina-microserver:/tmp/jde
 docker cp /tmp/build_jde_libs/StdWebService-1.0.0.jar jd-atina-microserver:/tmp/jde
 ----
 
-=== Step 8: Start the Container
+=== Step 7: Start the Container
 
 [source,bash]
 ----
@@ -985,11 +984,11 @@ docker exec -it jd-atina-microserver cat /tmp/jde/JDEConnectorServerLog/jde_atin
 [source,bash]
 ----
 ....
-19:27:06.713 [main] INFO  c.acqua.jde.jdeconnectorserver.JDEConnectorServer - Iniciando JDE Service Impl...
-19:27:06.891 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *-------------------------------------*
-19:27:06.892 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *   Starting JDE Microservice 1.0.0   *
-19:27:07.061 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *   JDE Microservice started!         *
-19:27:07.064 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *-------------------------------------*
+[main] INFO  c.acqua.jde.jdeconnectorserver.JDEConnectorServer - Iniciando JDE Service Impl...
+[main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *-------------------------------------*
+[main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *   Starting JDE Microservice 1.0.0   *
+[main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *   JDE Microservice started!         *
+[main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *-------------------------------------*
 ----
 
 or if you prefer you can run the following command:
@@ -1015,7 +1014,7 @@ This tool is a standalone Java application that performs the following test:
 [source,bash]
 ----
 curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-check-microservice/1.0.0/jd-check-microservice-1.0.0.jar \
-    --jd-check-microservice-1.0.0.jar
+    --output jd-check-microservice-1.0.0.jar
 ----
 
 === Step 2: Run the Test
