@@ -99,7 +99,7 @@ Default configuration
 
 
 [[GetBatchProcessInformation]]
-== Get Batch Process Information
+== Get UBE Job Status
 `<jdeatina:get-batch-process-information>`
 
 
@@ -123,7 +123,7 @@ Default configuration
 
 [%autowidth.spread]
 |===
-| *Type* a| Any
+| *Type* a| Object
 |===
 
 === For Configurations
@@ -162,7 +162,7 @@ Default configuration
 
 [%autowidth.spread]
 |===
-| *Type* a| Any
+| *Type* a| Object
 |===
 
 === For Configurations
@@ -201,7 +201,7 @@ Default configuration
 
 [%autowidth.spread]
 |===
-| *Type* a| Any
+| *Type* a| Object
 |===
 
 === For Configurations
@@ -278,7 +278,7 @@ Default configuration
 
 [%autowidth.spread]
 |===
-| *Type* a| Any
+| *Type* a| Object
 |===
 
 === For Configurations
@@ -288,12 +288,12 @@ Default configuration
 === Throws
 
 * JDEATINA:CONNECTIVITY {nbsp}
-* JDEATINA:ERROR_INVOKING_WS {nbsp}
+* JDEATINA:ERROR_POLL_EVENTS {nbsp}
 * JDEATINA:RETRY_EXHAUSTED {nbsp}
 
 
 [[SubmitBatchProcess]]
-== Submit Batch Process
+== Submit UBE
 `<jdeatina:submit-batch-process>`
 
 
@@ -317,7 +317,7 @@ Default configuration
 
 [%autowidth.spread]
 |===
-| *Type* a| Any
+| *Type* a| Object
 |===
 
 === For Configurations
