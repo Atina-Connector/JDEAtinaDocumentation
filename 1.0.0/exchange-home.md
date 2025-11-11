@@ -40,8 +40,8 @@ This 3rd party connector requires an additional fee to use with MuleSoft's Enter
 
 ## Additional References
   
-- [**Release Notes**](https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/3.0.0/apidocs/release-notes.html)
-- [**Connector Reference**](https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/3.0.0/apidocs/jde-atina-documentation.html)
+- [**Release Notes**](https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/apidocs/release-notes.html)
+- [**Connector Reference**](https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/apidocs/jde-atina-documentation.html)
 - [**Connector User Guide**](https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/)
 - [**MuleSoft's Connector Support Policy**](https://www.mulesoft.com/legal/versioning-back-support-policy#anypoint-connectors)
 - [**MuleSoft Forum:**](https://help.mulesoft.com/s/topic/0TO2T0000009a3bWAA/connectors)

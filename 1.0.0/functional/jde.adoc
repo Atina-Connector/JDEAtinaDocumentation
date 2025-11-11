@@ -125,7 +125,7 @@ Then, include the connector dependency in the <dependencies> section:
 <dependency>
     <groupId>com.atina-connection</groupId>
     <artifactId>mule-jde-atina-connector</artifactId>
-    <version>3.0.0</version>
+    <version>1.0.0</version>
     <classifier>mule-plugin</classifier>
 </dependency>
 ----
