@@ -6,14 +6,14 @@ It leverages the power of Oracle's Web Services, Java Dynamic Connector and XML 
 
 link:/https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/3.0.0/functional/jde.html[Atina JDE Connector user guide].
 
-== Atina JD Edwards™ Connector 3.0.0 - August 10, 2025
+== Atina JD Edwards™ Connector 1.0.0 - August 10, 2025
 
-=== Version 3.0.0 Compatibility
+=== Version 1.0.0 Compatibility
 
 [width="100%", cols=",", options="header"]
 |===
 |Software |Version
-|Mule Runtime |Mule 4.3 server Runtime or higher
+|Mule Runtime |Mule 4.4 server Runtime or higher
 |Java |JDK 1.8, 11 and 17
 |AnyPoint Studio™ |AnyPoint Studio™ 7.x or higher
 |Oracle's JDE Enterprise Server|This connector works with Oracles's JDE Edwards Enterprise One Tool Release Tool Release 8.98 Update 4 onwards
@@ -33,11 +33,11 @@ link:/https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/3.0.0/funct
 * Invoke Web Services
 * Log out.
 
-=== Version 3.0.0 Fixed in this Release
+=== Version 1.0.0 Fixed in this Release
 
 None
 
-=== Version 3.0.0 Known Issues
+=== Version 1.0.0 Known Issues
 
 None
 
