@@ -13,7 +13,7 @@ link:/https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/funct
 [width="100%", cols=",", options="header"]
 |===
 |Software |Version
-|Mule Runtime |Mule 4.4 server Runtime or higher
+|Mule Runtime |Mule 4.6 server Runtime or higher
 |Java |JDK 1.8, 11 and 17
 |AnyPoint Studio™ |AnyPoint Studio™ 7.x or higher
 |Oracle's JDE Enterprise Server|This connector works with Oracles's JDE Edwards Enterprise One Tool Release Tool Release 8.98 Update 4 onwards
