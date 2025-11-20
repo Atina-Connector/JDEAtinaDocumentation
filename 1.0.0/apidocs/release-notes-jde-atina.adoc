@@ -1,0 +1,51 @@
+= Atina JD Edwards™ Connector Release Notes
+:keywords: JDE, JDEdwards, EnterpriseOne, Oracle, JD Edwards, ATINA
+
+Atina JDE Microservices are Docker-based components designed to interact directly with Oracle’s JD Edwards EnterpriseOne™. They serve as a modern intermediary that improves upon legacy integration methods.
+
+== Atina JDE Edwards Microservice 1.0.0 - August 10, 2025
+
+=== Version 1.0.0 Compatibility
+
+[width="100%", cols=",", options="header"]
+|===
+|Software Component | Compatible Versions
+
+|Docker Runtime
+|Docker Engine 20.10+ or any OCI-compliant container runtime.
+Fully tested with Docker Desktop.
+
+|Oracle JD Edwards EnterpriseOne™
+|Oracle’s JD Edwards EnterpriseOne™ Tools Release 8.98 Update 4 and onwards. For Web Services we recomend Tool Release 9.2.x and onwards due limitations for previous versions.
+|===
+
+=== Features
+
+* Authentication methods, including Log in JD Edwards EnterpriseOne™ with JDE User Credentials or Tokens.
+
+* Invoke JD Edwards EnterpriseOne™ web services.
+
+* Submitting UBE by name and version processes, including data selection to filter records, override Processing Options and passing Report Interconnect (RI) parameter. The user can override the Batch Queue too.
+
+* Check a UBE call’s status asynchronously.
+
+* Invoking Business Functions (BSFNs) on the JDE server with parameters and Transaction Processing handling.
+
+* Polling for Master Business Function (MBF) events
+
+* Metadata APIs to retrieve lists of available web services, input/output parameters, and payload templates.
+
+* Monitoring APIs to view open connections and retrieve logs by transaction ID
+
+* Token APIs for creating and parsing tokens.
+
+=== Version 1.0.0 Fixed in this Release
+
+None
+
+=== Version 1.0.0 Known Issues
+
+None
+
+=== Support Resources
+* For more information on the Atina JDE Microservices - User Guide, visit its link:https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/functional/jdeatina.html[User Guide].
