@@ -586,6 +586,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel3">
 <li><a href="#_jde_atina_generate_configuration_files_tool_using_the_java_cli_application">JDE Atina Generate Configuration Files Tool - Using the Java CLI Application</a></li>
 <li><a href="#_jd_atina_generate_configuration_files_tool_using_the_docker_image">JD Atina Generate Configuration Files Tool - Using the Docker Image</a></li>
+<li><a href="#_notes_faq">Notes / FAQ</a></li>
 </ul>
 </li>
 <li><a href="#_jde_atina_generate_jars_files_tool"><strong>JDE Atina Generate Jars Files Tool</strong></a>
@@ -603,9 +604,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_jde_atina_microservices_installation"><strong>JDE Atina microservices - Installation</strong></a>
 <ul class="sectlevel2">
 <li><a href="#_step_1_create_the_service_constants_properties_file">Step 1: Create the service-constants.properties File</a></li>
-<li><a href="#_step_3_download_the_jdeatinaoverrideservicesconstants_library">Step 3: Download the JDEAtinaOverrideServicesConstants Library</a></li>
-<li><a href="#_step_4_download_docker_compose_files">Step 4: Download Docker Compose Files</a></li>
-<li><a href="#_step_5_configure_environment_variables">Step 5: Configure Environment Variables</a></li>
+<li><a href="#_step_2_download_the_jdeatinaoverrideservicesconstants_library">Step 2: Download the JDEAtinaOverrideServicesConstants Library</a></li>
+<li><a href="#_step_3_download_docker_compose_files">Step 3: Download Docker Compose Files</a></li>
+<li><a href="#_step_4_configure_environment_variables">Step 4: Configure Environment Variables</a></li>
 <li><a href="#_repository_configuration">Repository Configuration</a></li>
 <li><a href="#_jde_microserver_configuration">JDE Microserver Configuration</a></li>
 <li><a href="#_microservice_versioning">Microservice Versioning</a></li>
@@ -614,9 +615,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_external_library_configuration">External Library Configuration</a></li>
 <li><a href="#_time_zone_configuration">Time Zone Configuration</a></li>
 <li><a href="#_jde_enterprise_server_database_hosts">JDE Enterprise Server &amp; Database Hosts</a></li>
-<li><a href="#_step_6_initialize_the_container">Step 6: Initialize the Container</a></li>
-<li><a href="#_step_7_copy_required_files_into_the_container">Step 7: Copy Required Files into the Container</a></li>
-<li><a href="#_step_8_start_the_container">Step 8: Start the Container</a></li>
+<li><a href="#_step_5_initialize_the_container">Step 5: Initialize the Container</a></li>
+<li><a href="#_step_6_copy_required_files_into_the_container">Step 6: Copy Required Files into the Container</a></li>
+<li><a href="#_step_7_start_the_container">Step 7: Start the Container</a></li>
 </ul>
 </li>
 <li><a href="#_validating_the_microservice_deployment"><strong>Validating the Microservice Deployment</strong></a>
@@ -1435,6 +1436,67 @@ GENERATION SUCESSS
 <p>Adding manually "tnsnames.ora" for Oracle RDBMS based installations only.</p>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_notes_faq">Notes / FAQ</h4>
+<div class="paragraph">
+<p><strong>Migrating from the previous JDE connector</strong></p>
+</div>
+<div class="paragraph">
+<p>If you are migrating from the previous JDE connector and you already have valid configuration files (<code>jdbj.ini</code>, <code>jdeinterop.ini</code>, <code>jdelog.properties</code>, and <code>settings.xml</code>), you can reuse them. Regeneration is only required if you want to refresh values from Server Manager or if you are missing any files.</p>
+</div>
+<div class="paragraph">
+<p>To make this easier, the tool includes an option to generate an <strong>empty folder structure</strong> (one folder per JDE environment). Then you can copy your existing configuration files into the corresponding environment folder.</p>
+</div>
+<div class="paragraph">
+<p>Create the empty structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">java -jar jd-create-ini-files-1.0.0.jar -m Y -e [ENV]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">java -jar jd-create-ini-files-1.0.0.jar -m Y -e JDV920</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will generate the base structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">build_jde_libs
+      ├─ settings.xml
+      └─ JDV920</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Repeat the same step for any additional environments you want to include (for example, <code>JPS920</code>, <code>JPY920</code>, etc.):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">java -jar jd-create-ini-files-1.0.0.jar -m Y -e JPY920</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After generating the empty structure for each environment, copy the configuration files from your previous connector setup into the corresponding environment folder (one set of files per environment).</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/atina_images/migration.jpg" alt="migration" width="421">
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Using the microservice with multiple JDE environments</strong></p>
+</div>
+<div class="paragraph">
+<p>Yes, you can use the same microservice instance for multiple JDE environments, as long as all environments belong to the same JD Edwards Tools Release.
+Each environment must have its own configuration folder (e.g., <code>JDV920</code>, <code>JPS920</code>, etc.) under the same <code>build_jde_libs</code> path.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1679,8 +1741,7 @@ You&#8217;ll configure environment variables, initialize the container, and run 
 <div class="listingblock">
 <div class="title">Using the terminal, create the following file:</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">mkdir -p /tmp/build_jde_libs
-nano /tmp/build_jde_libs/service-constants.properties</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">nano /tmp/build_jde_libs/service-constants.properties</code></pre>
 </div>
 </div>
 <div class="listingblock">
@@ -1719,7 +1780,7 @@ J4300010_PREFIX_1=</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_3_download_the_jdeatinaoverrideservicesconstants_library">Step 3: Download the JDEAtinaOverrideServicesConstants Library</h3>
+<h3 id="_step_2_download_the_jdeatinaoverrideservicesconstants_library">Step 2: Download the JDEAtinaOverrideServicesConstants Library</h3>
 <div class="paragraph">
 <p>The system requires a supporting library to override default JD Edwards service properties with the values defined in your <code>service-constants.properties</code> file. This enables more flexible and file-driven configuration without modifying JDE directly.</p>
 </div>
@@ -1749,7 +1810,7 @@ J4300010_PREFIX_1=</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_4_download_docker_compose_files">Step 4: Download Docker Compose Files</h3>
+<h3 id="_step_3_download_docker_compose_files">Step 3: Download Docker Compose Files</h3>
 <div class="paragraph">
 <p>Download the Docker Compose package:</p>
 </div>
@@ -1769,7 +1830,7 @@ J4300010_PREFIX_1=</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_5_configure_environment_variables">Step 5: Configure Environment Variables</h3>
+<h3 id="_step_4_configure_environment_variables">Step 4: Configure Environment Variables</h3>
 <div class="paragraph">
 <p>Edit the <code>.env</code> file and set the values according to your infrastructure:</p>
 </div>
@@ -2042,7 +2103,7 @@ The database name must match the Data Source name defined in the JDE OCM. Incorr
 <hr>
 </div>
 <div class="sect2">
-<h3 id="_step_6_initialize_the_container">Step 6: Initialize the Container</h3>
+<h3 id="_step_5_initialize_the_container">Step 5: Initialize the Container</h3>
 <div class="paragraph">
 <p>Create the container without starting it:</p>
 </div>
@@ -2053,7 +2114,7 @@ The database name must match the Data Source name defined in the JDE OCM. Incorr
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_7_copy_required_files_into_the_container">Step 7: Copy Required Files into the Container</h3>
+<h3 id="_step_6_copy_required_files_into_the_container">Step 6: Copy Required Files into the Container</h3>
 <div class="paragraph">
 <p>Copy the configuration and JAR files that were previously generated:</p>
 </div>
@@ -2062,14 +2123,14 @@ The database name must match the Data Source name defined in the JDE OCM. Incorr
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker cp /tmp/build_jde_libs/service-constants.properties jd-atina-microserver:/var/jdeatinaserver
 docker cp /tmp/build_jde_libs/JPS920 jd-atina-microserver:/tmp/jde/config
 docker cp /tmp/build_jde_libs/JDV920 jd-atina-microserver:/tmp/jde/config
-docker cp JDEAtinaOverrideServicesConstants-1.0.0.jar jd-atina-microserver:/tmp/jde
+docker cp /tmp/build_jde_libsJDEAtinaOverrideServicesConstants-1.0.0.jar jd-atina-microserver:/tmp/jde
 docker cp /tmp/build_jde_libs/jde-lib-wrapped-1.0.0.jar jd-atina-microserver:/tmp/jde
 docker cp /tmp/build_jde_libs/StdWebService-1.0.0.jar jd-atina-microserver:/tmp/jde</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_8_start_the_container">Step 8: Start the Container</h3>
+<h3 id="_step_7_start_the_container">Step 7: Start the Container</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker-compose -f docker-compose-dist.yml start</code></pre>
@@ -2123,11 +2184,11 @@ ADDITIONAL SCRIPT:
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">....
-19:27:06.713 [main] INFO  c.acqua.jde.jdeconnectorserver.JDEConnectorServer - Iniciando JDE Service Impl...
-19:27:06.891 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *-------------------------------------*
-19:27:06.892 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *   Starting JDE Microservice 1.0.0   *
-19:27:07.061 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *   JDE Microservice started!         *
-19:27:07.064 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *-------------------------------------*</code></pre>
+[main] INFO  c.acqua.jde.jdeconnectorserver.JDEConnectorServer - Iniciando JDE Service Impl...
+[main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *-------------------------------------*
+[main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *   Starting JDE Microservice 1.0.0   *
+[main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *   JDE Microservice started!         *
+[main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *-------------------------------------*</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2168,7 +2229,7 @@ ADDITIONAL SCRIPT:
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-check-microservice/1.0.0/jd-check-microservice-1.0.0.jar \
-    --jd-check-microservice-1.0.0.jar</code></pre>
+    --output jd-check-microservice-1.0.0.jar</code></pre>
 </div>
 </div>
 </div>
@@ -2234,7 +2295,7 @@ User User: JDE in environment JDV920 with *ALL disconnected. Current session ID 
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-07-14 11:00:08 -0300
+Last updated 2025-12-15 19:46:56 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

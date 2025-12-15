@@ -504,6 +504,53 @@ build_jde_libs
 
 Adding manually "tnsnames.ora" for Oracle RDBMS based installations only.
 
+==== Notes / FAQ
+
+*Migrating from the previous JDE connector*
+
+If you are migrating from the previous JDE connector and you already have valid configuration files (`jdbj.ini`, `jdeinterop.ini`, `jdelog.properties`, and `settings.xml`), you can reuse them. Regeneration is only required if you want to refresh values from Server Manager or if you are missing any files.
+
+To make this easier, the tool includes an option to generate an *empty folder structure* (one folder per JDE environment). Then you can copy your existing configuration files into the corresponding environment folder.
+
+Create the empty structure:
+
+[source,bash]
+----
+java -jar jd-create-ini-files-1.0.0.jar -m Y -e [ENV]
+----
+
+Example:
+
+[source,bash]
+----
+java -jar jd-create-ini-files-1.0.0.jar -m Y -e JDV920
+----
+
+This will generate the base structure:
+
+[source,bash]
+----
+build_jde_libs
+      ├─ settings.xml
+      └─ JDV920
+----
+
+Repeat the same step for any additional environments you want to include (for example, `JPS920`, `JPY920`, etc.):
+
+[source,bash]
+----
+java -jar jd-create-ini-files-1.0.0.jar -m Y -e JPY920
+----
+
+After generating the empty structure for each environment, copy the configuration files from your previous connector setup into the corresponding environment folder (one set of files per environment).
+
+image::atina_images/migration.jpg[width=421,align=center]
+
+*Using the microservice with multiple JDE environments*
+
+Yes, you can use the same microservice instance for multiple JDE environments, as long as all environments belong to the same JD Edwards Tools Release.
+Each environment must have its own configuration folder (e.g., `JDV920`, `JPS920`, etc.) under the same `build_jde_libs` path.
+
 == *JDE Atina Generate Jars Files Tool*
 
 This tool packages the JD Edwards libraries into deployable JAR files that are required by the Atina JDE Microservice.
