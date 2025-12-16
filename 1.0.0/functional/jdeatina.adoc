@@ -1093,7 +1093,7 @@ Usage Exampes
 
 [source,bash]
 ----
-java -jar jd-check-microservice-1.0.0.jar -u JDE -w XXXXXX -e JDV920 -r *ALL -s localhost -p 8077 -m TestLoggindAndGetAddressBookWS -a 28
+java -jar jd-check-microservice-1.0.0.jar -u JDE -w **** -e JDV920 -r '*ALL' -s localhost -p 8077 -m TestLoggindAndGetAddressBookWS -a 1 -n "Financial/Distribution Company"
 ----
 
 === Step 3: Expected Output
