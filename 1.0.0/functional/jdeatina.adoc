@@ -396,12 +396,14 @@ See: https://maven.apache.org/download.cgi[Understanding jdeinterop.ini File].
 
 It will require openjdk 8 installed.
 
-Download the latest version (replace `1.0.0` with the latest one):
+For migration see notes below.
+
+Download the latest version (replace `1.0.1` with the latest one):
 
 [source,bash]
 ----
-curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-ini-files/1.0.0/jd-create-ini-files-1.0.0.jar \
---output jd-create-ini-files-1.0.0.jar
+curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-ini-files/1.0.1/jd-create-ini-files-1.0.1.jar \
+--output jd-create-ini-files-1.0.1.jar
 ----
 
 To check for the latest version, visit: https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-ini-files/[jd-create-ini-files repository]
@@ -410,14 +412,20 @@ Run the tool:
 
 [source,bash]
 ----
-java -jar jd-create-ini-files-1.0.0.jar [OPTIONS]
+java -jar jd-create-ini-files-1.0.1.jar [OPTIONS]
 
 OPTIONS:
     Options category 'startup':
       --debug [-d] (a string; default: "N")
         Debug Option
+      --folder-destination [-f] (a string; default: "/tmp/build_jde_libs")
+        Folder Destination
       --environment [-e] (a string; default: "")
         JDE Environment
+      --jde-release [-r] (a string; default: "92")
+        JDE E1 Tool Release
+      --migration [-m] (a string; default: "N")
+        Create Empty Folders on folder destination
       --password [-p] (a string; default: "")
         JDE Password for Enterprise Server Manager
       --server [-s] (a string; default: "")
@@ -430,13 +438,12 @@ Example
 
 [source,bash]
 ----
-java -jar jd-create-ini-files-1.0.0.jar \
+java -jar jd-create-ini-files-1.0.1.jar \
     -u jde_admin \
     -p XXXXXXX \
     -s http://server-manager:8999/manage \
     -e JDV920
 ----
-
 
 ==== JD Atina Generate Configuration Files Tool - Using the Docker Image
 
@@ -445,7 +452,7 @@ You can also run the same tool using Docker. This avoids needing Java locally.
 [source,bash]
 ----
 docker run --rm -v /tmp/build_jde_libs:/tmp/build_jde_libs/ \
-  -i --name jd-create-ini-files 92455890/jd-create-ini-files:1.0.0 \
+  -i --name jd-create-ini-files 92455890/jd-create-ini-files:1.0.1 \
   [user ex. jde_admin] \
   [password ex.secret123] \
   [environment ex JDV920] \
@@ -461,6 +468,9 @@ Folder : /tmp/build_jde_libs/JPS920 has been created
 Authenticating : http://server-manager:8999/manage
          Cookie: 044GXl43PnHkTe1L3AMc/siNkFOIoll+S4ngsdGnNkS7Qg=MDA5MDE1MDE1amRlX2FkbWluMTM0LjIwOS4yMTEuMjQ4MTM0LjIwOS4yMTEuMjQ4MTYzNzYwNzAxMTIzOQ==
 Getting Server Groups : http://server-manager:8999/manage
+Select HTML Group Instances for Enviroment:
+0 - default
+Q - Quit
 
 Select HTML Instance for environment JPS920:
 0 - alpha_db
@@ -516,7 +526,7 @@ Create the empty structure:
 
 [source,bash]
 ----
-java -jar jd-create-ini-files-1.0.0.jar -m Y -e [ENV]
+java -jar jd-create-ini-files-1.0.1.jar -m Y -e [ENV]
 ----
 
 Example:
