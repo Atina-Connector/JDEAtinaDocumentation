@@ -459,6 +459,18 @@ docker run --rm -v /tmp/build_jde_libs:/tmp/build_jde_libs/ \
   [server ex. http://server:8999/manage]
 ----
 
+Example:
+[source,bash]
+----
+docker run --rm -v /tmp/build_jde_libs:/tmp/build_jde_libs/ \
+  -i --name jd-create-ini-files 92455890/jd-create-ini-files:1.0.1 \
+  -d Y \
+  -u jde_admin \
+  -p ***** \
+  -s http://jde-alpha-dep:8999/manage \
+  -e JDV920
+----
+
 Reviewing Output
 
 [source,bash]

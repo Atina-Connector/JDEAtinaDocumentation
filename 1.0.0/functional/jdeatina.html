@@ -1390,6 +1390,20 @@ OPTIONS:
 </div>
 </div>
 <div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker run --rm -v /tmp/build_jde_libs:/tmp/build_jde_libs/ \
+  -i --name jd-create-ini-files 92455890/jd-create-ini-files:1.0.1 \
+  -d Y \
+  -u jde_admin \
+  -p ***** \
+  -s http://jde-alpha-dep:8999/manage \
+  -e JDV920</code></pre>
+</div>
+</div>
+<div class="paragraph">
 <p>Reviewing Output</p>
 </div>
 <div class="listingblock">
@@ -2307,7 +2321,7 @@ User User: JDE in environment JDV920 with *ALL disconnected. Current session ID 
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-12-16 17:38:26 -0300
+Last updated 2025-12-16 21:27:14 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
