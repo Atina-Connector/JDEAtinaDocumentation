@@ -101,14 +101,15 @@ image::images/S01.png[width=400,align=center]
 
 [cols="1,1,1,1",options="header"]
 |===
-| Execution | Create AB Using Web Services (ms) | Create AB Using BSFN - Atina (ms) | Create AB Using BSFN - PortX (ms)
+| Execution | Create AB WS (ms) | Create AB BSFN - Atina (ms) | Create AB BSFN - PortX (ms)
 
-| Exec 1 | 35902 | 792 | 106085
-| Exec 2 | 7057  | 518 | 603
-| Exec 3 | 5050  | 484 | 4723
+| Exec 1 | 28594 | 1497 | 12973
+| Exec 2 | 5585  | 522  | 631
+| Exec 3 | 5472  | 5152 | 628
 
-| *Average (ms)* | *16003.00* | *598.00* | *37137.00*
+| *Average (ms)* | *13217.00* | *2390.33* | *4744.00*
 |===
+
 
 === Cycle 2
 
@@ -116,18 +117,18 @@ image::images/S01.png[width=400,align=center]
 |===
 | Execution | Create AB Using Web Services (ms) | Create AB Using BSFN - Atina (ms) | Create AB Using BSFN - PortX (ms)
 
-| Exec 1  | 18823 | 534 | 109101
-| Exec 2  | 28820 | 763 | 606
-| Exec 3  | 8291  | 461 | 616
-| Exec 4  | 6100  | 475 | 611
-| Exec 5  | 19907 | 459 | 4824
-| Exec 6  | 6279  | 447 | 584
-| Exec 7  | 8237  | 454 | 591
-| Exec 8  | 6133  | 471 | 582
-| Exec 9  | 9243  | 466 | 638
-| Exec 10 | 6163  | 501 | 610
+|Exec 1  |13207 |526 |4981
+|Exec 2  |5529  |501 |706
+|Exec 3  |9947  |531 |639
+|Exec 4  |5403  |481 |618
+|Exec 5  |5733  |498 |707
+|Exec 6  |13037 |523 |5106
+|Exec 7  |5543  |481 |620
+|Exec 8  |5381  |535 |614
+|Exec 9  |5475  |480 |661
+|Exec 10 |5464  |456 |627
 
-| *Average (ms)* | *11799.60* | *503.10* | *11876.30*
+|Average (ms) |7471.9 |501.2 |1527.9
 |===
 
 == Scenario 03: Delete Address Book
@@ -444,7 +445,7 @@ The table below summarizes steady-state performance (Cycle 2 where available). L
 |449.2 |1046.3 |Atina |2.33x |Cycle 2
 
 |Create Address Book (MBF – Add)
-|503.1 |11876.3 |Atina |23.61x |Cycle 2; PortX run includes a very large outlier latency
+|501.2 |1527.9 |Atina |3.05x |Cycle 2; PortX run includes a couple of ~5s outlier latencies
 
 |Delete Address Book (MBF – Delete)
 |608.3 |792.5 |Atina |1.30x |Cycle 2 (using the Atina average without the extreme outlier)
@@ -467,5 +468,5 @@ The table below summarizes steady-state performance (Cycle 2 where available). L
 |Get Events
 |3110.3 |3105.0 |Tie |~1.00x |Cycle 2; PortX Exec 1 timed out and was excluded; remaining averages are essentially identical
 |===
-
+|Average (ms) |7471.9 |501.2 |1527.9
 Overall outcome: Atina is faster in most operations tested; PortX is faster in Submit UBE; Get Events is effectively a tie.
