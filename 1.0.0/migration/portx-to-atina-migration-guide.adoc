@@ -32,7 +32,7 @@ Migration consists of three main actions:
 
 == 1. Update the Mule XML header (namespaces and schema location)
 
-In each Mule XML file that uses the PortX connector:
+In each Mule XML file that uses the *PortX MuleSoft JDE Connector*:
 
 === 1.1 Replace the namespace prefix
 
@@ -61,6 +61,9 @@ http://www.mulesoft.org/schema/mule/jde http://www.mulesoft.org/schema/mule/jde/
 ----
 http://www.mulesoft.org/schema/mule/jdeatina http://www.mulesoft.org/schema/mule/jdeatina/current/mule-jdeatina.xsd
 ----
+
+image::images/A01.png[width=600,align=center]
+image::images/A02.png[width=600,align=center]
 
 == 2. Migrate operations (components) and attributes
 
@@ -91,9 +94,12 @@ The following table summarizes the most common operation-level changes.
 | Same element name, different prefix. Update child tags to `<jdeatina:input-parameters>`.
 |===
 
-=== 2.1 Example: Call/Invoke BSFN
+=== Call/Invoke BSFN
 
 *PortX (old):*
+
+image::images/B01.png[width=600,align=center]
+
 [source,xml]
 ----
 <jde:call-bsfn doc:name="Invoke BSFN Address Book" config-ref="JDE_Config" bsfnName="AddressBookMasterMBF">
@@ -110,6 +116,9 @@ The following table summarizes the most common operation-level changes.
 ----
 
 *Atina (new):*
+
+image::images/B02.png[width=600,align=center]
+
 [source,xml]
 ----
 <jdeatina:invoke-bsfn doc:name="Invoke BSFN Address Book" config-ref="JDE_Atina_Config_Non_WS_Operation" wsName="AddressBookMasterMBF">
@@ -125,14 +134,40 @@ The following table summarizes the most common operation-level changes.
 </jdeatina:invoke-bsfn>
 ----
 
-NOTE: Your *DataWeave payload inside CDATA does not need to change* for this migration. The change is purely the Mule component name/prefix and attribute (`bsfnName` → `wsName`).
+==== Change Summary — Call/Invoke BSFN (PortX → Atina)
 
-=== 2.2 Example: BSFN Transactions (Start/Commit/Rollback)
+* *Component*
+** `jde:call-bsfn` → `jdeatina:invoke-bsfn`
+
+* *BSFN name attribute*
+** `bsfnName="..."` → `wsName="..."`
+
+* *Input parameters tag*
+** `jde:input-parameters` → `jdeatina:input-parameters`
+** The DataWeave content inside CDATA usually remains the same (same payload structure), but may require adjustments for specific fields.
+
+* *Connector configuration reference (`config-ref`)*
+** May change depending on your naming convention:
+*** PortX example: `config-ref="JDE_Config"`
+*** Atina example: `config-ref="JDE_Atina_Config_Non_WS_Operation"`
+
+* *Important note (date fields)*
+** The DataWeave payload inside CDATA may require changes for date-like fields.
+** See <<migrating-date-fields,Appendix: Migrating Date Fields>>.
+
+=== BSFN Transactions (Start/Commit/Rollback)
 
 *PortX (old):*
+
+image::images/C01.png[width=600,align=center]
+
+==== Start Transaction
+
 [source,xml]
 ----
-<jde:bsfn-transaction operation="Start Transaction" config-ref="JDE_Config" target="transaction">
+<jde:bsfn-transaction
+    operation="Start Transaction"
+    config-ref="JDE_Config">
   <jde:input-parameters><![CDATA[#[output application/java
 ---
 {}]]]>
@@ -140,114 +175,309 @@ NOTE: Your *DataWeave payload inside CDATA does not need to change* for this mig
 </jde:bsfn-transaction>
 ----
 
-*Atina (new):*
+==== Commit Transaction
+
 [source,xml]
 ----
-<jdeatina:transaction transactionOperation="Start Transaction" config-ref="JDE_Atina_Config_Non_WS_Operation" target="transaction">
-  <jdeatina:input-parameters><![CDATA[#[output application/java
+<jde:bsfn-transaction
+    operation="Commit Transaction"
+    doc:name="Transaction - Commit"
+    config-ref="JDE_Config">
+    <jde:input-parameters><![CDATA[#[output application/java
 ---
-{}]]]>
-  </jdeatina:input-parameters>
+{
+	"Transaction ID": vars.transaction."Transaction ID"
+}]]]></jde:input-parameters>
+</jde:bsfn-transaction>
+----
+==== Rollback Transaction
+
+[source,xml]
+----
+<jde:bsfn-transaction
+    operation="Rollback Transaction"
+    doc:name="Transaction - Rollback"
+    config-ref="JDE_Config">
+    <jde:input-parameters><![CDATA[#[output application/java
+---
+{
+	"Transaction ID": vars.transaction."Transaction ID"
+}]]]></jde:input-parameters>
+</jde:bsfn-transaction>
+----
+
+*Atina (new):*
+
+image::images/C01.png[width=600,align=center]
+
+==== Start Transaction
+
+[source,xml]
+----
+<jdeatina:transaction
+    transactionOperation="Start Transaction"
+    doc:name="Transaction - Start"
+    config-ref="JDE_Atina_Config_Non_WS_Operation">
+    <jdeatina:input-parameters><![CDATA[#[output application/java
+---
+{
+}]]]></jdeatina:input-parameters>
 </jdeatina:transaction>
 ----
 
-=== 2.3 Example: Submit UBE (Batch Process)
+==== Commit Transaction
 
-*PortX (old):*
 [source,xml]
 ----
-<jde:submit-batch-process ubeName="R01010Z-ZJDE0001" config-ref="JDE_Config" target="ubeSubmited">
-  <jde:input-parameters><![CDATA[#[output application/json
+<jdeatina:transaction
+    transactionOperation="Commit Transaction"
+    doc:name="Transaction - Commit"
+    config-ref="JDE_Atina_Config_Non_WS_Operation">
+<jdeatina:input-parameters><![CDATA[#[output application/java
 ---
 {
-  "Report Interconnect": { "szEdiUserIdData": "ALA" },
-  "Processing Options": { "cProofFinalFlag": payload.PO_ProcessMode },
-  "Data Selection": "F0101Z2.EDUS = '" ++ (payload.DataSelection_EDUS as String) ++ "' AND F0101Z2.EDTN>'001'"
-}]]]>
-  </jde:input-parameters>
+	"Transaction ID": vars.transaction."Transaction ID"
+}]]]></jdeatina:input-parameters>
+</jdeatina:transaction>
+----
+==== Rollback Transaction
+
+[source,xml]
+----
+<jdeatina:transaction
+    transactionOperation="Rollback Transaction"
+    doc:name="Transaction - Rollback"
+    config-ref="JDE_Atina_Config_Non_WS_Operation">
+    <jdeatina:input-parameters><![CDATA[#[output application/java
+---
+{
+	"Transaction ID": vars.transaction."Transaction ID"
+}]]]></jdeatina:input-parameters>
+</jdeatina:transaction>
+----
+
+==== Change Summary — BSFN Transactions (Start / Commit / Rollback) (PortX → Atina)
+
+* *Component*
+** `jde:bsfn-transaction` → `jdeatina:transaction`
+
+* *Operation attribute*
+** `operation="Start Transaction|Commit Transaction|Rollback Transaction"` →
+`transactionOperation="Start Transaction|Commit Transaction|Rollback Transaction"`
+
+* *Input parameters tag*
+** `jde:input-parameters` → `jdeatina:input-parameters`
+** The DataWeave payload typically remains the same. For Commit/Rollback you still pass:
+*** `"Transaction ID": vars.transaction."Transaction ID"`
+
+* *Connector configuration reference (`config-ref`)*
+** May change depending on your naming convention:
+*** PortX example: `config-ref="JDE_Config"`
+*** Atina example: `config-ref="JDE_Atina_Config_Non_WS_Operation"`
+
+* *Transaction flow reminder*
+** Start returns a transaction object (store it in a variable, e.g. `vars.transaction`)
+** Commit/Rollback must reuse the same `"Transaction ID"` value from the Start response
+
+===  Submit UBE (Batch Process)
+
+*PortX (old):*
+
+image::images/D01.png[width=600,align=center]
+
+[source,xml]
+----
+<jde:submit-batch-process
+    ubeName="R01010Z-ZJDE0001"
+    doc:name="Submit Batch Upload"
+    config-ref="JDE_Config" >
+    <jde:input-parameters ><![CDATA[#[output application/json
+---
+{
+	"Report Interconnect": {
+		szEdiUserIdData: 'ALA'
+	},
+	"Data Selection": "F0101Z2.EDUS = '" ++ (payload.DataSelection_EDUS as String) ++ "' AND F0101Z2.EDTN>'001'"
+}]]]></jde:input-parameters>
 </jde:submit-batch-process>
 ----
 
 *Atina (new):*
+
+image::images/D01.png[width=600,align=center]
+
 [source,xml]
 ----
-<jdeatina:submit-batch-process ubeName="R01010Z-ZJDE0001" config-ref="JDE_Atina_Config_Non_WS_Operation" target="ubeSubmited">
-  <jdeatina:input-parameters><![CDATA[#[output application/json
+<jdeatina:submit-batch-process
+    ubeName="R01010Z-ZJDE0001"
+    config-ref="JDE_Atina_Config_Non_WS_Operation">
+    <jdeatina:input-parameters ><![CDATA[#[output application/json
 ---
 {
-  "Report Interconnect": { "szEdiUserIdData": "ALA" },
-  "Processing Options": { "cProofFinalFlag": payload.PO_ProcessMode },
-  "Data Selection": "F0101Z2.EDUS = '" ++ (payload.DataSelection_EDUS as String) ++ "' AND F0101Z2.EDTN>'001'"
-}]]]>
-  </jdeatina:input-parameters>
+	"Report Interconnect": {
+		szEdiUserIdData: 'ALA'
+	},
+	"Processing Options": {
+		cProofFinalFlag: payload.PO_ProcessMode
+	},
+	"Data Selection": "F0101Z2.EDUS = '" ++ (payload.DataSelection_EDUS as String) ++ "' AND F0101Z2.EDTN>'001'"
+}]]]></jdeatina:input-parameters>
 </jdeatina:submit-batch-process>
 ----
 
-=== 2.4 Example: Batch Process Information (Job Status)
+==== Change Summary — Submit UBE (Batch Process) (PortX → Atina)
+
+* *Component*
+** Same operation name, different prefix:
+*** `jde:submit-batch-process` → `jdeatina:submit-batch-process`
+
+* *UBE name attribute*
+** `ubeName="..."` remains the same (for example: `R01010Z-ZJDE0001`)
+
+* *Input parameters tag*
+** `jde:input-parameters` → `jdeatina:input-parameters`
+** The DataWeave payload structure can usually be reused.
+
+* *Payload differences (common in migrations)*
+** Atina examples often include an explicit `Processing Options` section (if your UBE requires it), e.g.:
+*** `"Processing Options": { cProofFinalFlag: payload.PO_ProcessMode }`
+** Keep your existing `Report Interconnect` and `Data Selection` logic as-is unless your UBE expects different keys.
+
+* *Connector configuration reference (`config-ref`)*
+** May change depending on your naming convention:
+*** PortX example: `config-ref="JDE_Config"`
+*** Atina example: `config-ref="JDE_Atina_Config_Non_WS_Operation"`
+
+=== Batch Process Information (Job Status)
 
 *PortX (old):*
+
+image::images/D01.png[width=600,align=center]
+
 [source,xml]
 ----
-<jde:get-batch-process-information ubeName="Get Job Status" config-ref="JDE_Config" target="getStatus">
-  <jde:input-parameters><![CDATA[#[output application/java
+<jde:get-batch-process-information
+    ubeName="Get Job Status"
+    doc:name="Get Batch Status"
+    config-ref="JDE_Config">
+    <jde:input-parameters ><![CDATA[#[output application/java
 ---
-{ "JOB Number": vars.ubeSubmited."JOB Number" as String }]]]>
-  </jde:input-parameters>
+{
+	"Job_ID": vars.ubeSubmited."_Job_ID" as String
+}]]]></jde:input-parameters>
 </jde:get-batch-process-information>
 ----
 
 *Atina (new):*
+
+image::images/D02.png[width=600,align=center]
+
 [source,xml]
 ----
-<jdeatina:get-batch-process-information operation="Get Job Status" config-ref="JDE_Atina_Config_Non_WS_Operation" target="getStatus">
-  <jdeatina:input-parameters><![CDATA[#[output application/java
+<jdeatina:get-batch-process-information
+    operation="Get Job Status"
+    doc:name="Get Batch Status"
+    config-ref="JDE_Atina_Config_Non_WS_Operation">
+    <jdeatina:input-parameters ><![CDATA[#[output application/java
 ---
-{ "JOB Number": vars.ubeSubmited."JOB Number" as String }]]]>
-  </jdeatina:input-parameters>
+{
+	"JOB Number": vars.ubeSubmited."JOB Number" as String
+}]]]></jdeatina:input-parameters>
 </jdeatina:get-batch-process-information>
 ----
 
-IMPORTANT: The attribute changes from `ubeName` (PortX) to `operation` (Atina).
+==== Change Summary — Batch Process Information (Get Job Status) (PortX → Atina)
 
-=== 2.5 Example: Poll Events
+* *Component*
+** `jde:get-batch-process-information` → `jdeatina:get-batch-process-information`
+
+* *Operation attribute*
+** PortX uses `ubeName="Get Job Status"`
+** Atina uses `operation="Get Job Status"`
+** Migration: `ubeName` → `operation`
+
+* *Input parameters tag*
+** `jde:input-parameters` → `jdeatina:input-parameters`
+
+* *Input payload key differences (verify in your flows)*
+** PortX example passes:
+*** `"Job_ID": vars.ubeSubmited."_Job_ID" as String`
+** Atina example passes:
+*** `"JOB Number": vars.ubeSubmited."JOB Number" as String`
+** Ensure the variable name and key match the actual output returned by your *Submit UBE* step in each connector version.
+
+* *Connector configuration reference (`config-ref`)*
+** May change depending on your naming convention:
+*** PortX example: `config-ref="JDE_Config"`
+*** Atina example: `config-ref="JDE_Atina_Config_Non_WS_Operation"`
+
+=== Poll Events
 
 *PortX (old):*
+
+image::images/E01.png[width=600,align=center]
+
 [source,xml]
 ----
-<jde:poll-events operation="Capture Event Transactions" doc:name="Get Customers Created" config-ref="JDE_Config">
-  <jde:input-parameters><![CDATA[#[output application/java
+<jde:poll-events
+    operation="Capture Event Transactions"
+    doc:name="Get Customers Created"
+    config-ref="JDE_Config">
+    <jde:input-parameters ><![CDATA[#[output application/java
 ---
 {
-  "Transaction Code": "JDECM",
-  "Last Batch Number (EDBT)": "",
-  "Max Qty Transactions to Read": attributes.queryParams.qtyRecords,
-  "Lock Events": "N",
-  "Update Events": "N",
-  "Match Interop Line Number": false
-}]]]>
-  </jde:input-parameters>
+	"Transaction Code": 'JDECM',
+	"Last Batch Number (EDBT)": '',
+	"Max Qty Transactions to Read": attributes.queryParams.qtyRecords,
+	"Lock Events": 'N',
+	"Update Events": 'N',
+	"Match Interop Line Number": false
+}]]]></jde:input-parameters>
 </jde:poll-events>
 ----
 
 *Atina (new):*
+
+image::images/E02.png[width=600,align=center]
+
 [source,xml]
 ----
-<jdeatina:poll-events operation="Capture Event Transactions" doc:name="Get Customers Created" config-ref="JDE_Atina_Config_Non_WS_Operation">
-  <jdeatina:input-parameters><![CDATA[#[output application/java
+<jdeatina:poll-events
+    operation="Capture Event Transactions"
+    doc:name="Get Customers Created"
+    config-ref="JDE_Atina_Config_Non_WS_Operation">
+    <jdeatina:input-parameters ><![CDATA[#[output application/java
 ---
 {
-  "Transaction Code": "JDECM",
-  "Last Batch Number (EDBT)": "",
-  "Max Qty Transactions to Read": attributes.queryParams.qtyRecords,
-  "Lock Events": "N",
-  "Update Events": "N",
-  "Match Interop Line Number": false
-}]]]>
-  </jdeatina:input-parameters>
+	"Transaction Code": 'JDECM',
+	"Last Batch Number (EDBT)": '',
+	"Max Qty Transactions to Read": attributes.queryParams.qtyRecords,
+	"Lock Events": 'N',
+	"Update Events": 'N',
+	"Match Interop Line Number": false
+}]]]></jdeatina:input-parameters>
 </jdeatina:poll-events>
 ----
 
-== 3. Connector configuration (`config-ref`) alignment
+==== Change Summary — Poll Events (PortX → Atina)
+
+* *Component*
+** Same operation name, different prefix:
+*** `jde:poll-events` → `jdeatina:poll-events`
+
+* *Operation attribute*
+** `operation="Capture Event Transactions"` remains the same
+
+* *Input parameters tag*
+** `jde:input-parameters` → `jdeatina:input-parameters`
+** The DataWeave payload can usually be reused without changes.
+
+* *Connector configuration reference (`config-ref`)*
+** May change depending on your naming convention:
+*** PortX example: `config-ref="JDE_Config"`
+*** Atina example: `config-ref="JDE_Atina_Config_Non_WS_Operation"`
+
+== Connector configuration (`config-ref`) alignment
 
 In the provided examples, the PortX flows reference `config-ref="JDE_Config"`, while the Atina flows reference `config-ref="JDE_Atina_Config_Non_WS_Operation"`.
 
@@ -259,24 +489,7 @@ You can migrate in either of these ways:
 
 Recommendation: choose one convention and apply it consistently across all flows to avoid confusion and mixed configurations.
 
-== 4. Suggested “search & replace” checklist
-
-You can speed up migration with controlled search/replace operations:
-
-. `xmlns:jde="http://www.mulesoft.org/schema/mule/jde"` → `xmlns:jdeatina="http://www.mulesoft.org/schema/mule/jdeatina"`
-. Replace the `schemaLocation` pair for JDE (see Section 1.2).
-. `<jde:call-bsfn` → `<jdeatina:invoke-bsfn`
-. `</jde:call-bsfn>` → `</jdeatina:invoke-bsfn>`
-. `bsfnName="` → `wsName="`
-. `<jde:bsfn-transaction` → `<jdeatina:transaction`
-. `operation="Start Transaction"` (in bsfn-transaction) → `transactionOperation="Start Transaction"` (in transaction)
-. `<jde:get-batch-process-information` → `<jdeatina:get-batch-process-information`
-. `ubeName="Get Job Status"` → `operation="Get Job Status"`
-. Replace `<jde:input-parameters` / `</jde:input-parameters>` with the `jdeatina` prefix in migrated components.
-
-TIP: Prefer file-by-file migration and run your unit/integration tests after each group (BSFN, UBE, Events) to isolate issues quickly.
-
-== 5. Validation and regression testing
+== Validation and regression testing
 
 After migrating:
 
@@ -288,13 +501,6 @@ After migrating:
   ** UBE submission + status poll
   ** Event polling (no update/lock first; then test update/lock behavior if used in production)
 
-== 6. Common pitfalls
-
-* *Namespace changed but schemaLocation not updated:* Studio may still mark tags as unknown.
-* *Only the opening tag updated:* Ensure closing tags and nested `<...:input-parameters>` prefixes are updated too.
-* *Attribute mismatch:* `bsfnName` and `ubeName` are not recognized by the Atina operations that expect `wsName` and `operation`.
-* *Config name mismatch:* Update `config-ref` or rename the config to match your flows.
-
 == Appendix A: Files used as reference
 
 The examples above were derived from these two equivalent demo flows (PortX vs Atina):
@@ -302,14 +508,10 @@ The examples above were derived from these two equivalent demo flows (PortX vs A
 * `demo-jde-process-portx-connector.xml`
 * `demo-jde-process-atina-connector.xml`
 
+[[migrating-date-fields]]
 == Migrating Date Fields in BSFN Inputs
 
 When migrating BSFN calls from the *PortX JDE Connector* to the *Atina JDE Connector*, pay special attention to *date fields*.
-
-Typical examples include:
-
-* Fields prefixed with `jd...` (for example `jdRequestedDate`, `jdOrderDate`)
-* Fields with explicit date names (for example `DateEntered`)
 
 Atina accepts more date representations than PortX, but *date values must still be migrated* to a compatible representation (do not keep legacy string formats such as `dd/MM/yyyy` unconverted).
 
