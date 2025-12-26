@@ -66,34 +66,7 @@ image::images/A01.png[width=600,align=center]
 image::images/A02.png[width=600,align=center]
 
 == 2. Migrate operations (components) and attributes
-
-The following table summarizes the most common operation-level changes.
-
-[cols="1,1,2",options="header"]
-|===
-| PortX component (old) | Atina component (new) | Notes
-
-| `<jde:call-bsfn ... bsfnName="...">`
-| `<jdeatina:invoke-bsfn ... wsName="...">`
-| Rename element and attribute: `bsfnName` → `wsName`. Also update child tags to `<jdeatina:input-parameters>`.
-
-| `<jde:bsfn-transaction operation="Start Transaction" ...>`
-| `<jdeatina:transaction transactionOperation="Start Transaction" ...>`
-| Rename element and attribute: `operation` → `transactionOperation`. Also update child tags to `<jdeatina:input-parameters>`.
-
-| `<jde:submit-batch-process ubeName="..." ...>`
-| `<jdeatina:submit-batch-process ubeName="..." ...>`
-| Same element name, different prefix. Update child tags to `<jdeatina:input-parameters>`.
-
-| `<jde:get-batch-process-information ubeName="Get Job Status" ...>`
-| `<jdeatina:get-batch-process-information operation="Get Job Status" ...>`
-| Attribute renamed: `ubeName` → `operation`. Update child tags to `<jdeatina:input-parameters>`.
-
-| `<jde:poll-events operation="Capture Event Transactions" ...>`
-| `<jdeatina:poll-events operation="Capture Event Transactions" ...>`
-| Same element name, different prefix. Update child tags to `<jdeatina:input-parameters>`.
-|===
-
+ 
 === Call/Invoke BSFN
 
 *PortX (old):*
