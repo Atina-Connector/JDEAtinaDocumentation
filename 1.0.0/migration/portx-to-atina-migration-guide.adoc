@@ -66,7 +66,7 @@ image::images/A01.png[width=600,align=center]
 image::images/A02.png[width=600,align=center]
 
 == 2. Migrate operations (components) and attributes
- 
+
 === Call/Invoke BSFN
 
 *PortX (old):*

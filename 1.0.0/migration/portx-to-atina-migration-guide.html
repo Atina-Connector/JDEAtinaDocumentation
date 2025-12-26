@@ -964,50 +964,6 @@ It focuses on the XML and operation-level changes required in Mule configuration
 <div class="sect1">
 <h2 id="_2_migrate_operations_components_and_attributes">6. 2. Migrate operations (components) and attributes</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>The following table summarizes the most common operation-level changes.</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">PortX component (old)</th>
-<th class="tableblock halign-left valign-top">Atina component (new)</th>
-<th class="tableblock halign-left valign-top">Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;jde:call-bsfn &#8230;&#8203; bsfnName="&#8230;&#8203;"&gt;</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;jdeatina:invoke-bsfn &#8230;&#8203; wsName="&#8230;&#8203;"&gt;</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Rename element and attribute: <code>bsfnName</code> → <code>wsName</code>. Also update child tags to <code>&lt;jdeatina:input-parameters&gt;</code>.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;jde:bsfn-transaction operation="Start Transaction" &#8230;&#8203;&gt;</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;jdeatina:transaction transactionOperation="Start Transaction" &#8230;&#8203;&gt;</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Rename element and attribute: <code>operation</code> → <code>transactionOperation</code>. Also update child tags to <code>&lt;jdeatina:input-parameters&gt;</code>.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;jde:submit-batch-process ubeName="&#8230;&#8203;" &#8230;&#8203;&gt;</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;jdeatina:submit-batch-process ubeName="&#8230;&#8203;" &#8230;&#8203;&gt;</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Same element name, different prefix. Update child tags to <code>&lt;jdeatina:input-parameters&gt;</code>.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;jde:get-batch-process-information ubeName="Get Job Status" &#8230;&#8203;&gt;</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;jdeatina:get-batch-process-information operation="Get Job Status" &#8230;&#8203;&gt;</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Attribute renamed: <code>ubeName</code> → <code>operation</code>. Update child tags to <code>&lt;jdeatina:input-parameters&gt;</code>.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;jde:poll-events operation="Capture Event Transactions" &#8230;&#8203;&gt;</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;jdeatina:poll-events operation="Capture Event Transactions" &#8230;&#8203;&gt;</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Same element name, different prefix. Update child tags to <code>&lt;jdeatina:input-parameters&gt;</code>.</p></td>
-</tr>
-</tbody>
-</table>
 <div class="sect2">
 <h3 id="_callinvoke_bsfn">6.1. Call/Invoke BSFN</h3>
 <div class="paragraph">
@@ -2055,7 +2011,7 @@ var d = now() as Date
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-12-24 11:03:30 -0300
+Last updated 2025-12-26 12:46:15 -0300
 </div>
 </div>
 <script>
