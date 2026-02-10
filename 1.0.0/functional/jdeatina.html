@@ -615,6 +615,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_external_library_configuration">External Library Configuration</a></li>
 <li><a href="#_time_zone_configuration">Time Zone Configuration</a></li>
 <li><a href="#_jde_enterprise_server_database_hosts">JDE Enterprise Server &amp; Database Hosts</a></li>
+<li><a href="#docker-extra-hosts">Hostname resolution inside the container (extra_hosts)</a></li>
 <li><a href="#_step_5_initialize_the_container">Step 5: Initialize the Container</a></li>
 <li><a href="#_step_6_copy_required_files_into_the_container">Step 6: Copy Required Files into the Container</a></li>
 <li><a href="#_step_7_start_the_container">Step 7: Start the Container</a></li>
@@ -1624,8 +1625,8 @@ It simplifies dependency management and ensures that all necessary classes are a
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-jar-files/1.0.0/jd-create-jar-files-1.0.0-jar-with-dependencies.jar \
---output jd-create-jar-files-1.0.0-jar-with-dependencies.jar</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-jar-files/1.0.1/jd-create-jar-files-1.0.1.jar \
+--output jd-create-jar-files-1.0.1.jar</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1633,7 +1634,7 @@ It simplifies dependency management and ensures that all necessary classes are a
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">Usage: java -jar jd-create-jar-files-1.0.0-jar-with-dependencies.jar OPTIONS
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">Usage: java -jar jd-create-jar-files-1.0.0.jar OPTIONS
 
 Options category 'startup':
   --accion [-a] (a string; default: "3")
@@ -2126,7 +2127,146 @@ The database name must match the Data Source name defined in the JDE OCM. Incorr
 </tr>
 </table>
 </div>
+</div>
+<div class="sect2">
+<h3 id="docker-extra-hosts">Hostname resolution inside the container (extra_hosts)</h3>
+<div class="paragraph">
+<p>In most JDE environments, the microservice must be able to reach <strong>multiple</strong> JDE Enterprise Servers and Database hosts depending on the target environment (DEV/QA/PROD).
+However, the <code>.env</code> file typically defines only <strong>one</strong> Enterprise Server and <strong>one</strong> Database endpoint, which is usually not enough when you need to access additional environments.</p>
+</div>
+<div class="paragraph">
+<p>As a best practice, keep the <code>.env</code> pointing to your <strong>primary</strong> environment (typically DEV / non-production), and use Docker Compose <code>extra_hosts</code> to add additional hostname-to-IP mappings for the remaining servers (QA/PROD, additional DB hosts, etc.).
+This ensures the container can reliably resolve and reach all required JDE hosts, even when Docker’s default DNS configuration cannot resolve internal names.</p>
+</div>
+<div class="paragraph">
+<p>To make hostname resolution deterministic, you can define static hostname-to-IP mappings using Docker Compose <code>extra_hosts</code>.
+This adds entries to the container&#8217;s <code>/etc/hosts</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Use this section if any of the following applies:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>You need the container to connect to <strong>multiple</strong> Enterprise Servers and/or DB hosts (DEV/QA/PROD).</p>
+</li>
+<li>
+<p>Your JDE Enterprise Server or Database hostnames are not resolvable from inside Docker.</p>
+</li>
+<li>
+<p>You prefer to keep using hostnames in configuration, but ensure they always map to the correct internal IP.</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_how_it_relates_to_the_env_variables">How it relates to the .env variables</h4>
+<div class="paragraph">
+<p>The following variables can point to an IP address <strong>or</strong> to a hostname:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>JDE_MICROSERVER_ENTERPRISE_SERVER_IP</code></p>
+</li>
+<li>
+<p><code>JDE_MICROSERVER_ENTERPRISE_DB_IP</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If you use hostnames (recommended for readability), <code>extra_hosts</code> ensures those names resolve correctly inside the container.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The <code>.env</code> should normally contain the Enterprise Server and Database values for your <strong>primary</strong> environment (typically DEV / non-production).
+Any additional Enterprise Servers and DB hosts required for other environments should be added via <code>extra_hosts</code>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_example_adding_extra_hosts_to_docker_compose">Example: adding extra_hosts to docker-compose</h4>
+<div class="paragraph">
+<p>Edit your <code>docker-compose.yml</code> (or <code>docker-compose-dist.yml</code>) and add the mappings under the microservice service:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">services:
+  jd-atina-microserver:
+    image: &lt;YOUR_IMAGE&gt;
+    # ...
+    extra_hosts:
+      # Enterprise Servers
+      - "JDE-QA-ENT:10.10.0.31"
+      - "JDE-PROD-ENT1:10.10.0.21"
+      - "JDE-PROD-ENT2:10.10.0.22"
+      # Database hosts
+      - "JDE-QA-DB:10.10.1.31"
+      - "JDE-PROD-DB:10.10.1.21"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then, in your <code>.env</code>, you may reference the <strong>primary</strong> environment hostnames, for example (DEV):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">JDE_MICROSERVER_ENTERPRISE_SERVER_NAME=JDE-DEV-ENT
+JDE_MICROSERVER_ENTERPRISE_SERVER_IP=10.10.0.11
+
+JDE_MICROSERVER_ENTERPRISE_DB_NAME=JDE-DEV-DB
+JDE_MICROSERVER_ENTERPRISE_DB_IP=10.10.1.11</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_apply_changes">Apply changes</h4>
+<div class="paragraph">
+<p>After updating <code>extra_hosts</code>, recreate or restart the container so the new mappings take effect:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker compose down
+docker compose up --no-start
+docker cp  [files]
+docker compose start</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If your organization provides working internal DNS for containers, you can alternatively configure Docker Compose <code>dns:</code> and <code>dns_search:</code>.
+However, <code>extra_hosts</code> is usually the simplest and most deterministic approach for on-prem JDE environments.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <hr>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_step_5_initialize_the_container">Step 5: Initialize the Container</h3>
@@ -2321,7 +2461,7 @@ User User: JDE in environment JDV920 with *ALL disconnected. Current session ID 
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-12-16 21:27:14 -0300
+Last updated 2026-02-10 14:27:32 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
