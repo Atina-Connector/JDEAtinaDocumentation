@@ -974,6 +974,91 @@ This section defines the network and database endpoints used by the microservice
 
 The database name must match the Data Source name defined in the JDE OCM. Incorrect names may lead to failed connections or incorrect environment targeting.
 
+[[docker-extra-hosts]]
+=== Hostname resolution inside the container (extra_hosts)
+
+In most JDE environments, the microservice must be able to reach *multiple* JDE Enterprise Servers and Database hosts depending on the target environment (DEV/QA/PROD).
+However, the `.env` file typically defines only *one* Enterprise Server and *one* Database endpoint, which is usually not enough when you need to access additional environments.
+
+As a best practice, keep the `.env` pointing to your *primary* environment (typically DEV / non-production), and use Docker Compose `extra_hosts` to add additional hostname-to-IP mappings for the remaining servers (QA/PROD, additional DB hosts, etc.).
+This ensures the container can reliably resolve and reach all required JDE hosts, even when Docker’s default DNS configuration cannot resolve internal names.
+
+To make hostname resolution deterministic, you can define static hostname-to-IP mappings using Docker Compose `extra_hosts`.
+This adds entries to the container's `/etc/hosts`.
+
+[NOTE]
+====
+Use this section if any of the following applies:
+
+* You need the container to connect to *multiple* Enterprise Servers and/or DB hosts (DEV/QA/PROD).
+* Your JDE Enterprise Server or Database hostnames are not resolvable from inside Docker.
+* You prefer to keep using hostnames in configuration, but ensure they always map to the correct internal IP.
+====
+
+==== How it relates to the .env variables
+
+The following variables can point to an IP address *or* to a hostname:
+
+* `JDE_MICROSERVER_ENTERPRISE_SERVER_IP`
+* `JDE_MICROSERVER_ENTERPRISE_DB_IP`
+
+If you use hostnames (recommended for readability), `extra_hosts` ensures those names resolve correctly inside the container.
+
+[IMPORTANT]
+====
+The `.env` should normally contain the Enterprise Server and Database values for your *primary* environment (typically DEV / non-production).
+Any additional Enterprise Servers and DB hosts required for other environments should be added via `extra_hosts`.
+====
+
+==== Example: adding extra_hosts to docker-compose
+
+Edit your `docker-compose.yml` (or `docker-compose-dist.yml`) and add the mappings under the microservice service:
+
+[source,yaml]
+----
+services:
+  jd-atina-microserver:
+    image: <YOUR_IMAGE>
+    # ...
+    extra_hosts:
+      # Enterprise Servers
+      - "JDE-QA-ENT:10.10.0.31"
+      - "JDE-PROD-ENT1:10.10.0.21"
+      - "JDE-PROD-ENT2:10.10.0.22"
+      # Database hosts
+      - "JDE-QA-DB:10.10.1.31"
+      - "JDE-PROD-DB:10.10.1.21"
+----
+
+Then, in your `.env`, you may reference the *primary* environment hostnames, for example (DEV):
+
+[source,properties]
+----
+JDE_MICROSERVER_ENTERPRISE_SERVER_NAME=JDE-DEV-ENT
+JDE_MICROSERVER_ENTERPRISE_SERVER_IP=10.10.0.11
+
+JDE_MICROSERVER_ENTERPRISE_DB_NAME=JDE-DEV-DB
+JDE_MICROSERVER_ENTERPRISE_DB_IP=10.10.1.11
+----
+
+==== Apply changes
+
+After updating `extra_hosts`, recreate or restart the container so the new mappings take effect:
+
+[source,bash]
+----
+docker compose down
+docker compose up --no-start
+docker cp  [files]
+docker compose start
+----
+
+[TIP]
+====
+If your organization provides working internal DNS for containers, you can alternatively configure Docker Compose `dns:` and `dns_search:`.
+However, `extra_hosts` is usually the simplest and most deterministic approach for on-prem JDE environments.
+====
+
 ---
 
 === Step 5: Initialize the Container
