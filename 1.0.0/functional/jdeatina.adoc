@@ -1053,6 +1053,8 @@ docker cp  [files]
 docker compose start
 ----
 
+See next Step: *Step 5: Initialize the Container*
+
 [TIP]
 ====
 If your organization provides working internal DNS for containers, you can alternatively configure Docker Compose `dns:` and `dns_search:`.
