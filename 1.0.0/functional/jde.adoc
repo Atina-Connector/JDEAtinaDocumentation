@@ -1320,3 +1320,83 @@ image::atina_connector_images/jde_10_JDE06.png[width=521,align=center]
 This tells the connector where to poll outbound events for the selected transaction (e.g., table F03012Z1 for JDECM).
 
 NOTE: For more outbound interoperability alternatives, refer to the official guide: JD Edwards EnterpriseOne Applications Interoperability Fundamentals Implementation Guide
+
+[[grpc-connectivity-check]]
+== Troubleshooting:
+
+=== gRPC connectivity check
+
+If you see *Timeout* errors (for example, `TimeoutException`) when calling the microservice, this usually indicates a *connectivity / reachability* issue between the client machine (e.g., Anypoint Studio dev machine) and the microservice endpoint (host + port).
+
+image::troubleshooting/Timeout.png[width=521,align=center]
+
+
+Before reviewing payloads or functional behavior, verify that the machine can reach the microservice gRPC port.
+
+==== 1) Confirm the configured endpoint
+
+Verify the values configured in your application/environment:
+
+* *Microservice Host / Name* (DNS name or IP)
+* *Microservice Port* (gRPC port)
+
+A wrong host or port will typically result in a timeout.
+
+==== 2) Check TCP reachability to the gRPC port
+
+gRPC runs over TCP (HTTP/2). The quickest validation is to confirm the target port is reachable.
+
+===== Windows (PowerShell)
+
+[source,powershell]
+----
+Test-NetConnection <MICROSERVICE_HOST> -Port <MICROSERVICE_PORT>
+----
+
+Expected result:
+
+* `TcpTestSucceeded : True`
+
+If the result is `False`, review routing, firewall rules, VPN, and proxy policies, or confirm the host/port values are correct.
+
+===== macOS / Linux
+
+[source,bash]
+----
+nc -vz <MICROSERVICE_HOST> <MICROSERVICE_PORT>
+----
+
+A successful connection indicates the port is reachable.
+
+==== 3) Optional: Validate gRPC response (application-level)
+
+If TCP connectivity succeeds but the application still fails, you can validate that the endpoint responds as *gRPC* (plaintext) using `grpcurl` (if available on the client machine):
+
+[source,bash]
+----
+grpcurl -vv -plaintext <MICROSERVICE_HOST>:<MICROSERVICE_PORT> list
+----
+
+If reflection is enabled, this will list available services. If reflection is not enabled, the command may fail even though gRPC is reachable; in that case, the TCP test above is still the primary connectivity indicator.
+
+==== 4) If the microservice runs in Docker on the same host
+
+Confirm the container is running and that the gRPC port is published:
+
+[source,bash]
+----
+docker ps
+----
+
+Review container logs:
+
+[source,bash]
+----
+docker logs <container_name> --tail 200
+----
+
+[NOTE]
+====
+If TCP connectivity fails from the client machine, the issue is *not* related to the payload.
+It must be solved by correcting the endpoint configuration (host/port) or by enabling network access (routing/firewall/VPN).
+====
