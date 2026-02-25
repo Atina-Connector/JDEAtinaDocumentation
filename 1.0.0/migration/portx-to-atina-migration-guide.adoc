@@ -79,6 +79,8 @@ image::images/B01.png[width=600,align=center]
   <jde:input-parameters><![CDATA[#[output application/json
 ---
 {
+  "_BSFNThrowExceptionWithErrorsYN": 'Y',
+  "_BSFNTransactionID": 0,
   cActionCode: "I",
   cSuppressErrorMessages: "1",
   szVersion: "ZJDE0001",
@@ -87,6 +89,8 @@ image::images/B01.png[width=600,align=center]
   </jde:input-parameters>
 </jde:call-bsfn>
 ----
+
+Remove all parameters that start with `_BSFN` as they are not required in Atina. The Atina connector handles exceptions and transactions differently, so you can omit these parameters when migrating.
 
 *Atina (new):*
 

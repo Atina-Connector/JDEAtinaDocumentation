@@ -1088,6 +1088,19 @@ docker cp /tmp/build_jde_libs/StdWebService-1.0.0.jar jd-atina-microserver:/tmp/
 
 === Step 7: Start the Container
 
+[IMPORTANT]
+====
+*Recommended:* Before starting the container, keep a backup copy of the generated configuration and JAR artifacts used by the microservice.
+
+If you later upgrade the microservice image, recreate the container, or reinstall on a new host, you will typically need these files again (both for rebuilding the JDE JARs and for reapplying the environment configuration).
+
+At minimum, back up:
+
+* Your `.env` file and `docker-compose-*.yml` files used for the deployment
+* Generated JDE configuration folders (for example `JPS*`, `JDV*`) and `.ini` / `.properties` files placed under `/tmp/jde` and '/tmp/jdebuild_jde_libs'
+* The generated JARs copied into the container (for example `jde-lib-wrapped-*.jar`, `StdWebService-*.jar`, and any override/constant JARs)
+====
+
 [source,bash]
 ----
 docker-compose -f docker-compose-dist.yml start
