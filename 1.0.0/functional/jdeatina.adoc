@@ -826,6 +826,8 @@ Unzip it:
 7z e jd-docker-files-1.0.0.zip
 ----
 
+See <<deployment-addendum>> for the v1.0.1 deployment changes.
+
 === Step 4: Configure Environment Variables
 
 Edit the `.env` file and set the values according to your infrastructure:
@@ -1098,6 +1100,7 @@ At minimum, back up:
 
 * Your `.env` file and `docker-compose-*.yml` files used for the deployment
 * Generated JDE configuration folders (for example `JPS*`, `JDV*`) and `.ini` / `.properties` files placed under `/tmp/jde` and '/tmp/jdebuild_jde_libs'
+* Generated JDE configuration folders (for example `JPS*`, `JDV*`) and `.ini` / `.properties` files placed under `/tmp/jde` and '/tmp/jdebuild_jde_libs'
 * The generated JARs copied into the container (for example `jde-lib-wrapped-*.jar`, `StdWebService-*.jar`, and any override/constant JARs)
 ====
 
@@ -1238,3 +1241,8 @@ Address Book Name: Financial/Distribution Company --
 User User: JDE in environment JDV920 with *ALL disconnected. Current session ID 0
 ------------------------------------------------------------------------
 ----
+// -------------------------------------------------
+// Appendix: Deployment Addendum (v1.0.1)
+// -------------------------------------------------
+[appendix]
+include::appendix-deployment-1.0.1.adoc[]

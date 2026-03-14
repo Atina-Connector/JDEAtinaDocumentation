@@ -628,6 +628,35 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_step_3_expected_output">Step 3: Expected Output</a></li>
 </ul>
 </li>
+<li><a href="#deployment-addendum">Appendix A: Appendix — Deployment Addendum (jd-docker-files v1.0.1)</a></li>
+<li><a href="#_a_what_changed_in_v1_0_1">1. A. What changed in v1.0.1</a>
+<ul class="sectlevel2">
+<li><a href="#_a_1_deployment_simplification_docker_volumes_instead_of_docker_cp">1.1. A.1 Deployment simplification (Docker volumes instead of <code>docker cp</code>)</a></li>
+<li><a href="#_a_2_support_for_external_etchosts_entries_file_based">1.2. A.2 Support for external <code>/etc/hosts</code> entries (file-based)</a></li>
+</ul>
+</li>
+<li><a href="#_b_download_the_updated_docker_files_bundle_v1_0_1">2. B. Download the updated docker files bundle (v1.0.1)</a></li>
+<li><a href="#_c_configuration_changes">3. C. Configuration changes</a>
+<ul class="sectlevel2">
+<li><a href="#_c_1_env_env_file_new_variable">3.1. C.1 <code>.env</code> / <code>--env-file</code> (new variable)</a></li>
+</ul>
+</li>
+<li><a href="#_d_docker_compose_changes_customer_facing">4. D. docker-compose changes (customer-facing)</a>
+<ul class="sectlevel2">
+<li><a href="#_d_1_force_platform_recommended">4.1. D.1 Force platform (recommended)</a></li>
+<li><a href="#_d_2_use_the_image_no_build">4.2. D.2 Use the image (no build)</a></li>
+<li><a href="#_d_3_mount_runtime_artifacts_via_volumes_replaces_docker_cp">4.3. D.3 Mount runtime artifacts via volumes (replaces <code>docker cp</code>)</a></li>
+</ul>
+</li>
+<li><a href="#_e_new_startup_command_recommended">5. E. New startup command (recommended)</a></li>
+<li><a href="#_f_file_based_etchosts_injection_extra_hosts_txt">6. F. File-based <code>/etc/hosts</code> injection (extra-hosts.txt)</a>
+<ul class="sectlevel2">
+<li><a href="#_f_1_how_it_works">6.1. F.1 How it works</a></li>
+<li><a href="#_f_2_docker_compose_configuration">6.2. F.2 docker-compose configuration</a></li>
+<li><a href="#_f_3_host_file_requirements_important">6.3. F.3 Host file requirements (important)</a></li>
+</ul>
+</li>
+<li><a href="#_g_recommended_improvement_optional_stable_filenames">7. G. Recommended improvement (optional): stable filenames</a></li>
 </ul>
 </div>
 </div>
@@ -1855,6 +1884,9 @@ J4300010_PREFIX_1=</code></pre>
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">7z e jd-docker-files-1.0.0.zip</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>See <a href="#deployment-addendum">Appendix — Deployment Addendum (jd-docker-files v1.0.1)</a> for the v1.0.1 deployment changes.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_step_4_configure_environment_variables">Step 4: Configure Environment Variables</h3>
@@ -2300,6 +2332,42 @@ docker cp /tmp/build_jde_libs/StdWebService-1.0.0.jar jd-atina-microserver:/tmp/
 </div>
 <div class="sect2">
 <h3 id="_step_7_start_the_container">Step 7: Start the Container</h3>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><strong>Recommended:</strong> Before starting the container, keep a backup copy of the generated configuration and JAR artifacts used by the microservice.</p>
+</div>
+<div class="paragraph">
+<p>If you later upgrade the microservice image, recreate the container, or reinstall on a new host, you will typically need these files again (both for rebuilding the JDE JARs and for reapplying the environment configuration).</p>
+</div>
+<div class="paragraph">
+<p>At minimum, back up:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Your <code>.env</code> file and <code>docker-compose-*.yml</code> files used for the deployment</p>
+</li>
+<li>
+<p>Generated JDE configuration folders (for example <code>JPS*</code>, <code>JDV*</code>) and <code>.ini</code> / <code>.properties</code> files placed under <code>/tmp/jde</code> and '/tmp/jdebuild_jde_libs'</p>
+</li>
+<li>
+<p>Generated JDE configuration folders (for example <code>JPS*</code>, <code>JDV*</code>) and <code>.ini</code> / <code>.properties</code> files placed under <code>/tmp/jde</code> and '/tmp/jdebuild_jde_libs'</p>
+</li>
+<li>
+<p>The generated JARs copied into the container (for example <code>jde-lib-wrapped-<strong>.jar</code>, <code>StdWebService-</strong>.jar</code>, and any override/constant JARs)</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker-compose -f docker-compose-dist.yml start</code></pre>
@@ -2461,10 +2529,303 @@ User User: JDE in environment JDV920 with *ALL disconnected. Current session ID 
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="deployment-addendum">Appendix A: Appendix — Deployment Addendum (jd-docker-files v1.0.1)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This addendum documents the deployment changes introduced in <strong>jd-docker-files v1.0.1</strong> and the microserver image <strong>92455890/jd-atina-microserver:1.0.1</strong>.</p>
+</div>
+<div class="paragraph">
+<p>It is intended to be applied on top of the main installation guide <strong>without modifying the core document</strong>.</p>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_a_what_changed_in_v1_0_1">1. A. What changed in v1.0.1</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_a_1_deployment_simplification_docker_volumes_instead_of_docker_cp">1.1. A.1 Deployment simplification (Docker volumes instead of <code>docker cp</code>)</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>The deployment flow is simplified by replacing multiple <code>docker cp</code> commands with <strong>read-only Docker volume mounts</strong>.</p>
+</li>
+<li>
+<p>This makes deployments more reliable, reproducible, and fully compatible with container recreation (<code>--force-recreate</code>) without losing copied files.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Removed the need to copy files into the container before startup:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>JDE environment folders (e.g., <code>JDV920</code>, <code>JPS920</code>)</p>
+</li>
+<li>
+<p>JDE library JARs (e.g., <code>jde-lib-wrapped-<strong>.jar</code>, <code>StdWebService-</strong>.jar</code>, <code>JDEAtinaOverrideServicesConstants-*.jar</code>)</p>
+</li>
+<li>
+<p><code>service-constants.properties</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Important:</strong> Customer-facing compose files should use <strong><code>image:</code> only</strong> (no <code>build:</code> section).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_a_2_support_for_external_etchosts_entries_file_based">1.2. A.2 Support for external <code>/etc/hosts</code> entries (file-based)</h3>
+<div class="paragraph">
+<p>You can now inject multiple host mappings into the container’s <code>/etc/hosts</code> using a mounted file, instead of relying on a fixed set of environment variables or manually editing the container.</p>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_b_download_the_updated_docker_files_bundle_v1_0_1">2. B. Download the updated docker files bundle (v1.0.1)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If your main guide currently references v1.0.0, update it to v1.0.1.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl -L "https://jfrog.atina-connection.com/artifactory/libs-release/com/atina/jd-docker-files/1.0.1/jd-docker-files-1.0.1.zip" \
+  --output jd-docker-files-1.0.1.zip
+
+unzip -o jd-docker-files-1.0.1.zip</code></pre>
+</div>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_c_configuration_changes">3. C. Configuration changes</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_c_1_env_env_file_new_variable">3.1. C.1 <code>.env</code> / <code>--env-file</code> (new variable)</h3>
+<div class="paragraph">
+<p>Add the base folder that contains the runtime artifacts mounted into the container:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># JDE_LIBS_ROOT: Base folder that contains the runtime artifacts mounted into the container.
+#
+# Expected contents:
+# - Properties:
+#   - service-constants.properties
+#
+# - JAR files:
+#   - JDEAtinaOverrideServicesConstants-1.0.0.jar
+#   - StdWebService-1.0.0.jar
+#   - jde-lib-wrapped-1.0.0.jar
+#
+# - JDE environment/config folders:
+#   - JDV920/
+#   - JPS920/
+#   - (and any other environments you use)
+#
+JDE_LIBS_ROOT=/tmp/build_jde_libs</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you will use file-based host injection, also add:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># Host path to the hosts file (on the VM)
+HOST_EXTRA_HOSTS_FILE=/opt/jde/config/extra-hosts.txt</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Notes:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>JDE_LIBS_ROOT</code> is used by Docker Compose for <strong>path interpolation</strong> (e.g., in <code>volumes:</code>). It does not need to be set under <code>environment:</code> unless your application explicitly reads it at runtime.</p>
+</li>
+<li>
+<p>Ensure your env file contains only valid <code>KEY=VALUE</code> lines (remove any stray lines such as <code>JDE-ALPHA-ENT</code> without <code>=</code>).</p>
+</li>
+</ul>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_d_docker_compose_changes_customer_facing">4. D. docker-compose changes (customer-facing)</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_d_1_force_platform_recommended">4.1. D.1 Force platform (recommended)</h3>
+<div class="paragraph">
+<p>Because the runtime uses x86_64 components, force amd64 to avoid architecture issues:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">services:
+  jd-atina-microserver:
+    platform: linux/amd64</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_d_2_use_the_image_no_build">4.2. D.2 Use the image (no build)</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">services:
+  jd-atina-microserver:
+    image: 92455890/jd-atina-microserver:1.0.1</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_d_3_mount_runtime_artifacts_via_volumes_replaces_docker_cp">4.3. D.3 Mount runtime artifacts via volumes (replaces <code>docker cp</code>)</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">services:
+  jd-atina-microserver:
+    volumes:
+      # JDE env folders (must include jdbj.ini inside each env folder)
+      - ${JDE_LIBS_ROOT}/JDV920:/tmp/jde/config/JDV920:ro
+      - ${JDE_LIBS_ROOT}/JPS920:/tmp/jde/config/JPS920:ro
+
+      # JARs
+      - ${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar:/tmp/jde/jde-lib-wrapped-1.0.0.jar:ro
+      - ${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar:/tmp/jde/StdWebService-1.0.0.jar:ro
+      - ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar:/tmp/jde/JDEAtinaOverrideServicesConstants-1.0.0.jar:ro
+
+      # Properties
+      - ${JDE_LIBS_ROOT}/service-constants.properties:/var/jdeatinaserver/service-constants.properties:ro</code></pre>
+</div>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_e_new_startup_command_recommended">5. E. New startup command (recommended)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can now start (or restart) the microserver with a single command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker-compose --env-file .env-linux up -d --force-recreate</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Use the <strong>same</strong> docker-compose YAML and the <strong>same</strong> env file you used before — just add <code>--force-recreate</code>.</p>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_f_file_based_etchosts_injection_extra_hosts_txt">6. F. File-based <code>/etc/hosts</code> injection (extra-hosts.txt)</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_f_1_how_it_works">6.1. F.1 How it works</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Mount a hosts file into the container at: <code>/tmp/extra-hosts.txt</code></p>
+</li>
+<li>
+<p>Set the environment variable: <code>JDE_EXTRA_HOSTS_FILE=/tmp/extra-hosts.txt</code></p>
+</li>
+<li>
+<p>At startup, the microserver reads the file and appends the entries to <code>/etc/hosts</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_f_2_docker_compose_configuration">6.2. F.2 docker-compose configuration</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">services:
+  jd-atina-microserver:
+    volumes:
+      - ${HOST_EXTRA_HOSTS_FILE}:/tmp/extra-hosts.txt:ro
+    environment:
+      JDE_EXTRA_HOSTS_FILE: /tmp/extra-hosts.txt</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_f_3_host_file_requirements_important">6.3. F.3 Host file requirements (important)</h3>
+<div class="paragraph">
+<p>Create on the VM (example path):</p>
+</div>
+<div class="paragraph">
+<p><code>/opt/jde/config/extra-hosts.txt</code></p>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text"># IP            HOSTNAME
+138.91.73.161   JDE-ALPHA-ENT
+65.52.119.187   JDE-ALPHA-SQL
+10.0.0.8        ORCLPROD1
+10.0.0.6        ORCLPROD
+# END HOSTS</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Important:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The file must use <strong>Unix line endings (LF)</strong> (not Windows CRLF).</p>
+</li>
+<li>
+<p>Keep <code># END HOSTS</code> at the end and ensure the file ends with a final newline.</p>
+</li>
+</ul>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_g_recommended_improvement_optional_stable_filenames">7. G. Recommended improvement (optional): stable filenames</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To avoid updating <code>docker-compose.yml</code> when versions change, use stable filenames (symlinks) on the host:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">ln -sf ${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar ${JDE_LIBS_ROOT}/jde-lib-wrapped.jar
+ln -sf ${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar ${JDE_LIBS_ROOT}/StdWebService.jar
+ln -sf ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants.jar</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then mount the stable names instead:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">services:
+  jd-atina-microserver:
+    volumes:
+      - ${JDE_LIBS_ROOT}/jde-lib-wrapped.jar:/tmp/jde/jde-lib-wrapped.jar:ro
+      - ${JDE_LIBS_ROOT}/StdWebService.jar:/tmp/jde/StdWebService.jar:ro
+      - ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants.jar:/tmp/jde/JDEAtinaOverrideServicesConstants.jar:ro</code></pre>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-02-10 14:40:01 -0300
+Last updated 2026-03-14 17:46:20 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

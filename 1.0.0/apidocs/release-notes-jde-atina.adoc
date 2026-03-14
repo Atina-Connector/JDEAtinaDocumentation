@@ -3,6 +3,55 @@
 
 Atina JDE Microservices are Docker-based components designed to interact directly with Oracle’s JD Edwards EnterpriseOne™. They serve as a modern intermediary that improves upon legacy integration methods.
 
+== Atina JDE Edwards Microservice 1.0.1 - March 8, 2026
+
+=== Version 1.0.1 Fixed in this Release
+
+==== 1. Kernel Recycling
+
+We added an **optional kernel recycling step** to the cleanup flow to help mitigate scenarios where JDE Enterprise Server resources are not released correctly (for example, when CallObject kernels become stuck/zombie and prevent proper recycling).
+
+This feature allows the microservice to trigger recycling as part of the cleanup process, helping the server free up kernels and restore capacity.
+
+Enable/disable via the Atina microservice Docker `.env` file:
+```env
+KERNEL_RECICLYING=true
+```
+
+	•	true: kernel recycling is executed during cleanup
+	•	false (or not set): recycling is skipped (default behavior)
+
+When to use
+
+•	Intermittent COSE#1000 / “Unable to obtain an environment”
+•	Kernel exhaustion or zombie CallObject kernel symptoms
+•	Temporary mitigation while investigating the root cause
+
+
+```env
+KERNEL_RECICLYING_BY_USER=true
+```
+
+When to use:
+
+•	KERNEL_RECICLYING is true
+•	Recycling should only be triggered by user logoff rather than automatically during every cleanup cycle.
+
+Notes / Recommendation
+
+This is intended as a workaround/mitigation, not a permanent fix. If the underlying issue is caused by custom BSFNs leaving resources open (e.g., “OPEN TABLE NOT CLOSED”), that custom code should still be corrected to prevent leaks.
+
+Deployment
+After updating the .env, restart/redeploy the container for the change to take effect.
+
+```env
+SESSION_EXPIRATION_TIME=5
+```
+
+When to use:
+
+•	Enable this setting to have the microservice automatically log off users after a specified minutes of inactivity, helping to free up resources and prevent stale sessions.
+
 == Atina JDE Edwards Microservice 1.0.0 - August 10, 2025
 
 === Version 1.0.0 Compatibility

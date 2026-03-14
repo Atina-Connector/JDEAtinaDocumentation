@@ -5,8 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
-<meta name="keywords" content="JDE, JDEdwards, EnterpriseOne, Oracle, JD Edwards, ATINA">
-<title>Atina JD Edwards™ Connector Release Notes</title>
+<title>Appendix — Deployment Addendum (jd-docker-files v1.0.1)</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -549,193 +548,297 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article">
 <div id="header">
-<h1>Atina JD Edwards™ Connector Release Notes</h1>
 </div>
 <div id="content">
-<div id="preamble">
+<div class="sect1">
+<h2 id="deployment-addendum">Appendix — Deployment Addendum (jd-docker-files v1.0.1)</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Atina JDE Microservices are Docker-based components designed to interact directly with Oracle’s JD Edwards EnterpriseOne™. They serve as a modern intermediary that improves upon legacy integration methods.</p>
+<p>This addendum documents the deployment changes introduced in <strong>jd-docker-files v1.0.1</strong> and the microserver image <strong>92455890/jd-atina-microserver:1.0.1</strong>.</p>
+</div>
+<div class="paragraph">
+<p>It is intended to be applied on top of the main installation guide <strong>without modifying the core document</strong>.</p>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_a_what_changed_in_v1_0_1">1. A. What changed in v1.0.1</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_a_1_deployment_simplification_docker_volumes_instead_of_docker_cp">1.1. A.1 Deployment simplification (Docker volumes instead of <code>docker cp</code>)</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>The deployment flow is simplified by replacing multiple <code>docker cp</code> commands with <strong>read-only Docker volume mounts</strong>.</p>
+</li>
+<li>
+<p>This makes deployments more reliable, reproducible, and fully compatible with container recreation (<code>--force-recreate</code>) without losing copied files.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Removed the need to copy files into the container before startup:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>JDE environment folders (e.g., <code>JDV920</code>, <code>JPS920</code>)</p>
+</li>
+<li>
+<p>JDE library JARs (e.g., <code>jde-lib-wrapped-<strong>.jar</code>, <code>StdWebService-</strong>.jar</code>, <code>JDEAtinaOverrideServicesConstants-*.jar</code>)</p>
+</li>
+<li>
+<p><code>service-constants.properties</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Important:</strong> Customer-facing compose files should use <strong><code>image:</code> only</strong> (no <code>build:</code> section).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_a_2_support_for_external_etchosts_entries_file_based">1.2. A.2 Support for external <code>/etc/hosts</code> entries (file-based)</h3>
+<div class="paragraph">
+<p>You can now inject multiple host mappings into the container’s <code>/etc/hosts</code> using a mounted file, instead of relying on a fixed set of environment variables or manually editing the container.</p>
+</div>
+<hr>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_atina_jde_edwards_microservice_1_0_1_march_8_2026">Atina JDE Edwards Microservice 1.0.1 - March 8, 2026</h2>
+<h2 id="_b_download_the_updated_docker_files_bundle_v1_0_1">2. B. Download the updated docker files bundle (v1.0.1)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If your main guide currently references v1.0.0, update it to v1.0.1.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">curl -L &quot;https://jfrog.atina-connection.com/artifactory/libs-release/com/atina/jd-docker-files/1.0.1/jd-docker-files-1.0.1.zip&quot; \
+  --output jd-docker-files-1.0.1.zip
+
+unzip -o jd-docker-files-1.0.1.zip</code></pre>
+</div>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_c_configuration_changes">3. C. Configuration changes</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_version_1_0_0_fixed_in_this_release">Version 1.0.0 Fixed in this Release</h3>
-<div class="sect3">
-<h4 id="_1_kernel_recycling">1. Kernel Recycling</h4>
+<h3 id="_c_1_env_env_file_new_variable">3.1. C.1 <code>.env</code> / <code>--env-file</code> (new variable)</h3>
 <div class="paragraph">
-<p>We added an <strong>optional kernel recycling step</strong> to the cleanup flow to help mitigate scenarios where JDE Enterprise Server resources are not released correctly (for example, when CallObject kernels become stuck/zombie and prevent proper recycling).</p>
-</div>
-<div class="paragraph">
-<p>This feature allows the microservice to trigger recycling as part of the cleanup process, helping the server free up kernels and restore capacity.</p>
-</div>
-<div class="paragraph">
-<p>Enable/disable via the Atina microservice Docker <code>.env</code> file:</p>
+<p>Add the base folder that contains the runtime artifacts mounted into the container:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="env">KERNEL_RECICLYING=true</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash"># JDE_LIBS_ROOT: Base folder that contains the runtime artifacts mounted into the container.
+#
+# Expected contents:
+# - Properties:
+#   - service-constants.properties
+#
+# - JAR files:
+#   - JDEAtinaOverrideServicesConstants-1.0.0.jar
+#   - StdWebService-1.0.0.jar
+#   - jde-lib-wrapped-1.0.0.jar
+#
+# - JDE environment/config folders:
+#   - JDV920/
+#   - JPS920/
+#   - (and any other environments you use)
+#
+JDE_LIBS_ROOT=/tmp/build_jde_libs</code></pre>
 </div>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>true: kernel recycling is executed during cleanup</p>
-</li>
-<li>
-<p>false (or not set): recycling is skipped (default behavior)</p>
-</li>
-</ul>
 </div>
 <div class="paragraph">
-<p>When to use</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Intermittent COSE#1000 / “Unable to obtain an environment”</p>
-</li>
-<li>
-<p>Kernel exhaustion or zombie CallObject kernel symptoms</p>
-</li>
-<li>
-<p>Temporary mitigation while investigating the root cause</p>
-</li>
-</ul>
+<p>If you will use file-based host injection, also add:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="env">KERNEL_RECICLYING_BY_USER=true</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash"># Host path to the hosts file (on the VM)
+HOST_EXTRA_HOSTS_FILE=/opt/jde/config/extra-hosts.txt</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>When to use:</p>
+<p><strong>Notes:</strong></p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>KERNEL_RECICLYING is true</p>
+<p><code>JDE_LIBS_ROOT</code> is used by Docker Compose for <strong>path interpolation</strong> (e.g., in <code>volumes:</code>). It does not need to be set under <code>environment:</code> unless your application explicitly reads it at runtime.</p>
 </li>
 <li>
-<p>Recycling should only be triggered by user logoff rather than automatically during every cleanup cycle.</p>
+<p>Ensure your env file contains only valid <code>KEY=VALUE</code> lines (remove any stray lines such as <code>JDE-ALPHA-ENT</code> without <code>=</code>).</p>
 </li>
 </ul>
 </div>
-<div class="paragraph">
-<p>Notes / Recommendation</p>
-</div>
-<div class="paragraph">
-<p>This is intended as a workaround/mitigation, not a permanent fix. If the underlying issue is caused by custom BSFNs leaving resources open (e.g., “OPEN TABLE NOT CLOSED”), that custom code should still be corrected to prevent leaks.</p>
-</div>
-<div class="paragraph">
-<p>Deployment
-After updating the .env, restart/redeploy the container for the change to take effect.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="env">SESSION_EXPIRATION_TIME=5</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>When to use:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Enable this setting to have the microservice automatically log off users after a specified minutes of inactivity, helping to free up resources and prevent stale sessions.</p>
-</li>
-</ul>
-</div>
-</div>
+<hr>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_atina_jde_edwards_microservice_1_0_0_august_10_2025">Atina JDE Edwards Microservice 1.0.0 - August 10, 2025</h2>
+<h2 id="_d_docker_compose_changes_customer_facing">4. D. docker-compose changes (customer-facing)</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_version_1_0_0_compatibility">Version 1.0.0 Compatibility</h3>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Software Component</th>
-<th class="tableblock halign-left valign-top">Compatible Versions</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Docker Runtime</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Docker Engine 20.10+ or any OCI-compliant container runtime.
-Fully tested with Docker Desktop.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Oracle JD Edwards EnterpriseOne™</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Oracle’s JD Edwards EnterpriseOne™ Tools Release 8.98 Update 4 and onwards. For Web Services we recomend Tool Release 9.2.x and onwards due limitations for previous versions.</p></td>
-</tr>
-</tbody>
-</table>
+<h3 id="_d_1_force_platform_recommended">4.1. D.1 Force platform (recommended)</h3>
+<div class="paragraph">
+<p>Because the runtime uses x86_64 components, force amd64 to avoid architecture issues:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yaml"><span style="color:#606">services</span>:
+  <span style="color:#606">jd-atina-microserver</span>:
+    <span style="color:#606">platform</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">linux/amd64</span></span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_features">Features</h3>
+<h3 id="_d_2_use_the_image_no_build">4.2. D.2 Use the image (no build)</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yaml"><span style="color:#606">services</span>:
+  <span style="color:#606">jd-atina-microserver</span>:
+    <span style="color:#606">image</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">92455890/jd-atina-microserver:1.0.1</span></span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_d_3_mount_runtime_artifacts_via_volumes_replaces_docker_cp">4.3. D.3 Mount runtime artifacts via volumes (replaces <code>docker cp</code>)</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yaml"><span style="color:#606">services</span>:
+  <span style="color:#606">jd-atina-microserver</span>:
+    <span style="color:#606">volumes</span>:
+      <span style="color:#777"># JDE env folders (must include jdbj.ini inside each env folder)</span>
+      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/JDV920:/tmp/jde/config/JDV920:ro</span></span>
+      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/JPS920:/tmp/jde/config/JPS920:ro</span></span>
+
+      <span style="color:#777"># JARs</span>
+      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar:/tmp/jde/jde-lib-wrapped-1.0.0.jar:ro</span></span>
+      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar:/tmp/jde/StdWebService-1.0.0.jar:ro</span></span>
+      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar:/tmp/jde/JDEAtinaOverrideServicesConstants-1.0.0.jar:ro</span></span>
+
+      <span style="color:#777"># Properties</span>
+      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/service-constants.properties:/var/jdeatinaserver/service-constants.properties:ro</span></span></code></pre>
+</div>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_e_new_startup_command_recommended">5. E. New startup command (recommended)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can now start (or restart) the microserver with a single command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">docker-compose --env-file .env-linux up -d --force-recreate</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Use the <strong>same</strong> docker-compose YAML and the <strong>same</strong> env file you used before — just add <code>--force-recreate</code>.</p>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_f_file_based_etchosts_injection_extra_hosts_txt">6. F. File-based <code>/etc/hosts</code> injection (extra-hosts.txt)</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_f_1_how_it_works">6.1. F.1 How it works</h3>
 <div class="ulist">
 <ul>
 <li>
-<p>Authentication methods, including Log in JD Edwards EnterpriseOne™ with JDE User Credentials or Tokens.</p>
+<p>Mount a hosts file into the container at: <code>/tmp/extra-hosts.txt</code></p>
 </li>
 <li>
-<p>Invoke JD Edwards EnterpriseOne™ web services.</p>
+<p>Set the environment variable: <code>JDE_EXTRA_HOSTS_FILE=/tmp/extra-hosts.txt</code></p>
 </li>
 <li>
-<p>Submitting UBE by name and version processes, including data selection to filter records, override Processing Options and passing Report Interconnect (RI) parameter. The user can override the Batch Queue too.</p>
-</li>
-<li>
-<p>Check a UBE call’s status asynchronously.</p>
-</li>
-<li>
-<p>Invoking Business Functions (BSFNs) on the JDE server with parameters and Transaction Processing handling.</p>
-</li>
-<li>
-<p>Polling for Master Business Function (MBF) events</p>
-</li>
-<li>
-<p>Metadata APIs to retrieve lists of available web services, input/output parameters, and payload templates.</p>
-</li>
-<li>
-<p>Monitoring APIs to view open connections and retrieve logs by transaction ID</p>
-</li>
-<li>
-<p>Token APIs for creating and parsing tokens.</p>
+<p>At startup, the microserver reads the file and appends the entries to <code>/etc/hosts</code>.</p>
 </li>
 </ul>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_version_1_0_0_fixed_in_this_release_2">Version 1.0.0 Fixed in this Release</h3>
-<div class="paragraph">
-<p>None</p>
+<h3 id="_f_2_docker_compose_configuration">6.2. F.2 docker-compose configuration</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yaml"><span style="color:#606">services</span>:
+  <span style="color:#606">jd-atina-microserver</span>:
+    <span style="color:#606">volumes</span>:
+      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${HOST_EXTRA_HOSTS_FILE}:/tmp/extra-hosts.txt:ro</span></span>
+    <span style="color:#606">environment</span>:
+      <span style="color:#606">JDE_EXTRA_HOSTS_FILE</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">/tmp/extra-hosts.txt</span></span></code></pre>
+</div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_version_1_0_0_known_issues">Version 1.0.0 Known Issues</h3>
+<h3 id="_f_3_host_file_requirements_important">6.3. F.3 Host file requirements (important)</h3>
 <div class="paragraph">
-<p>None</p>
+<p>Create on the VM (example path):</p>
+</div>
+<div class="paragraph">
+<p><code>/opt/jde/config/extra-hosts.txt</code></p>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="text"># IP            HOSTNAME
+138.91.73.161   JDE-ALPHA-ENT
+65.52.119.187   JDE-ALPHA-SQL
+10.0.0.8        ORCLPROD1
+10.0.0.6        ORCLPROD
+# END HOSTS</code></pre>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_support_resources">Support Resources</h3>
+<div class="paragraph">
+<p><strong>Important:</strong></p>
+</div>
 <div class="ulist">
 <ul>
 <li>
-<p>For more information on the Atina JDE Microservices - User Guide, visit its <a href="https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/functional/jdeatina.html">User Guide</a>.</p>
+<p>The file must use <strong>Unix line endings (LF)</strong> (not Windows CRLF).</p>
+</li>
+<li>
+<p>Keep <code># END HOSTS</code> at the end and ensure the file ends with a final newline.</p>
 </li>
 </ul>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_g_recommended_improvement_optional_stable_filenames">7. G. Recommended improvement (optional): stable filenames</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To avoid updating <code>docker-compose.yml</code> when versions change, use stable filenames (symlinks) on the host:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">ln -sf ${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar ${JDE_LIBS_ROOT}/jde-lib-wrapped.jar
+ln -sf ${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar ${JDE_LIBS_ROOT}/StdWebService.jar
+ln -sf ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants.jar</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then mount the stable names instead:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yaml"><span style="color:#606">services</span>:
+  <span style="color:#606">jd-atina-microserver</span>:
+    <span style="color:#606">volumes</span>:
+      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/jde-lib-wrapped.jar:/tmp/jde/jde-lib-wrapped.jar:ro</span></span>
+      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/StdWebService.jar:/tmp/jde/StdWebService.jar:ro</span></span>
+      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants.jar:/tmp/jde/JDEAtinaOverrideServicesConstants.jar:ro</span></span></code></pre>
 </div>
 </div>
 </div>
@@ -743,7 +846,7 @@ Fully tested with Docker Desktop.</p></td>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-03-09 11:02:39 -0300
+Last updated 2026-03-14 17:43:54 -0300
 </div>
 </div>
 <script>

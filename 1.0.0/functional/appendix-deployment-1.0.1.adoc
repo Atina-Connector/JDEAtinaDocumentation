@@ -1,0 +1,213 @@
+[[deployment-addendum]]
+== Appendix — Deployment Addendum (jd-docker-files v1.0.1)
+:toc:
+:toclevels: 3
+:sectnums:
+
+This addendum documents the deployment changes introduced in *jd-docker-files v1.0.1* and the microserver image *92455890/jd-atina-microserver:1.0.1*.
+
+It is intended to be applied on top of the main installation guide *without modifying the core document*.
+
+---
+
+== A. What changed in v1.0.1
+
+=== A.1 Deployment simplification (Docker volumes instead of `docker cp`)
+
+* The deployment flow is simplified by replacing multiple `docker cp` commands with **read-only Docker volume mounts**.
+* This makes deployments more reliable, reproducible, and fully compatible with container recreation (`--force-recreate`) without losing copied files.
+
+**Removed the need to copy files into the container before startup:**
+
+* JDE environment folders (e.g., `JDV920`, `JPS920`)
+* JDE library JARs (e.g., `jde-lib-wrapped-*.jar`, `StdWebService-*.jar`, `JDEAtinaOverrideServicesConstants-*.jar`)
+* `service-constants.properties`
+
+**Important:** Customer-facing compose files should use **`image:` only** (no `build:` section).
+
+=== A.2 Support for external `/etc/hosts` entries (file-based)
+
+You can now inject multiple host mappings into the container’s `/etc/hosts` using a mounted file, instead of relying on a fixed set of environment variables or manually editing the container.
+
+---
+
+== B. Download the updated docker files bundle (v1.0.1)
+
+If your main guide currently references v1.0.0, update it to v1.0.1.
+
+[source,bash]
+----
+curl -L "https://jfrog.atina-connection.com/artifactory/libs-release/com/atina/jd-docker-files/1.0.1/jd-docker-files-1.0.1.zip" \
+  --output jd-docker-files-1.0.1.zip
+
+unzip -o jd-docker-files-1.0.1.zip
+----
+
+---
+
+== C. Configuration changes
+
+=== C.1 `.env` / `--env-file` (new variable)
+
+Add the base folder that contains the runtime artifacts mounted into the container:
+
+[source,bash]
+----
+# JDE_LIBS_ROOT: Base folder that contains the runtime artifacts mounted into the container.
+#
+# Expected contents:
+# - Properties:
+#   - service-constants.properties
+#
+# - JAR files:
+#   - JDEAtinaOverrideServicesConstants-1.0.0.jar
+#   - StdWebService-1.0.0.jar
+#   - jde-lib-wrapped-1.0.0.jar
+#
+# - JDE environment/config folders:
+#   - JDV920/
+#   - JPS920/
+#   - (and any other environments you use)
+#
+JDE_LIBS_ROOT=/tmp/build_jde_libs
+----
+
+If you will use file-based host injection, also add:
+
+[source,bash]
+----
+# Host path to the hosts file (on the VM)
+HOST_EXTRA_HOSTS_FILE=/opt/jde/config/extra-hosts.txt
+----
+
+**Notes:**
+
+* `JDE_LIBS_ROOT` is used by Docker Compose for *path interpolation* (e.g., in `volumes:`). It does not need to be set under `environment:` unless your application explicitly reads it at runtime.
+* Ensure your env file contains only valid `KEY=VALUE` lines (remove any stray lines such as `JDE-ALPHA-ENT` without `=`).
+
+---
+
+== D. docker-compose changes (customer-facing)
+
+=== D.1 Force platform (recommended)
+
+Because the runtime uses x86_64 components, force amd64 to avoid architecture issues:
+
+[source,yaml]
+----
+services:
+  jd-atina-microserver:
+    platform: linux/amd64
+----
+
+=== D.2 Use the image (no build)
+
+[source,yaml]
+----
+services:
+  jd-atina-microserver:
+    image: 92455890/jd-atina-microserver:1.0.1
+----
+
+=== D.3 Mount runtime artifacts via volumes (replaces `docker cp`)
+
+[source,yaml]
+----
+services:
+  jd-atina-microserver:
+    volumes:
+      # JDE env folders (must include jdbj.ini inside each env folder)
+      - ${JDE_LIBS_ROOT}/JDV920:/tmp/jde/config/JDV920:ro
+      - ${JDE_LIBS_ROOT}/JPS920:/tmp/jde/config/JPS920:ro
+
+      # JARs
+      - ${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar:/tmp/jde/jde-lib-wrapped-1.0.0.jar:ro
+      - ${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar:/tmp/jde/StdWebService-1.0.0.jar:ro
+      - ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar:/tmp/jde/JDEAtinaOverrideServicesConstants-1.0.0.jar:ro
+
+      # Properties
+      - ${JDE_LIBS_ROOT}/service-constants.properties:/var/jdeatinaserver/service-constants.properties:ro
+----
+
+---
+
+== E. New startup command (recommended)
+
+You can now start (or restart) the microserver with a single command:
+
+[source,bash]
+----
+docker-compose --env-file .env-linux up -d --force-recreate
+----
+
+Use the **same** docker-compose YAML and the **same** env file you used before — just add `--force-recreate`.
+
+---
+
+== F. File-based `/etc/hosts` injection (extra-hosts.txt)
+
+=== F.1 How it works
+
+* Mount a hosts file into the container at: `/tmp/extra-hosts.txt`
+* Set the environment variable: `JDE_EXTRA_HOSTS_FILE=/tmp/extra-hosts.txt`
+* At startup, the microserver reads the file and appends the entries to `/etc/hosts`.
+
+=== F.2 docker-compose configuration
+
+[source,yaml]
+----
+services:
+  jd-atina-microserver:
+    volumes:
+      - ${HOST_EXTRA_HOSTS_FILE}:/tmp/extra-hosts.txt:ro
+    environment:
+      JDE_EXTRA_HOSTS_FILE: /tmp/extra-hosts.txt
+----
+
+=== F.3 Host file requirements (important)
+
+Create on the VM (example path):
+
+`/opt/jde/config/extra-hosts.txt`
+
+Example:
+
+[source,text]
+----
+# IP            HOSTNAME
+138.91.73.161   JDE-ALPHA-ENT
+65.52.119.187   JDE-ALPHA-SQL
+10.0.0.8        ORCLPROD1
+10.0.0.6        ORCLPROD
+# END HOSTS
+----
+
+**Important:**
+
+* The file must use **Unix line endings (LF)** (not Windows CRLF).
+* Keep `# END HOSTS` at the end and ensure the file ends with a final newline.
+
+---
+
+== G. Recommended improvement (optional): stable filenames
+
+To avoid updating `docker-compose.yml` when versions change, use stable filenames (symlinks) on the host:
+
+[source,bash]
+----
+ln -sf ${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar ${JDE_LIBS_ROOT}/jde-lib-wrapped.jar
+ln -sf ${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar ${JDE_LIBS_ROOT}/StdWebService.jar
+ln -sf ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants.jar
+----
+
+Then mount the stable names instead:
+
+[source,yaml]
+----
+services:
+  jd-atina-microserver:
+    volumes:
+      - ${JDE_LIBS_ROOT}/jde-lib-wrapped.jar:/tmp/jde/jde-lib-wrapped.jar:ro
+      - ${JDE_LIBS_ROOT}/StdWebService.jar:/tmp/jde/StdWebService.jar:ro
+      - ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants.jar:/tmp/jde/JDEAtinaOverrideServicesConstants.jar:ro
+----
