@@ -188,26 +188,3 @@ Example:
 * Keep `# END HOSTS` at the end and ensure the file ends with a final newline.
 
 ---
-
-== G. Recommended improvement (optional): stable filenames
-
-To avoid updating `docker-compose.yml` when versions change, use stable filenames (symlinks) on the host:
-
-[source,bash]
-----
-ln -sf ${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar ${JDE_LIBS_ROOT}/jde-lib-wrapped.jar
-ln -sf ${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar ${JDE_LIBS_ROOT}/StdWebService.jar
-ln -sf ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants.jar
-----
-
-Then mount the stable names instead:
-
-[source,yaml]
-----
-services:
-  jd-atina-microserver:
-    volumes:
-      - ${JDE_LIBS_ROOT}/jde-lib-wrapped.jar:/tmp/jde/jde-lib-wrapped.jar:ro
-      - ${JDE_LIBS_ROOT}/StdWebService.jar:/tmp/jde/StdWebService.jar:ro
-      - ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants.jar:/tmp/jde/JDEAtinaOverrideServicesConstants.jar:ro
-----

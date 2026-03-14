@@ -815,38 +815,10 @@ HOST_EXTRA_HOSTS_FILE=/opt/jde/config/extra-hosts.txt</code></pre>
 </div>
 </div>
 </div>
-<div class="sect1">
-<h2 id="_g_recommended_improvement_optional_stable_filenames">7. G. Recommended improvement (optional): stable filenames</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>To avoid updating <code>docker-compose.yml</code> when versions change, use stable filenames (symlinks) on the host:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">ln -sf ${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar ${JDE_LIBS_ROOT}/jde-lib-wrapped.jar
-ln -sf ${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar ${JDE_LIBS_ROOT}/StdWebService.jar
-ln -sf ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants.jar</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Then mount the stable names instead:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="yaml"><span style="color:#606">services</span>:
-  <span style="color:#606">jd-atina-microserver</span>:
-    <span style="color:#606">volumes</span>:
-      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/jde-lib-wrapped.jar:/tmp/jde/jde-lib-wrapped.jar:ro</span></span>
-      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/StdWebService.jar:/tmp/jde/StdWebService.jar:ro</span></span>
-      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants.jar:/tmp/jde/JDEAtinaOverrideServicesConstants.jar:ro</span></span></code></pre>
-</div>
-</div>
-</div>
-</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-03-14 17:43:54 -0300
+Last updated 2026-03-14 18:13:12 -0300
 </div>
 </div>
 <script>
