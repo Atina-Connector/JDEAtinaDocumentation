@@ -188,3 +188,4 @@ Example:
 * Keep `# END HOSTS` at the end and ensure the file ends with a final newline.
 
 ---
+
