@@ -133,6 +133,15 @@ Then, include the connector dependency in the <dependencies> section:
 [NOTE]
 ====
 Make sure to replace the version number with the latest available release if a newer one exists.
+
+For version history, compatibility notes, Release Candidate versions, and newly introduced features such as TLS support, see the Release Notes:
+
+https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/apidocs/release-notes.html
+====
+
+[IMPORTANT]
+====
+When using secure deployments through an ingress or proxy layer, ensure that the connector version includes TLS support and that the proxy forwards traffic using HTTP/2 (gRPC), not HTTP/1.1.
 ====
 
 === Other Considerations
@@ -1320,6 +1329,105 @@ image::atina_connector_images/jde_10_JDE06.png[width=521,align=center]
 This tells the connector where to poll outbound events for the selected transaction (e.g., table F03012Z1 for JDECM).
 
 NOTE: For more outbound interoperability alternatives, refer to the official guide: JD Edwards EnterpriseOne Applications Interoperability Fundamentals Implementation Guide
+
+== Appendix: Version Guidance and Release Notes
+
+This section provides guidance on selecting the appropriate connector version based on your deployment architecture and security requirements.
+
+The Atina JDE Connector is distributed in both stable and Release Candidate (RC) versions.
+Release Candidate versions may introduce new capabilities and enhancements that are pending MuleSoft certification.
+
+=== Supported Versions
+
+[cols="1,2,3"]
+|===
+| Version | Recommended Use | Notes
+
+| 1.0.0
+| Internal or non-secure environments (plaintext gRPC)
+| Certified and stable release. Suitable for direct microservice connectivity without TLS.
+
+| 1.0.1-RC1
+| Secure environments using HTTPS, ingress controllers, or reverse proxies
+| Introduces TLS support for gRPC connections. Distributed via Atina private repository while pending MuleSoft certification.
+|===
+
+=== TLS and Secure Deployments
+
+For deployments exposed through HTTPS endpoints (e.g., Caddy, NGINX, API Gateway, or cloud ingress layers), it is required to use a connector version that supports TLS.
+
+==== Architecture Overview
+
+[source,text]
+----
+Client
+   ↓ HTTPS (TLS - Port 443 / 8079)
+Ingress / Proxy (Caddy / NGINX / Gateway)
+   ↓ HTTP/2 (gRPC - h2c)
+Atina Microservice (Port 8077 / 8078)
+----
+
+==== Key Requirements
+
+* TLS is terminated at the ingress or proxy layer
+* The connector must connect using TLS (when enabled)
+* The proxy must forward traffic using **HTTP/2 (gRPC)**, not HTTP/1.1
+
+Failure to meet these conditions may result in connection errors such as:
+
+----
+UNAVAILABLE: io exception
+----
+
+=== Release Notes
+
+For full details on available versions, feature changes, and compatibility considerations, refer to the official Release Notes:
+
+https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/apidocs/release-notes.html
+
+
+image::releases/tls-grpc-architecture-8079.png[Release Notes, align=center, width=85%]
+
+
+[NOTE]
+====
+The Release Notes page includes:
+
+* Version history and release evolution
+* Release Candidate availability
+* New features (including TLS support)
+* Compatibility and deployment considerations
+* Infrastructure requirements for secure environments
+====
+
+
+=== Screenshots
+
+image::releases/Screenshot01.png[Release Notes, align=center, width=85%]
+
+image::releases/Screenshot02.png[Release Notes, align=center, width=85%]
+
+image::releases/Screenshot03.png[Release Notes, align=center, width=85%]
+
+image::releases/Screenshot04.png[Release Notes, align=center, width=85%]
+  
+=== Distribution Model
+
+Stable versions are distributed through MuleSoft-certified channels.
+
+Release Candidate versions (such as `1.0.1-RC1`) are currently distributed via the Atina private repository:
+
+----
+https://jfrog.atina-connection.com/artifactory/libs-release-local
+----
+
+These versions are intended for early adoption, validation, and testing in controlled environments.
+
+=== Recommendation
+
+* Use `1.0.0` for existing, stable, plaintext deployments
+* Use `1.0.1-RC1` when TLS or secure ingress is required
+* Always validate your infrastructure supports **HTTP/2 (gRPC)** end-to-end
 
 [[grpc-connectivity-check]]
 == Troubleshooting:

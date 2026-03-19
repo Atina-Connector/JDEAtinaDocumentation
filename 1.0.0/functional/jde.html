@@ -604,6 +604,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#jde-events-config">JDEdwards Events configuration</a></li>
 </ul>
 </li>
+<li><a href="#_appendix_version_guidance_and_release_notes">Appendix: Version Guidance and Release Notes</a>
+<ul class="sectlevel2">
+<li><a href="#_supported_versions">Supported Versions</a></li>
+<li><a href="#_tls_and_secure_deployments">TLS and Secure Deployments</a></li>
+<li><a href="#_release_notes">Release Notes</a></li>
+<li><a href="#_guide">Guide</a></li>
+<li><a href="#_distribution_model">Distribution Model</a></li>
+<li><a href="#_recommendation">Recommendation</a></li>
+</ul>
+</li>
 <li><a href="#grpc-connectivity-check">Troubleshooting:</a>
 <ul class="sectlevel2">
 <li><a href="#_grpc_connectivity_check">gRPC connectivity check</a></li>
@@ -866,6 +876,26 @@ It is recommended that you update AnyPoint Studio before starting with a <em>Ati
 <td class="content">
 <div class="paragraph">
 <p>Make sure to replace the version number with the latest available release if a newer one exists.</p>
+</div>
+<div class="paragraph">
+<p>For version history, compatibility notes, Release Candidate versions, and newly introduced features such as TLS support, see the Release Notes:</p>
+</div>
+<div class="paragraph">
+<p><a href="https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/apidocs/release-notes.html" class="bare">https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/apidocs/release-notes.html</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>When using secure deployments through an ingress or proxy layer, ensure that the connector version includes TLS support and that the proxy forwards traffic using HTTP/2 (gRPC), not HTTP/1.1.</p>
 </div>
 </td>
 </tr>
@@ -2788,6 +2818,173 @@ For more outbound interoperability alternatives, refer to the official guide: JD
 </div>
 </div>
 <div class="sect1">
+<h2 id="_appendix_version_guidance_and_release_notes">Appendix: Version Guidance and Release Notes</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This section provides guidance on selecting the appropriate connector version based on your deployment architecture and security requirements.</p>
+</div>
+<div class="paragraph">
+<p>The Atina JDE Connector is distributed in both stable and Release Candidate (RC) versions.
+Release Candidate versions may introduce new capabilities and enhancements that are pending MuleSoft certification.</p>
+</div>
+<div class="sect2">
+<h3 id="_supported_versions">Supported Versions</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 33.3333%;">
+<col style="width: 50.0001%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Version</th>
+<th class="tableblock halign-left valign-top">Recommended Use</th>
+<th class="tableblock halign-left valign-top">Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.0.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Internal or non-secure environments (plaintext gRPC)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Certified and stable release. Suitable for direct microservice connectivity without TLS.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.0.1-RC1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Secure environments using HTTPS, ingress controllers, or reverse proxies</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Introduces TLS support for gRPC connections. Distributed via Atina private repository while pending MuleSoft certification.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_tls_and_secure_deployments">TLS and Secure Deployments</h3>
+<div class="paragraph">
+<p>For deployments exposed through HTTPS endpoints (e.g., Caddy, NGINX, API Gateway, or cloud ingress layers), it is required to use a connector version that supports TLS.</p>
+</div>
+<div class="sect3">
+<h4 id="_architecture_overview">Architecture Overview</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">Client
+   ↓ HTTPS (TLS - Port 443 / 8079)
+Ingress / Proxy (Caddy / NGINX / Gateway)
+   ↓ HTTP/2 (gRPC - h2c)
+Atina Microservice (Port 8077 / 8078)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_key_requirements">Key Requirements</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>TLS is terminated at the ingress or proxy layer</p>
+</li>
+<li>
+<p>The connector must connect using TLS (when enabled)</p>
+</li>
+<li>
+<p>The proxy must forward traffic using <strong>HTTP/2 (gRPC)</strong>, not HTTP/1.1</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Failure to meet these conditions may result in connection errors such as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>UNAVAILABLE: io exception</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_release_notes">Release Notes</h3>
+<div class="paragraph">
+<p>For full details on available versions, feature changes, and compatibility considerations, refer to the official Release Notes:</p>
+</div>
+<div class="paragraph">
+<p><a href="https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/apidocs/release-notes.html" class="bare">https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/apidocs/release-notes.html</a></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_guide">Guide</h3>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/images/release-notes-page.png" alt="Release Notes" width="85%">
+</div>
+<div class="title">Figure 1. Screenshot - Release Notes Overview</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The Release Notes page includes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Version history and release evolution</p>
+</li>
+<li>
+<p>Release Candidate availability</p>
+</li>
+<li>
+<p>New features (including TLS support)</p>
+</li>
+<li>
+<p>Compatibility and deployment considerations</p>
+</li>
+<li>
+<p>Infrastructure requirements for secure environments</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_distribution_model">Distribution Model</h3>
+<div class="paragraph">
+<p>Stable versions are distributed through MuleSoft-certified channels.</p>
+</div>
+<div class="paragraph">
+<p>Release Candidate versions (such as <code>1.0.1-RC1</code>) are currently distributed via the Atina private repository:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>https://jfrog.atina-connection.com/artifactory/libs-release-local</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>These versions are intended for early adoption, validation, and testing in controlled environments.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_recommendation">Recommendation</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Use <code>1.0.0</code> for existing, stable, plaintext deployments</p>
+</li>
+<li>
+<p>Use <code>1.0.1-RC1</code> when TLS or secure ingress is required</p>
+</li>
+<li>
+<p>Always validate your infrastructure supports <strong>HTTP/2 (gRPC)</strong> end-to-end</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="grpc-connectivity-check">Troubleshooting:</h2>
 <div class="sectionbody">
 <div class="sect2">
@@ -2914,7 +3111,7 @@ It must be solved by correcting the endpoint configuration (host/port) or by ena
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-02-11 14:05:47 -0300
+Last updated 2026-03-19 11:12:03 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
