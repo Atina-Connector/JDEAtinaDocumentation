@@ -1210,6 +1210,8 @@ Usage: java -jar jd-check-microservice OPTIONS
   --serverName [-s] (a string; default: "")JD Micreserver Name or IP
   --serverPort [-p] (a string; default: "")
     JD Micreserver Port
+  --tlsEnabled [-x] (a string; default: "false")
+    JD Micreserver TlS Enabled
   --addressbookno [-a] (a string; default: "")
     Address Book No
 ----
@@ -1219,6 +1221,12 @@ Usage Exampes
 [source,bash]
 ----
 java -jar jd-check-microservice-1.0.0.jar -u JDE -w **** -e JDV920 -r '*ALL' -s localhost -p 8077 -m TestLoggindAndGetAddressBookWS -a 1 -n "Financial/Distribution Company"
+----
+
+TLS Enabled Example
+
+----
+java -jar jd-check-microservice-1.0.0.jar -u JDE -w **** -e JDV920 -r '*ALL' -s domain.name -p 8079 -x true -m TestLoggindAndGetAddressBookWS -a 1 -n "Financial/Distribution Company"
 ----
 
 === Step 3: Expected Output

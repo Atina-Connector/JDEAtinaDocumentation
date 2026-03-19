@@ -656,7 +656,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_f_3_host_file_requirements_important">6.3. F.3 Host file requirements (important)</a></li>
 </ul>
 </li>
-<li><a href="#_g_recommended_improvement_optional_stable_filenames">7. G. Recommended improvement (optional): stable filenames</a></li>
 </ul>
 </div>
 </div>
@@ -2491,6 +2490,8 @@ ADDITIONAL SCRIPT:
   --serverName [-s] (a string; default: "")JD Micreserver Name or IP
   --serverPort [-p] (a string; default: "")
     JD Micreserver Port
+  --tlsEnabled [-x] (a string; default: "false")
+    JD Micreserver TlS Enabled
   --addressbookno [-a] (a string; default: "")
     Address Book No</code></pre>
 </div>
@@ -2501,6 +2502,14 @@ ADDITIONAL SCRIPT:
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">java -jar jd-check-microservice-1.0.0.jar -u JDE -w **** -e JDV920 -r '*ALL' -s localhost -p 8077 -m TestLoggindAndGetAddressBookWS -a 1 -n "Financial/Distribution Company"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>TLS Enabled Example</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>java -jar jd-check-microservice-1.0.0.jar -u JDE -w **** -e JDV920 -r '*ALL' -s domain.name -p 8079 -x true -m TestLoggindAndGetAddressBookWS -a 1 -n "Financial/Distribution Company"</pre>
 </div>
 </div>
 </div>
@@ -2794,38 +2803,10 @@ HOST_EXTRA_HOSTS_FILE=/opt/jde/config/extra-hosts.txt</code></pre>
 </div>
 </div>
 </div>
-<div class="sect1">
-<h2 id="_g_recommended_improvement_optional_stable_filenames">7. G. Recommended improvement (optional): stable filenames</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>To avoid updating <code>docker-compose.yml</code> when versions change, use stable filenames (symlinks) on the host:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">ln -sf ${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar ${JDE_LIBS_ROOT}/jde-lib-wrapped.jar
-ln -sf ${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar ${JDE_LIBS_ROOT}/StdWebService.jar
-ln -sf ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants.jar</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Then mount the stable names instead:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">services:
-  jd-atina-microserver:
-    volumes:
-      - ${JDE_LIBS_ROOT}/jde-lib-wrapped.jar:/tmp/jde/jde-lib-wrapped.jar:ro
-      - ${JDE_LIBS_ROOT}/StdWebService.jar:/tmp/jde/StdWebService.jar:ro
-      - ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants.jar:/tmp/jde/JDEAtinaOverrideServicesConstants.jar:ro</code></pre>
-</div>
-</div>
-</div>
-</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-03-14 17:46:20 -0300
+Last updated 2026-03-19 12:11:01 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
