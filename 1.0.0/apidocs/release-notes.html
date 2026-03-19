@@ -550,6 +550,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <body class="article">
 <div id="header">
 <h1>Atina JD Edwards™ Connector Release Notes</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_version_1_0_1_rc1">Version 1.0.1-RC1</a></li>
+<li><a href="#_atina_jd_edwards_connector_1_0_0_august_10_2025">Atina JD Edwards™ Connector 1.0.0 - August 10, 2025</a></li>
+</ul>
+</div>
 </div>
 <div id="content">
 <div id="preamble">
@@ -560,6 +567,210 @@ It leverages the power of Oracle&#8217;s Web Services, Java Dynamic Connector an
 </div>
 <div class="paragraph">
 <p><a href="/https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/functional/jde.html">Atina JDE Connector user guide</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_version_1_0_1_rc1">Version 1.0.1-RC1</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_overview">Overview</h3>
+<div class="paragraph">
+<p>This Release Candidate introduces <strong>TLS support for gRPC connections</strong>, enabling secure communication between MuleSoft and the Atina JDE Microservice.</p>
+</div>
+<div class="paragraph">
+<p>This version is currently pending MuleSoft certification and is distributed through Atina’s private repository for validation purposes.</p>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_new_features">New Features</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Added support for <strong>gRPC over TLS (HTTPS)</strong></p>
+</li>
+<li>
+<p>Introduced new connection property:
+<strong>TLS Enabled</strong> – allows switching between plaintext and secure communication</p>
+</li>
+</ul>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_improvements">Improvements</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Maintains full backward compatibility with existing plaintext (h2c) configurations</p>
+</li>
+<li>
+<p>No changes required on the microservice side</p>
+</li>
+<li>
+<p>Seamless integration with ingress / proxy layers (e.g., Caddy, NGINX)</p>
+</li>
+</ul>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_configuration">Configuration</h3>
+<div class="paragraph">
+<p>New property available in the connector:</p>
+</div>
+<div class="paragraph">
+<p><strong>TLS Enabled</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>true</code>  → Enables TLS (recommended for production)</p>
+</li>
+<li>
+<p><code>false</code> → Uses plaintext (legacy / internal use)</p>
+</li>
+</ul>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_supported_connection_modes">Supported Connection Modes</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 40%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Mode</th>
+<th class="tableblock halign-left valign-top">Port</th>
+<th class="tableblock halign-left valign-top">TLS Enabled</th>
+<th class="tableblock halign-left valign-top">Protocol</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Plaintext</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8078</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gRPC over HTTP/2 (h2c)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Secure</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">443</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gRPC over TLS (HTTPS)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Secure</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8079</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gRPC over TLS (HTTPS)</p></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_infrastructure_requirements">Infrastructure Requirements</h3>
+<div class="paragraph">
+<p>When TLS is enabled, the ingress or proxy layer must:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Support <strong>HTTP/2 (gRPC)</strong></p>
+</li>
+<li>
+<p>Forward traffic using <strong>h2c</strong> to the backend microservice</p>
+</li>
+<li>
+<p>Perform TLS termination correctly</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Example architecture:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Client → HTTPS (443) → TLS termination → HTTP/2 (h2c) → Microservice</pre>
+</div>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_important_notes">Important Notes</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>TLS connections require using a <strong>hostname</strong>, not a raw IP address</p>
+</li>
+<li>
+<p>Ensure that the proxy does not downgrade traffic to HTTP/1.1</p>
+</li>
+<li>
+<p>Public certificates (e.g., Let’s Encrypt) are supported without additional configuration</p>
+</li>
+</ul>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_distribution">Distribution</h3>
+<div class="paragraph">
+<p>This version is distributed as a <strong>Release Candidate</strong> and is not yet available through MuleSoft’s certified channels.</p>
+</div>
+<div class="paragraph">
+<p>It is currently deployed using Atina’s private JFrog repository:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>&lt;repositories&gt;
+		&lt;repository&gt;
+			&lt;id&gt;atina-central&lt;/id&gt;
+			&lt;name&gt;libs-release&lt;/name&gt;
+			&lt;url&gt;https://jfrog.atina-connection.com/artifactory/libs-release&lt;/url&gt;
+        &lt;/repository&gt;
+&lt;/repositories&gt;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This allows early validation of TLS functionality before final certification.</p>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_compatibility">Compatibility</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Fully compatible with previous versions</p>
+</li>
+<li>
+<p>Existing integrations using plaintext continue to function without changes</p>
+</li>
+</ul>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_known_limitations">Known Limitations</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>MuleSoft certification is still in progress</p>
+</li>
+<li>
+<p>Advanced TLS configurations (custom truststore, mTLS) are not included in this release</p>
+</li>
+</ul>
+</div>
+<hr>
 </div>
 </div>
 </div>
@@ -678,7 +889,7 @@ It leverages the power of Oracle&#8217;s Web Services, Java Dynamic Connector an
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-11-18 12:08:25 -0300
+Last updated 2026-03-19 10:44:27 -0300
 </div>
 </div>
 <script>

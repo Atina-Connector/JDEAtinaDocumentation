@@ -1,10 +1,130 @@
 = Atina JD Edwards™ Connector Release Notes
 :keywords: JDE, JDEdwards, EnterpriseOne, Oracle, JD Edwards, ATINA
+:toc:
+:toclevels: 1
 
 The Atina’s _JD Edwards Connector_ aims to provide integration from and to Oracle’s _JD Edwards™ EnterpriseOne™_.
 It leverages the power of Oracle's Web Services, Java Dynamic Connector and XML List to provide interoperability with Oracle’s _JD Edwards EnterpriseOne™_ and external systems.
 
 link:/https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/functional/jde.html[Atina JDE Connector user guide].
+
+== Version 1.0.1-RC1
+=== Overview
+
+This Release Candidate introduces **TLS support for gRPC connections**, enabling secure communication between MuleSoft and the Atina JDE Microservice.
+
+This version is currently pending MuleSoft certification and is distributed through Atina’s private repository for validation purposes.
+
+---
+
+=== New Features
+
+* Added support for **gRPC over TLS (HTTPS)**
+* Introduced new connection property:
+**TLS Enabled** – allows switching between plaintext and secure communication
+
+---
+
+=== Improvements
+
+* Maintains full backward compatibility with existing plaintext (h2c) configurations
+* No changes required on the microservice side
+* Seamless integration with ingress / proxy layers (e.g., Caddy, NGINX)
+
+---
+
+=== Configuration
+
+New property available in the connector:
+
+*TLS Enabled*
+
+* `true`  → Enables TLS (recommended for production)
+* `false` → Uses plaintext (legacy / internal use)
+
+---
+
+=== Supported Connection Modes
+
+[cols="1,1,1,2"]
+|===
+| Mode | Port | TLS Enabled | Protocol
+
+| Plaintext
+| 8078
+| false
+| gRPC over HTTP/2 (h2c)
+
+| Secure
+| 443
+| true
+| gRPC over TLS (HTTPS)
+
+| Secure
+| 8079
+| true
+| gRPC over TLS (HTTPS)
+|===
+
+---
+
+=== Infrastructure Requirements
+
+When TLS is enabled, the ingress or proxy layer must:
+
+* Support **HTTP/2 (gRPC)**
+* Forward traffic using **h2c** to the backend microservice
+* Perform TLS termination correctly
+
+Example architecture:
+
+----
+Client → HTTPS (443) → TLS termination → HTTP/2 (h2c) → Microservice
+----
+
+---
+
+=== Important Notes
+
+* TLS connections require using a **hostname**, not a raw IP address
+* Ensure that the proxy does not downgrade traffic to HTTP/1.1
+* Public certificates (e.g., Let’s Encrypt) are supported without additional configuration
+
+---
+
+=== Distribution
+
+This version is distributed as a **Release Candidate** and is not yet available through MuleSoft’s certified channels.
+
+It is currently deployed using Atina’s private JFrog repository:
+
+----
+<repositories>
+		<repository>
+			<id>atina-central</id>
+			<name>libs-release</name>
+			<url>https://jfrog.atina-connection.com/artifactory/libs-release</url>
+        </repository>
+</repositories>
+----
+
+This allows early validation of TLS functionality before final certification.
+
+---
+
+=== Compatibility
+
+* Fully compatible with previous versions
+* Existing integrations using plaintext continue to function without changes
+
+---
+
+=== Known Limitations
+
+* MuleSoft certification is still in progress
+* Advanced TLS configurations (custom truststore, mTLS) are not included in this release
+
+---
 
 == Atina JD Edwards™ Connector 1.0.0 - August 10, 2025
 
