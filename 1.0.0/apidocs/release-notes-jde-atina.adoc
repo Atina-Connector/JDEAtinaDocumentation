@@ -3,6 +3,26 @@
 
 Atina JDE Microservices are Docker-based components designed to interact directly with Oracle’s JD Edwards EnterpriseOne™. They serve as a modern intermediary that improves upon legacy integration methods.
 
+== Atina JDE Edwards Microservice 1.0.2 - March 25, 2026
+
+=== Version 1.0.2 Fixed in this Release
+
+We identified and fixed an issue where the SessionsCleanerTask, while removing an expired session, could trigger an unintended shutdown/disconnect path that impacted the entire connection pool.
+
+As a result, sessions that were still active (including sessions being used by an in-flight BSFN call) could be terminated unexpectedly, leading to errors such as:
+
+•	Cannot find the user session with session ID ... please (re)login
+
+What changed
+
+•	The cleanup flow now ensures that only the targeted expired session is disconnected.
+•	The cleanup process includes an additional safety control to prevent it from interrupting ongoing operations.
+
+Impact
+
+•	Prevents unexpected logoffs of active sessions.
+•	Improves stability when multiple concurrent sessions are in use.
+
 == Atina JDE Edwards Microservice 1.0.1 - March 8, 2026
 
 === Version 1.0.1 Fixed in this Release
