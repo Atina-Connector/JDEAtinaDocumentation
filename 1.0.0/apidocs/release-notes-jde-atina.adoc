@@ -3,9 +3,9 @@
 
 Atina JDE Microservices are Docker-based components designed to interact directly with Oracle’s JD Edwards EnterpriseOne™. They serve as a modern intermediary that improves upon legacy integration methods.
 
-== Atina JDE Edwards Microservice 1.0.4 - April 9, 2026
+== Atina JDE Edwards Microservice 1.0.5 - April 9, 2026
 
-=== Version 1.0.4 Fixed in this Release
+=== Version 1.0.5 Fixed in this Release
 
 ==== 1. Session Concurrency Handling During Re-Login
 
@@ -34,7 +34,11 @@ This fix is especially relevant in environments where multiple concurrent reques
 No additional configuration is required.
 Redeploy the container to apply the update.
 
-==== 2. Submit UBE XML Request - Error Handling and Cache Validation
+== Atina JDE Edwards Microservice 1.0.4 - April 7, 2026
+
+=== Version 1.0.4 Fixed in this Release
+
+==== 1. Submit UBE XML Request - Error Handling and Cache Validation
 
 We identified a scenario where error responses returned by JD Edwards (such as invalid credentials or malformed requests) could be mistakenly stored in the cache, leading to repeated failures in subsequent executions.
 
