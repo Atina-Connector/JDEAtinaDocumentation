@@ -1,24 +1,22 @@
 = JD Atina Microserver Docker Files - Release Notes
-:toc:
-:toclevels: 3
-:sectnums:
 
 This document describes changes to the *JD Atina Microserver Docker deployment bundle* (also referred to as `jd-docker-files`).
 It focuses on deployment and operational changes (Docker Compose, environment files, startup behavior).
 
-== Version 1.0.1
+== JD Atina Microserver Docker Files Version 1.0.1, April 1, 2026
+
+=== Version 1.0.1 Fixed in this Release
 
 Release scope:
 * Docker deployment bundle: `jd-docker-files`
 * Recommended microserver image: `92455890/jd-atina-microserver:1.0.1`
 
-=== Changed – Deployment simplification (Docker volumes instead of `docker cp`)
+==== 1. Deployment simplification (Docker volumes instead of `docker cp`)
 
-==== Summary
 The microserver deployment flow has been simplified by replacing multiple `docker cp` steps with **read-only Docker volume mounts**.
 This makes deployments more reliable, reproducible, and compatible with container recreation (`--force-recreate`) without losing copied files.
 
-==== What changed
+===== What changed
 * Removed the need to copy files into the container before startup:
 ** JDE environment folders (e.g., `JDV920`, `JPS920`)
 ** JDE library JARs (e.g., `jde-lib-wrapped-*.jar`, `StdWebService-*.jar`, `JDEAtinaOverrideServicesConstants-*.jar`)
@@ -69,9 +67,11 @@ Use the **same** docker-compose YAML and the **same** env file you used before �
 
 ---
 
-=== Added – Support for external `/etc/hosts` entries (file-based)
+==== 2. Added – Support for external `/etc/hosts` entries (file-based)
 
 You can now inject multiple host mappings into the container’s `/etc/hosts` using a mounted file, instead of relying on a fixed set of environment variables.
+
+This feature is useful when extra_hosts cannot be used (e.g., certain Azure networking constraints).
 
 ==== How it works
 * Mount a hosts file into the container at: `/tmp/extra-hosts.txt`

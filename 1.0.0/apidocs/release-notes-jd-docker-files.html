@@ -549,31 +549,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <body class="article">
 <div id="header">
 <h1>JD Atina Microserver Docker Files - Release Notes</h1>
-<div id="toc" class="toc">
-<div id="toctitle">Table of Contents</div>
-<ul class="sectlevel1">
-<li><a href="#_version_1_0_1">1. Version 1.0.1</a>
-<ul class="sectlevel2">
-<li><a href="#_changed_deployment_simplification_docker_volumes_instead_of_docker_cp">1.1. Changed – Deployment simplification (Docker volumes instead of <code>docker cp</code>)</a>
-<ul class="sectlevel3">
-<li><a href="#_summary">1.1.1. Summary</a></li>
-<li><a href="#_what_changed">1.1.2. What changed</a></li>
-<li><a href="#_new_configuration">1.1.3. New configuration</a></li>
-<li><a href="#_new_startup_command">1.1.4. New startup command</a></li>
-<li><a href="#_notes">1.1.5. Notes</a></li>
-</ul>
-</li>
-<li><a href="#_added_support_for_external_etchosts_entries_file_based">1.2. Added – Support for external <code>/etc/hosts</code> entries (file-based)</a>
-<ul class="sectlevel3">
-<li><a href="#_how_it_works">1.2.1. How it works</a></li>
-<li><a href="#_configuration_example">1.2.2. Configuration example</a></li>
-<li><a href="#_notes_2">1.2.3. Notes</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div>
 </div>
 <div id="content">
 <div id="preamble">
@@ -585,24 +560,23 @@ It focuses on deployment and operational changes (Docker Compose, environment fi
 </div>
 </div>
 <div class="sect1">
-<h2 id="_version_1_0_1">1. Version 1.0.1</h2>
+<h2 id="_jd_atina_microserver_docker_files_version_1_0_1_april_1_2026">JD Atina Microserver Docker Files Version 1.0.1, April 1, 2026</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_version_1_0_1_fixed_in_this_release">Version 1.0.1 Fixed in this Release</h3>
 <div class="paragraph">
 <p>Release scope:
 * Docker deployment bundle: <code>jd-docker-files</code>
 * Recommended microserver image: <code>92455890/jd-atina-microserver:1.0.1</code></p>
 </div>
-<div class="sect2">
-<h3 id="_changed_deployment_simplification_docker_volumes_instead_of_docker_cp">1.1. Changed – Deployment simplification (Docker volumes instead of <code>docker cp</code>)</h3>
 <div class="sect3">
-<h4 id="_summary">1.1.1. Summary</h4>
+<h4 id="_1_deployment_simplification_docker_volumes_instead_of_docker_cp">1. Deployment simplification (Docker volumes instead of <code>docker cp</code>)</h4>
 <div class="paragraph">
 <p>The microserver deployment flow has been simplified by replacing multiple <code>docker cp</code> steps with <strong>read-only Docker volume mounts</strong>.
 This makes deployments more reliable, reproducible, and compatible with container recreation (<code>--force-recreate</code>) without losing copied files.</p>
 </div>
-</div>
-<div class="sect3">
-<h4 id="_what_changed">1.1.2. What changed</h4>
+<div class="sect4">
+<h5 id="_what_changed">What changed</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -630,8 +604,9 @@ This makes deployments more reliable, reproducible, and compatible with containe
 </ul>
 </div>
 </div>
+</div>
 <div class="sect3">
-<h4 id="_new_configuration">1.1.3. New configuration</h4>
+<h4 id="_new_configuration">New configuration</h4>
 <div class="paragraph">
 <p>Add the following to your <code>.env</code> (or the <code>--env-file</code> you use with Docker Compose):</p>
 </div>
@@ -660,7 +635,7 @@ This makes deployments more reliable, reproducible, and compatible with containe
 </div>
 </div>
 <div class="sect3">
-<h4 id="_new_startup_command">1.1.4. New startup command</h4>
+<h4 id="_new_startup_command">New startup command</h4>
 <div class="paragraph">
 <p>You can now start (or restart) the microserver with a single command:</p>
 </div>
@@ -674,7 +649,7 @@ This makes deployments more reliable, reproducible, and compatible with containe
 </div>
 </div>
 <div class="sect3">
-<h4 id="_notes">1.1.5. Notes</h4>
+<h4 id="_notes">Notes</h4>
 <div class="ulist">
 <ul>
 <li>
@@ -690,14 +665,17 @@ This makes deployments more reliable, reproducible, and compatible with containe
 </div>
 <hr>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_added_support_for_external_etchosts_entries_file_based">1.2. Added – Support for external <code>/etc/hosts</code> entries (file-based)</h3>
+<div class="sect3">
+<h4 id="_2_added_support_for_external_etchosts_entries_file_based">2. Added – Support for external <code>/etc/hosts</code> entries (file-based)</h4>
 <div class="paragraph">
 <p>You can now inject multiple host mappings into the container’s <code>/etc/hosts</code> using a mounted file, instead of relying on a fixed set of environment variables.</p>
 </div>
+<div class="paragraph">
+<p>This feature is useful when extra_hosts cannot be used (e.g., certain Azure networking constraints).</p>
+</div>
+</div>
 <div class="sect3">
-<h4 id="_how_it_works">1.2.1. How it works</h4>
+<h4 id="_how_it_works">How it works</h4>
 <div class="ulist">
 <ul>
 <li>
@@ -713,7 +691,7 @@ This makes deployments more reliable, reproducible, and compatible with containe
 </div>
 </div>
 <div class="sect3">
-<h4 id="_configuration_example">1.2.2. Configuration example</h4>
+<h4 id="_configuration_example">Configuration example</h4>
 <div class="paragraph">
 <p><code>docker-compose.yml</code>:</p>
 </div>
@@ -748,7 +726,7 @@ This makes deployments more reliable, reproducible, and compatible with containe
 </div>
 </div>
 <div class="sect3">
-<h4 id="_notes_2">1.2.3. Notes</h4>
+<h4 id="_notes_2">Notes</h4>
 <div class="ulist">
 <ul>
 <li>
@@ -769,7 +747,7 @@ This makes deployments more reliable, reproducible, and compatible with containe
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-03-14 17:49:43 -0300
+Last updated 2026-04-09 20:16:44 -0300
 </div>
 </div>
 <script>

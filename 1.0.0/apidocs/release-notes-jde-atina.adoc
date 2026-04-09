@@ -3,6 +3,109 @@
 
 Atina JDE Microservices are Docker-based components designed to interact directly with Oracle’s JD Edwards EnterpriseOne™. They serve as a modern intermediary that improves upon legacy integration methods.
 
+== Atina JDE Edwards Microservice 1.0.4 - April 9, 2026
+
+=== Version 1.0.4 Fixed in this Release
+
+==== 1. Session Concurrency Handling During Re-Login
+
+We identified a concurrency issue during the JDE re-login/session validation flow. While the microservice was checking the list of existing JDE sessions before opening a new one, another thread could modify that same session collection at the same time.
+
+Under parallel execution, this could lead to intermittent failures such as `ConcurrentModificationException` during session reuse or re-login validation.
+
+===== What changed
+
+* The session validation flow was updated to avoid iterating directly over a live shared session collection.
+* The microservice now works with a safer session snapshot/retry approach during re-login validation.
+* This reduces the risk of intermittent failures when multiple requests are processed concurrently.
+
+===== Impact
+
+* Improves stability under parallel execution.
+* Prevents intermittent re-login/session validation failures caused by concurrent updates to the session list.
+* Reduces the risk of unexpected connector errors during high-concurrency scenarios.
+
+===== Notes / Recommendation
+
+This fix is especially relevant in environments where multiple concurrent requests may trigger JDE session validation or re-login logic at the same time.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+==== 2. Submit UBE XML Request - Error Handling and Cache Validation
+
+We identified a scenario where error responses returned by JD Edwards (such as invalid credentials or malformed requests) could be mistakenly stored in the cache, leading to repeated failures in subsequent executions.
+
+===== What changed
+
+•	The microservice now detects error responses in the XML payload
+
+If an error is detected:
+
+•	The error is returned immediately to the caller
+•	The XML is not stored in the cache
+
+===== Impact
+
+•	Prevents invalid or error responses from being cached
+•	Avoids persistent failures caused by corrupted cache entries
+•	Improves troubleshooting by exposing the actual JDE error response
+
+===== Notes / Recommendation
+
+This change ensures that only valid XML definitions are cached.
+If an error occurs, it will now be visible in the response, making it easier to diagnose configuration or credential issues.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+== Atina JDE Edwards Microservice 1.0.3 - April 7, 2026
+
+=== Version 1.0.3 Fixed in this Release
+
+==== 1. UBE Submission User Context
+
+We identified an issue where UBE submissions were executed using the security (bootstrap) user instead of the logged-in user, which could lead to unexpected behavior depending on customer configurations and permissions.
+
+===== What changed
+
+•	UBE submissions now use the logged-in user by default.
+•	A new configuration property allows switching back to the security (bootstrap) user if required.
+
+===== New .Env configuration
+
+```env
+UBE_SUBMISSION_USER_CONTEXT=logged_in_user
+```
+
+===== New Docker-Compose.yml configuration
+
+```env
+    environment:
+      ...
+      JDE_EXTRA_HOSTS_FILE: /tmp/extra-hosts.txt
+      SUBMIT_UBE_USER_LOGGED: ${SUBMIT_UBE_USER_LOGGED}
+    container_name: jd-atina-microserver
+      ...
+```
+
+===== Impact
+
+•	Ensures consistency with user context and permissions during UBE execution
+•	Prevents discrepancies between interactive and integration-based executions
+
+===== Notes / Recommendation
+
+The default behavior (true) is recommended for most scenarios, as it aligns UBE execution with the authenticated user context.
+
+===== Deployment
+
+After updating the .env, restart/redeploy the container for the change to take effect.
+
 == Atina JDE Edwards Microservice 1.0.2 - March 25, 2026
 
 === Version 1.0.2 Fixed in this Release
@@ -13,12 +116,12 @@ As a result, sessions that were still active (including sessions being used by a
 
 •	Cannot find the user session with session ID ... please (re)login
 
-What changed
+===== What changed
 
 •	The cleanup flow now ensures that only the targeted expired session is disconnected.
 •	The cleanup process includes an additional safety control to prevent it from interrupting ongoing operations.
 
-Impact
+===== Impact
 
 •	Prevents unexpected logoffs of active sessions.
 •	Improves stability when multiple concurrent sessions are in use.
@@ -33,6 +136,8 @@ We added an **optional kernel recycling step** to the cleanup flow to help mitig
 
 This feature allows the microservice to trigger recycling as part of the cleanup process, helping the server free up kernels and restore capacity.
 
+====== KERNEL_RECICLYING
+
 Enable/disable via the Atina microservice Docker `.env` file:
 ```env
 KERNEL_RECICLYING=true
@@ -41,36 +146,41 @@ KERNEL_RECICLYING=true
 	•	true: kernel recycling is executed during cleanup
 	•	false (or not set): recycling is skipped (default behavior)
 
-When to use
+====== When to use
 
 •	Intermittent COSE#1000 / “Unable to obtain an environment”
 •	Kernel exhaustion or zombie CallObject kernel symptoms
 •	Temporary mitigation while investigating the root cause
 
+====== KERNEL_RECICLYING_BY_USER
 
 ```env
 KERNEL_RECICLYING_BY_USER=true
 ```
 
-When to use:
+======  When to use:
 
 •	KERNEL_RECICLYING is true
 •	Recycling should only be triggered by user logoff rather than automatically during every cleanup cycle.
 
-Notes / Recommendation
 
-This is intended as a workaround/mitigation, not a permanent fix. If the underlying issue is caused by custom BSFNs leaving resources open (e.g., “OPEN TABLE NOT CLOSED”), that custom code should still be corrected to prevent leaks.
-
-Deployment
-After updating the .env, restart/redeploy the container for the change to take effect.
+====== SESSION_EXPIRATION_TIME
 
 ```env
 SESSION_EXPIRATION_TIME=5
 ```
 
-When to use:
+===== When to use:
 
 •	Enable this setting to have the microservice automatically log off users after a specified minutes of inactivity, helping to free up resources and prevent stale sessions.
+
+===== Notes / Recommendation
+
+This is intended as a workaround/mitigation, not a permanent fix. If the underlying issue is caused by custom BSFNs leaving resources open (e.g., “OPEN TABLE NOT CLOSED”), that custom code should still be corrected to prevent leaks.
+
+===== Deployment
+After updating the .env, restart/redeploy the container for the change to take effect.
+
 
 == Atina JDE Edwards Microservice 1.0.0 - August 10, 2025
 
