@@ -3,6 +3,165 @@
 This document describes changes to the *JD Atina Microserver Docker deployment bundle* (also referred to as `jd-docker-files`).
 It focuses on deployment and operational changes (Docker Compose, environment files, startup behavior).
 
+== JD Atina Microserver Docker Files Version 1.0.4, April 20, 2026
+
+=== Changes in this Release
+
+Release scope:
+* Docker deployment bundle: `jd-docker-files`
+* Recommended microserver image: `92455890/jd-atina-microserver:1.0.4`
+
+==== 1. Added – Configurable JVM memory and OutOfMemory dump settings
+
+The Docker deployment bundle now supports configuring JVM heap settings and automatic dump generation through environment variables.
+This makes it easier to adjust memory usage without changing the startup script and provides better diagnostics if an OutOfMemoryError happens again.
+
+===== What changed
+* Added new JVM-related environment variables to the `.env` file.
+* Updated the startup script to read JVM settings from environment variables instead of using a hardcoded `-Xmx2G`.
+* Added support for automatic heap dump generation on `OutOfMemoryError`.
+* Added support for configurable JVM fatal error log output.
+* Added optional support for extra JVM options through a free-form variable.
+
+===== New configuration
+
+Add the following to your `.env` (or the `--env-file` you use with Docker Compose):
+
+[source,bash]
+----
+# JVM Memory Configuration
+# -------------------------------------------
+# Defines the JVM heap settings used by the microserver.
+#
+JDE_JAVA_XMS=2G
+JDE_JAVA_XMX=4G
+#
+# Enables automatic heap dump generation on OutOfMemoryError.
+#
+JDE_JAVA_HEAP_DUMP_ON_OOM=true
+#
+# Directory where heap dumps will be written.
+#
+JDE_JAVA_HEAP_DUMP_PATH=/tmp/jvm-dumps
+#
+# JVM fatal error log file.
+#
+JDE_JAVA_ERROR_FILE=/tmp/jvm-dumps/hs_err_pid%p.log
+#
+# Optional extra JVM arguments.
+#
+JDE_JAVA_EXTRA_OPTS=
+# -------------------------------------------
+----
+
+Update `docker-compose.yml` to expose the variables to the container:
+
+[source,yaml]
+----
+services:
+  jd-atina-microserver:
+    environment:
+      JDE_JAVA_XMS: ${JDE_JAVA_XMS}
+      JDE_JAVA_XMX: ${JDE_JAVA_XMX}
+      JDE_JAVA_HEAP_DUMP_ON_OOM: ${JDE_JAVA_HEAP_DUMP_ON_OOM}
+      JDE_JAVA_HEAP_DUMP_PATH: ${JDE_JAVA_HEAP_DUMP_PATH}
+      JDE_JAVA_ERROR_FILE: ${JDE_JAVA_ERROR_FILE}
+      JDE_JAVA_EXTRA_OPTS: ${JDE_JAVA_EXTRA_OPTS}
+----
+
+====  How to update the Docker image version
+
+
+When upgrading to a new Docker deployment bundle version, update the microserver image tag in `docker-compose.yml`.
+
+For example, change:
+
+[source,yaml]
+----
+services:
+  jd-atina-microserver:
+    image: 92455890/jd-atina-microserver:1.0.3
+----
+
+to:
+
+[source,yaml]
+----
+services:
+  jd-atina-microserver:
+    image: 92455890/jd-atina-microserver:1.0.4
+----
+
+After updating the image tag, recreate the container:
+
+[source,bash]
+----
+docker compose --env-file .env up -d --force-recreate
+----
+
+===== Notes
+* The previous hardcoded JVM heap setting (`-Xmx2G`) has been replaced by configurable environment variables.
+* `JDE_JAVA_XMS=2G` and `JDE_JAVA_XMX=4G` are the recommended initial settings.
+* If `JDE_JAVA_HEAP_DUMP_ON_OOM=true`, the JVM will automatically write a heap dump when an `OutOfMemoryError` occurs.
+* `JDE_JAVA_EXTRA_OPTS` can be used for additional JVM arguments when needed.
+* It is recommended to use a mounted volume for `JDE_JAVA_HEAP_DUMP_PATH` so dump files are preserved across container recreation.
+* Make sure the image tag matches the Docker deployment bundle version you are installing.
+
+== JD Atina Microserver Docker Files Version 1.0.3, April 7, 2026
+
+=== Changes in this Release
+
+Release scope:
+* Docker deployment bundle: `jd-docker-files`
+* Recommended microserver image: `92455890/jd-atina-microserver:1.0.3`
+
+==== 1. Added – UBE submission user mode configuration
+
+A new environment variable was added to control which user context is used when submitting UBE jobs from the microserver.
+
+===== What changed
+* Added a new `.env` property:
+** `SUBMIT_UBE_USER_LOGGED`
+* Added the corresponding variable in `docker-compose.yml` under the container `environment:` section.
+* This allows customers to explicitly choose between:
+** using the logged-in user context
+** using the security/bootstrap user context
+
+===== New configuration
+
+Add the following to your `.env` (or the `--env-file` you use with Docker Compose):
+
+[source,bash]
+----
+# UBE Submission User Configuration
+# -------------------------------------------
+# Defines which user context is used when submitting UBE jobs.
+#
+# true  → Uses the logged-in user (recommended and default behavior)
+# false → Uses the security/bootstrap user (legacy behavior)
+#
+# If not defined, the system defaults to "true".
+#
+SUBMIT_UBE_USER_LOGGED=true
+# -------------------------------------------
+----
+
+Update `docker-compose.yml` to expose the variable to the container:
+
+[source,yaml]
+----
+services:
+  jd-atina-microserver:
+    environment:
+      SUBMIT_UBE_USER_LOGGED: ${SUBMIT_UBE_USER_LOGGED}
+----
+
+===== Notes
+* `SUBMIT_UBE_USER_LOGGED=true` is the recommended setting.
+* `SUBMIT_UBE_USER_LOGGED=false` preserves the legacy behavior by using the security/bootstrap user for UBE submission.
+* If the variable is not explicitly defined, the system defaults to `true`.
+
+
 == JD Atina Microserver Docker Files Version 1.0.1, April 1, 2026
 
 === Version 1.0.1 Fixed in this Release
@@ -43,9 +202,9 @@ services:
       - ${JDE_LIBS_ROOT}/JDV920:/tmp/jde/config/JDV920:ro
       - ${JDE_LIBS_ROOT}/JPS920:/tmp/jde/config/JPS920:ro
 
-      - ${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar:/tmp/jde/jde-lib-wrapped-1.0.0.jar:ro
-      - ${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar:/tmp/jde/StdWebService-1.0.0.jar:ro
-      - ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar:/tmp/jde/JDEAtinaOverrideServicesConstants-1.0.0.jar:ro
+      - ${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar:/tmp/jde/jde-lib-wrapped-1.0.0.jar
+      - ${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar:/tmp/jde/StdWebService-1.0.0.jar
+      - ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar:/tmp/jde/JDEAtinaOverrideServicesConstants-1.0.0.jar
 
       - ${JDE_LIBS_ROOT}/service-constants.properties:/var/jdeatinaserver/service-constants.properties:ro
 ----

@@ -560,6 +560,256 @@ It focuses on deployment and operational changes (Docker Compose, environment fi
 </div>
 </div>
 <div class="sect1">
+<h2 id="_jd_atina_microserver_docker_files_version_1_0_4_april_20_2026">JD Atina Microserver Docker Files Version 1.0.4, April 20, 2026</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_changes_in_this_release">Changes in this Release</h3>
+<div class="paragraph">
+<p>Release scope:
+* Docker deployment bundle: <code>jd-docker-files</code>
+* Recommended microserver image: <code>92455890/jd-atina-microserver:1.0.4</code></p>
+</div>
+<div class="sect3">
+<h4 id="_1_added_configurable_jvm_memory_and_outofmemory_dump_settings">1. Added – Configurable JVM memory and OutOfMemory dump settings</h4>
+<div class="paragraph">
+<p>The Docker deployment bundle now supports configuring JVM heap settings and automatic dump generation through environment variables.
+This makes it easier to adjust memory usage without changing the startup script and provides better diagnostics if an OutOfMemoryError happens again.</p>
+</div>
+<div class="sect4">
+<h5 id="_what_changed">What changed</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>Added new JVM-related environment variables to the <code>.env</code> file.</p>
+</li>
+<li>
+<p>Updated the startup script to read JVM settings from environment variables instead of using a hardcoded <code>-Xmx2G</code>.</p>
+</li>
+<li>
+<p>Added support for automatic heap dump generation on <code>OutOfMemoryError</code>.</p>
+</li>
+<li>
+<p>Added support for configurable JVM fatal error log output.</p>
+</li>
+<li>
+<p>Added optional support for extra JVM options through a free-form variable.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_new_configuration">New configuration</h5>
+<div class="paragraph">
+<p>Add the following to your <code>.env</code> (or the <code>--env-file</code> you use with Docker Compose):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash"># JVM Memory Configuration
+# -------------------------------------------
+# Defines the JVM heap settings used by the microserver.
+#
+JDE_JAVA_XMS=2G
+JDE_JAVA_XMX=4G
+#
+# Enables automatic heap dump generation on OutOfMemoryError.
+#
+JDE_JAVA_HEAP_DUMP_ON_OOM=true
+#
+# Directory where heap dumps will be written.
+#
+JDE_JAVA_HEAP_DUMP_PATH=/tmp/jvm-dumps
+#
+# JVM fatal error log file.
+#
+JDE_JAVA_ERROR_FILE=/tmp/jvm-dumps/hs_err_pid%p.log
+#
+# Optional extra JVM arguments.
+#
+JDE_JAVA_EXTRA_OPTS=
+# -------------------------------------------</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Update <code>docker-compose.yml</code> to expose the variables to the container:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yaml"><span style="color:#606">services</span>:
+  <span style="color:#606">jd-atina-microserver</span>:
+    <span style="color:#606">environment</span>:
+      <span style="color:#606">JDE_JAVA_XMS</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_JAVA_XMS}</span></span>
+      <span style="color:#606">JDE_JAVA_XMX</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_JAVA_XMX}</span></span>
+      <span style="color:#606">JDE_JAVA_HEAP_DUMP_ON_OOM</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_JAVA_HEAP_DUMP_ON_OOM}</span></span>
+      <span style="color:#606">JDE_JAVA_HEAP_DUMP_PATH</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_JAVA_HEAP_DUMP_PATH}</span></span>
+      <span style="color:#606">JDE_JAVA_ERROR_FILE</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_JAVA_ERROR_FILE}</span></span>
+      <span style="color:#606">JDE_JAVA_EXTRA_OPTS</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_JAVA_EXTRA_OPTS}</span></span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_how_to_update_the_docker_image_version">How to update the Docker image version</h4>
+<div class="paragraph">
+<p>When upgrading to a new Docker deployment bundle version, update the microserver image tag in <code>docker-compose.yml</code>.</p>
+</div>
+<div class="paragraph">
+<p>For example, change:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yaml"><span style="color:#606">services</span>:
+  <span style="color:#606">jd-atina-microserver</span>:
+    <span style="color:#606">image</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">92455890/jd-atina-microserver:1.0.3</span></span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>to:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yaml"><span style="color:#606">services</span>:
+  <span style="color:#606">jd-atina-microserver</span>:
+    <span style="color:#606">image</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">92455890/jd-atina-microserver:1.0.4</span></span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After updating the image tag, recreate the container:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">docker compose --env-file .env up -d --force-recreate</code></pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_notes">Notes</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>The previous hardcoded JVM heap setting (<code>-Xmx2G</code>) has been replaced by configurable environment variables.</p>
+</li>
+<li>
+<p><code>JDE_JAVA_XMS=2G</code> and <code>JDE_JAVA_XMX=4G</code> are the recommended initial settings.</p>
+</li>
+<li>
+<p>If <code>JDE_JAVA_HEAP_DUMP_ON_OOM=true</code>, the JVM will automatically write a heap dump when an <code>OutOfMemoryError</code> occurs.</p>
+</li>
+<li>
+<p><code>JDE_JAVA_EXTRA_OPTS</code> can be used for additional JVM arguments when needed.</p>
+</li>
+<li>
+<p>It is recommended to use a mounted volume for <code>JDE_JAVA_HEAP_DUMP_PATH</code> so dump files are preserved across container recreation.</p>
+</li>
+<li>
+<p>Make sure the image tag matches the Docker deployment bundle version you are installing.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_jd_atina_microserver_docker_files_version_1_0_3_april_7_2026">JD Atina Microserver Docker Files Version 1.0.3, April 7, 2026</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_changes_in_this_release_2">Changes in this Release</h3>
+<div class="paragraph">
+<p>Release scope:
+* Docker deployment bundle: <code>jd-docker-files</code>
+* Recommended microserver image: <code>92455890/jd-atina-microserver:1.0.3</code></p>
+</div>
+<div class="sect3">
+<h4 id="_1_added_ube_submission_user_mode_configuration">1. Added – UBE submission user mode configuration</h4>
+<div class="paragraph">
+<p>A new environment variable was added to control which user context is used when submitting UBE jobs from the microserver.</p>
+</div>
+<div class="sect4">
+<h5 id="_what_changed_2">What changed</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>Added a new <code>.env</code> property:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>SUBMIT_UBE_USER_LOGGED</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Added the corresponding variable in <code>docker-compose.yml</code> under the container <code>environment:</code> section.</p>
+</li>
+<li>
+<p>This allows customers to explicitly choose between:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>using the logged-in user context</p>
+</li>
+<li>
+<p>using the security/bootstrap user context</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_new_configuration_2">New configuration</h5>
+<div class="paragraph">
+<p>Add the following to your <code>.env</code> (or the <code>--env-file</code> you use with Docker Compose):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash"># UBE Submission User Configuration
+# -------------------------------------------
+# Defines which user context is used when submitting UBE jobs.
+#
+# true  → Uses the logged-in user (recommended and default behavior)
+# false → Uses the security/bootstrap user (legacy behavior)
+#
+# If not defined, the system defaults to &quot;true&quot;.
+#
+SUBMIT_UBE_USER_LOGGED=true
+# -------------------------------------------</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Update <code>docker-compose.yml</code> to expose the variable to the container:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yaml"><span style="color:#606">services</span>:
+  <span style="color:#606">jd-atina-microserver</span>:
+    <span style="color:#606">environment</span>:
+      <span style="color:#606">SUBMIT_UBE_USER_LOGGED</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${SUBMIT_UBE_USER_LOGGED}</span></span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_notes_2">Notes</h5>
+<div class="ulist">
+<ul>
+<li>
+<p><code>SUBMIT_UBE_USER_LOGGED=true</code> is the recommended setting.</p>
+</li>
+<li>
+<p><code>SUBMIT_UBE_USER_LOGGED=false</code> preserves the legacy behavior by using the security/bootstrap user for UBE submission.</p>
+</li>
+<li>
+<p>If the variable is not explicitly defined, the system defaults to <code>true</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_jd_atina_microserver_docker_files_version_1_0_1_april_1_2026">JD Atina Microserver Docker Files Version 1.0.1, April 1, 2026</h2>
 <div class="sectionbody">
 <div class="sect2">
@@ -576,7 +826,7 @@ It focuses on deployment and operational changes (Docker Compose, environment fi
 This makes deployments more reliable, reproducible, and compatible with container recreation (<code>--force-recreate</code>) without losing copied files.</p>
 </div>
 <div class="sect4">
-<h5 id="_what_changed">What changed</h5>
+<h5 id="_what_changed_3">What changed</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -606,7 +856,7 @@ This makes deployments more reliable, reproducible, and compatible with containe
 </div>
 </div>
 <div class="sect3">
-<h4 id="_new_configuration">New configuration</h4>
+<h4 id="_new_configuration_3">New configuration</h4>
 <div class="paragraph">
 <p>Add the following to your <code>.env</code> (or the <code>--env-file</code> you use with Docker Compose):</p>
 </div>
@@ -626,9 +876,9 @@ This makes deployments more reliable, reproducible, and compatible with containe
       - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/JDV920:/tmp/jde/config/JDV920:ro</span></span>
       - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/JPS920:/tmp/jde/config/JPS920:ro</span></span>
 
-      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar:/tmp/jde/jde-lib-wrapped-1.0.0.jar:ro</span></span>
-      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar:/tmp/jde/StdWebService-1.0.0.jar:ro</span></span>
-      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar:/tmp/jde/JDEAtinaOverrideServicesConstants-1.0.0.jar:ro</span></span>
+      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar:/tmp/jde/jde-lib-wrapped-1.0.0.jar</span></span>
+      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar:/tmp/jde/StdWebService-1.0.0.jar</span></span>
+      - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar:/tmp/jde/JDEAtinaOverrideServicesConstants-1.0.0.jar</span></span>
 
       - <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${JDE_LIBS_ROOT}/service-constants.properties:/var/jdeatinaserver/service-constants.properties:ro</span></span></code></pre>
 </div>
@@ -649,7 +899,7 @@ This makes deployments more reliable, reproducible, and compatible with containe
 </div>
 </div>
 <div class="sect3">
-<h4 id="_notes">Notes</h4>
+<h4 id="_notes_3">Notes</h4>
 <div class="ulist">
 <ul>
 <li>
@@ -726,7 +976,7 @@ This makes deployments more reliable, reproducible, and compatible with containe
 </div>
 </div>
 <div class="sect3">
-<h4 id="_notes_2">Notes</h4>
+<h4 id="_notes_4">Notes</h4>
 <div class="ulist">
 <ul>
 <li>
@@ -747,7 +997,7 @@ This makes deployments more reliable, reproducible, and compatible with containe
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-04-09 20:16:44 -0300
+Last updated 2026-04-20 18:52:05 -0300
 </div>
 </div>
 <script>
