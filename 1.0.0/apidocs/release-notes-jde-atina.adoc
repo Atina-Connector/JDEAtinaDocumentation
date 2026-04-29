@@ -64,6 +64,35 @@ If active sessions are still open, the microservice will skip the shutdown and c
 No additional configuration is required.
 Redeploy the container to apply the update.
 
+==== 3. JDE Session Resolution and `jdeinterop.ini` Context Handling
+
+We identified a JD Edwards session resolution issue where the underlying JDE session lookup could return stale session information associated with the first logged-in session, even when a different session ID was provided.
+
+As a result, operations that depend on the resolved user session could end up loading `jdeinterop.ini` values from the wrong session context, including the Enterprise Server host and port configuration.
+
+===== What changed
+
+* The microservice was updated to better handle this JD Edwards session resolution behavior.
+* Additional safeguards were added around the session-dependent loading of `jdeinterop.ini` values.
+* This reduces the risk of using host and port information associated with the wrong JDE session context.
+
+===== Impact
+
+* Prevents incorrect reuse of session-related configuration data.
+* Reduces the risk of loading `jdeinterop.ini` values from the wrong session.
+* Improves stability when multiple JDE sessions are active in the same runtime.
+
+===== Notes / Recommendation
+
+Based on our analysis, the root cause appears to be in the underlying JD Edwards session resolution behavior, where the session lookup may return stale data from the first logged-in session.
+
+This fix adds protection on the microservice side to reduce the impact of that behavior during runtime.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
 == Atina JDE Edwards Microservice 1.0.4 - April 7, 2026
 
 === Version 1.0.4 Fixed in this Release
