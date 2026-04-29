@@ -34,6 +34,36 @@ This fix is especially relevant in environments where multiple concurrent reques
 No additional configuration is required.
 Redeploy the container to apply the update.
 
+==== 2. Safe Shutdown Execution During Connection Pool Cleanup
+
+We identified an issue in the shutdown flow where `connector.shutDown()` could be triggered while the connection pool cleanup process was still active.
+
+To prevent inconsistent shutdown behavior, the shutdown call had been temporarily disabled while a proper fix was being implemented.
+
+===== What changed
+
+* The microservice now checks the number of active sessions before executing `connector.shutDown()`.
+* A safe session snapshot/retry mechanism is used to determine whether open sessions still exist.
+* `connector.shutDown()` is now executed only when there are no remaining active sessions.
+* If active sessions are still present, the shutdown is skipped and the condition is logged.
+
+===== Impact
+
+* Prevents shutdown from running while sessions are still active.
+* Improves connection pool stability during cleanup operations.
+* Reduces the risk of incomplete shutdown sequences or unintended side effects during session cleanup.
+
+===== Notes / Recommendation
+
+This fix restores the shutdown behavior in a safer way by ensuring that shutdown is only executed when no active sessions remain.
+
+If active sessions are still open, the microservice will skip the shutdown and continue logging the condition for traceability.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
 == Atina JDE Edwards Microservice 1.0.4 - April 7, 2026
 
 === Version 1.0.4 Fixed in this Release
@@ -83,7 +113,7 @@ We identified an issue where UBE submissions were executed using the security (b
 ===== New .Env configuration
 
 ```env
-UBE_SUBMISSION_USER_CONTEXT=logged_in_user
+UBE_SUBMISSION_USER_CONTEXT=true
 ```
 
 ===== New Docker-Compose.yml configuration
