@@ -618,6 +618,123 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_2_safe_shutdown_execution_during_connection_pool_cleanup">2. Safe Shutdown Execution During Connection Pool Cleanup</h4>
+<div class="paragraph">
+<p>We identified an issue in the shutdown flow where <code>connector.shutDown()</code> could be triggered while the connection pool cleanup process was still active.</p>
+</div>
+<div class="paragraph">
+<p>To prevent inconsistent shutdown behavior, the shutdown call had been temporarily disabled while a proper fix was being implemented.</p>
+</div>
+<div class="sect4">
+<h5 id="_what_changed_2">What changed</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>The microservice now checks the number of active sessions before executing <code>connector.shutDown()</code>.</p>
+</li>
+<li>
+<p>A safe session snapshot/retry mechanism is used to determine whether open sessions still exist.</p>
+</li>
+<li>
+<p><code>connector.shutDown()</code> is now executed only when there are no remaining active sessions.</p>
+</li>
+<li>
+<p>If active sessions are still present, the shutdown is skipped and the condition is logged.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_impact_2">Impact</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>Prevents shutdown from running while sessions are still active.</p>
+</li>
+<li>
+<p>Improves connection pool stability during cleanup operations.</p>
+</li>
+<li>
+<p>Reduces the risk of incomplete shutdown sequences or unintended side effects during session cleanup.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_notes_recommendation_2">Notes / Recommendation</h5>
+<div class="paragraph">
+<p>This fix restores the shutdown behavior in a safer way by ensuring that shutdown is only executed when no active sessions remain.</p>
+</div>
+<div class="paragraph">
+<p>If active sessions are still open, the microservice will skip the shutdown and continue logging the condition for traceability.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_deployment_2">Deployment</h5>
+<div class="paragraph">
+<p>No additional configuration is required.
+Redeploy the container to apply the update.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_3_jde_session_resolution_and_jdeinterop_ini_context_handling">3. JDE Session Resolution and <code>jdeinterop.ini</code> Context Handling</h4>
+<div class="paragraph">
+<p>We identified a JD Edwards session resolution issue where the underlying JDE session lookup could return stale session information associated with the first logged-in session, even when a different session ID was provided.</p>
+</div>
+<div class="paragraph">
+<p>As a result, operations that depend on the resolved user session could end up loading <code>jdeinterop.ini</code> values from the wrong session context, including the Enterprise Server host and port configuration.</p>
+</div>
+<div class="sect4">
+<h5 id="_what_changed_3">What changed</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>The microservice was updated to better handle this JD Edwards session resolution behavior.</p>
+</li>
+<li>
+<p>Additional safeguards were added around the session-dependent loading of <code>jdeinterop.ini</code> values.</p>
+</li>
+<li>
+<p>This reduces the risk of using host and port information associated with the wrong JDE session context.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_impact_3">Impact</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>Prevents incorrect reuse of session-related configuration data.</p>
+</li>
+<li>
+<p>Reduces the risk of loading <code>jdeinterop.ini</code> values from the wrong session.</p>
+</li>
+<li>
+<p>Improves stability when multiple JDE sessions are active in the same runtime.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_notes_recommendation_3">Notes / Recommendation</h5>
+<div class="paragraph">
+<p>Based on our analysis, the root cause appears to be in the underlying JD Edwards session resolution behavior, where the session lookup may return stale data from the first logged-in session.</p>
+</div>
+<div class="paragraph">
+<p>This fix adds protection on the microservice side to reduce the impact of that behavior during runtime.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_deployment_3">Deployment</h5>
+<div class="paragraph">
+<p>No additional configuration is required.
+Redeploy the container to apply the update.</p>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -632,7 +749,7 @@ Redeploy the container to apply the update.</p>
 <p>We identified a scenario where error responses returned by JD Edwards (such as invalid credentials or malformed requests) could be mistakenly stored in the cache, leading to repeated failures in subsequent executions.</p>
 </div>
 <div class="sect4">
-<h5 id="_what_changed_2">What changed</h5>
+<h5 id="_what_changed_4">What changed</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -655,7 +772,7 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_impact_2">Impact</h5>
+<h5 id="_impact_4">Impact</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -671,14 +788,14 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_notes_recommendation_2">Notes / Recommendation</h5>
+<h5 id="_notes_recommendation_4">Notes / Recommendation</h5>
 <div class="paragraph">
 <p>This change ensures that only valid XML definitions are cached.
 If an error occurs, it will now be visible in the response, making it easier to diagnose configuration or credential issues.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_deployment_2">Deployment</h5>
+<h5 id="_deployment_4">Deployment</h5>
 <div class="paragraph">
 <p>No additional configuration is required.
 Redeploy the container to apply the update.</p>
@@ -699,7 +816,7 @@ Redeploy the container to apply the update.</p>
 <p>We identified an issue where UBE submissions were executed using the security (bootstrap) user instead of the logged-in user, which could lead to unexpected behavior depending on customer configurations and permissions.</p>
 </div>
 <div class="sect4">
-<h5 id="_what_changed_3">What changed</h5>
+<h5 id="_what_changed_5">What changed</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -715,7 +832,7 @@ Redeploy the container to apply the update.</p>
 <h5 id="_new_env_configuration">New .Env configuration</h5>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="env">UBE_SUBMISSION_USER_CONTEXT=logged_in_user</code></pre>
+<pre class="CodeRay highlight"><code data-lang="env">UBE_SUBMISSION_USER_CONTEXT=true</code></pre>
 </div>
 </div>
 </div>
@@ -733,7 +850,7 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_impact_3">Impact</h5>
+<h5 id="_impact_5">Impact</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -746,13 +863,13 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_notes_recommendation_3">Notes / Recommendation</h5>
+<h5 id="_notes_recommendation_5">Notes / Recommendation</h5>
 <div class="paragraph">
 <p>The default behavior (true) is recommended for most scenarios, as it aligns UBE execution with the authenticated user context.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_deployment_3">Deployment</h5>
+<h5 id="_deployment_5">Deployment</h5>
 <div class="paragraph">
 <p>After updating the .env, restart/redeploy the container for the change to take effect.</p>
 </div>
@@ -780,7 +897,7 @@ Redeploy the container to apply the update.</p>
 </ul>
 </div>
 <div class="sect4">
-<h5 id="_what_changed_4">What changed</h5>
+<h5 id="_what_changed_6">What changed</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -793,7 +910,7 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_impact_4">Impact</h5>
+<h5 id="_impact_6">Impact</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -898,13 +1015,13 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_notes_recommendation_4">Notes / Recommendation</h5>
+<h5 id="_notes_recommendation_6">Notes / Recommendation</h5>
 <div class="paragraph">
 <p>This is intended as a workaround/mitigation, not a permanent fix. If the underlying issue is caused by custom BSFNs leaving resources open (e.g., “OPEN TABLE NOT CLOSED”), that custom code should still be corrected to prevent leaks.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_deployment_4">Deployment</h5>
+<h5 id="_deployment_6">Deployment</h5>
 <div class="paragraph">
 <p>After updating the .env, restart/redeploy the container for the change to take effect.</p>
 </div>
@@ -1003,7 +1120,7 @@ Fully tested with Docker Desktop.</p></td>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-04-09 20:22:24 -0300
+Last updated 2026-04-29 15:16:35 -0300
 </div>
 </div>
 <script>
