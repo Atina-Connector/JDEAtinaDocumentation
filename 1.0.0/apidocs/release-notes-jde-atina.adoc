@@ -272,12 +272,7 @@ This fix adds protection on the microservice side to reduce the impact of that b
 
 No additional configuration is required.
 Redeploy the container to apply the update.
-
-
-
-
-
-
+ 
 == Atina JDE Edwards Microservice 1.0.4 - April 7, 2026
 
 === Version 1.0.4 Fixed in this Release
