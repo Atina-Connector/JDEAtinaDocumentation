@@ -1,4 +1,4 @@
-= Atina JD Edwards™ Connector Release Notes
+= Atina JD Edwards™ Micorservices Release Notes
 :keywords: JDE, JDEdwards, EnterpriseOne, Oracle, JD Edwards, ATINA
 
 Atina JDE Microservices are Docker-based components designed to interact directly with Oracle’s JD Edwards EnterpriseOne™. They serve as a modern intermediary that improves upon legacy integration methods.
