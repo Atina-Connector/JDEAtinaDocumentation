@@ -322,7 +322,7 @@ We identified an issue where UBE submissions were executed using the security (b
 ===== New .Env configuration
 
 ```env
-UBE_SUBMISSION_USER_CONTEXT=true
+SUBMIT_UBE_USER_LOGGED=true
 ```
 
 ===== New Docker-Compose.yml configuration
