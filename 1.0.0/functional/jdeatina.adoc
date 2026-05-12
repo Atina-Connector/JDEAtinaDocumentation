@@ -638,6 +638,21 @@ Create the following directory layout and populate it with the required files:
     └── WS/                      # From: //Deployment Server/E920/DV920/java/sbfjars
 ----
 
+[NOTE]
+.Technical note
+====
+In newer JD Edwards releases, the JAS / HTML Server libraries may not be located under the traditional Deployment Server path:
+
+`system/JAS/webclient.ear/webclient.war/WEB-INF/lib`
+
+In environments managed by **Server Manager**, these libraries may instead be located under the corresponding **Agent / Instance** deployment path.
+
+Example:
+
+`D:\jde_home_agent\SCFHA\targets\CA15A2660_DV_HTML_01\owl_deployment\webclient.ear\app\webclient.war\WEB-INF\lib`
+
+If the standard `system/JAS` path is not available, or does not contain the expected JAR files, locate the active HTML Server instance managed by Server Manager and copy the required libraries from that deployment location instead.
+====
 
 **Define local Repository** (localRepo option)
 

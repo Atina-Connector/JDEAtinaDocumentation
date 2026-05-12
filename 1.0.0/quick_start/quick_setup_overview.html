@@ -951,6 +951,36 @@ J4300010_PREFIX_1=</code></pre>
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">cp -rv ~/atina/E1_DeploymentServer/E920/system/JAS/webclient.ear/webclient.war/WEB-INF/lib/* /tmp/build_jde_libs/system/JAS/</code></pre>
 </div>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Technical note</div>
+<div class="paragraph">
+<p>In newer JD Edwards releases, the JAS / HTML Server libraries may not be located under the traditional Deployment Server path:</p>
+</div>
+<div class="paragraph">
+<p><code>system/JAS/webclient.ear/webclient.war/WEB-INF/lib</code></p>
+</div>
+<div class="paragraph">
+<p>In environments managed by <strong>Server Manager</strong>, these libraries may instead be located under the corresponding <strong>Agent / Instance</strong> deployment path.</p>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="paragraph">
+<p><code>D:\jde_home_agent\SCFHA\targets\CA15A2660_DV_HTML_01\owl_deployment\webclient.ear\app\webclient.war\WEB-INF\lib</code></p>
+</div>
+<div class="paragraph">
+<p>If the standard <code>system/JAS</code> path is not available, or does not contain the expected JAR files, locate the active HTML Server instance managed by Server Manager and copy the required libraries from that deployment location instead.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p><strong>System/WS:</strong></p>
 </div>
@@ -1361,7 +1391,7 @@ docker cp /tmp/build_jde_libs/StdWebService-1.0.0.jar jd-atina-microserver:/tmp/
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-05-12 16:18:42 -0300
+Last updated 2026-05-12 16:41:07 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
