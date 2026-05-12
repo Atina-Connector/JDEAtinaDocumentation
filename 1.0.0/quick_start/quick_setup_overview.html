@@ -569,13 +569,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_step_2_generate_jar_libraries"><strong>Step 2: Generate JAR Libraries</strong></a>
 <ul class="sectlevel2">
-<li><a href="#_step_2_1_create_the_service_constants_properties_file"><strong>Step 2.1 - Create the service-constants.properties File</strong></a></li>
-<li><a href="#_step_2_2_download_the_jdeatinaoverrideservicesconstants_library"><strong>Step 2.2 - Download the JDEAtinaOverrideServicesConstants Library</strong></a></li>
-<li><a href="#_step_2_3_download_the_jar_creation_tool"><strong>Step 2.3 - Download the JAR Creation Tool</strong></a></li>
-<li><a href="#_step_2_4_create_the_required_folder_structure"><strong>Step 2.4 - Create the Required Folder Structure</strong></a></li>
-<li><a href="#_step_2_5_copy_deployment_server_files"><strong>Step 2.5 - Copy Deployment Server Files</strong></a></li>
-<li><a href="#_step_2_6_define_local_maven_repository"><strong>Step 2.6 - Define Local Maven Repository</strong></a></li>
-<li><a href="#_step_2_7_execute_the_jar_tool"><strong>Step 2.7 - Execute the JAR Tool</strong></a></li>
+<li><a href="#_step_2_1_download_the_jar_creation_tool"><strong>Step 2.1 - Download the JAR Creation Tool</strong></a></li>
+<li><a href="#_step_2_2_create_the_required_folder_structure"><strong>Step 2.2 - Create the Required Folder Structure</strong></a></li>
+<li><a href="#_step_2_3_copy_deployment_server_files"><strong>Step 2.3 - Copy Deployment Server Files</strong></a></li>
+<li><a href="#_step_2_4_define_local_maven_repository"><strong>Step 2.4 - Define Local Maven Repository</strong></a></li>
+<li><a href="#_step_2_5_execute_the_jar_tool"><strong>Step 2.5 - Execute the JAR Tool</strong></a></li>
 </ul>
 </li>
 <li><a href="#_step_3_microservice_installation"><strong>Step 3: Microservice Installation</strong></a>
@@ -848,54 +846,7 @@ Creating Setting XML File...
 </ul>
 </div>
 <div class="sect2">
-<h3 id="_step_2_1_create_the_service_constants_properties_file"><strong>Step 2.1 - Create the service-constants.properties File</strong></h3>
-<div class="paragraph">
-<p>In this step, you will define runtime parameters for JD Edwards Web Services by creating the <code>service-constants.properties</code> configuration file.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">nano /tmp/build_jde_libs/service-constants.properties</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Copy and paste the following content into the file:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">J0100002_MAX_ROWS=10
-J0000110_MAX_ROWS=10
-J0100004_MAX_ROWS=10
-J0400002_MAX_ROWS=10
-J4200010_SOE_MBF_VERSION=
-J4200010_BYPASS_WARNINGS=2
-J4200010_PREFIX_5=ATINA
-J4200010_PREFIX_2=ATINA
-J4200050_MAX_ROWS=10
-J0100022_MAX_ROWS=10
-J0100007_MAX_ROWS=10
-J4300010_PO_MBF_VERSION=ZJDE0001
-J4300010_BYPASS_BSFN_WARNINGS=1
-J4300010_PREFIX_1=</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_step_2_2_download_the_jdeatinaoverrideservicesconstants_library"><strong>Step 2.2 - Download the JDEAtinaOverrideServicesConstants Library</strong></h3>
-<div class="paragraph">
-<p>The system requires a supporting library to override default JD Edwards service properties with the values defined in your <code>service-constants.properties</code> file. This enables more flexible and file-driven configuration without modifying JDE directly.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl -L https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/JDEAtinaOverrideServicesConstants/1.0.0/JDEAtinaOverrideServicesConstants-1.0.0.jar \
-  --output /tmp/build_jde_libs/JDEAtinaOverrideServicesConstants-1.0.0.jar</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Ensure this JAR file is located in the <code>/tmp/build_jde_libs/</code> folder along with the <code>service-constants.properties</code> file.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_step_2_3_download_the_jar_creation_tool"><strong>Step 2.3 - Download the JAR Creation Tool</strong></h3>
+<h3 id="_step_2_1_download_the_jar_creation_tool"><strong>Step 2.1 - Download the JAR Creation Tool</strong></h3>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-jar-files/1.0.0/jd-create-jar-files-1.2.0.jar \
@@ -904,7 +855,7 @@ J4300010_PREFIX_1=</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_2_4_create_the_required_folder_structure"><strong>Step 2.4 - Create the Required Folder Structure</strong></h3>
+<h3 id="_step_2_2_create_the_required_folder_structure"><strong>Step 2.2 - Create the Required Folder Structure</strong></h3>
 <div class="paragraph">
 <p>Create the following directory layout and populate it with the required files from the Deployment Server:</p>
 </div>
@@ -923,7 +874,7 @@ J4300010_PREFIX_1=</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_2_5_copy_deployment_server_files"><strong>Step 2.5 - Copy Deployment Server Files</strong></h3>
+<h3 id="_step_2_3_copy_deployment_server_files"><strong>Step 2.3 - Copy Deployment Server Files</strong></h3>
 <div class="paragraph">
 <p>Copy the required JDE libraries from the Deployment Server into your local directory structure:</p>
 </div>
@@ -991,7 +942,7 @@ J4300010_PREFIX_1=</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_2_6_define_local_maven_repository"><strong>Step 2.6 - Define Local Maven Repository</strong></h3>
+<h3 id="_step_2_4_define_local_maven_repository"><strong>Step 2.4 - Define Local Maven Repository</strong></h3>
 <div class="paragraph">
 <p>Run this command to find where the current local repository is defined:</p>
 </div>
@@ -1010,7 +961,7 @@ J4300010_PREFIX_1=</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_2_7_execute_the_jar_tool"><strong>Step 2.7 - Execute the JAR Tool</strong></h3>
+<h3 id="_step_2_5_execute_the_jar_tool"><strong>Step 2.5 - Execute the JAR Tool</strong></h3>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">java -jar jd-create-jar-files-1.2.0.jar \
@@ -1391,7 +1342,7 @@ docker cp /tmp/build_jde_libs/StdWebService-1.0.0.jar jd-atina-microserver:/tmp/
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-05-12 16:45:14 -0300
+Last updated 2026-05-12 17:43:07 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

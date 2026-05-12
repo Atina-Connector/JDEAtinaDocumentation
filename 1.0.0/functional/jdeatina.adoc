@@ -747,6 +747,11 @@ GENERATION SUCESSS
 ------------------------------------------------------------------------
 JDE Library bundle has been copied to: /tmp/build_jde_libs/jde-lib-wrapped-1.0.0.jar
 JDE WS has been copied to: /tmp/build_jde_libs/StdWebService-1.0.0.jar
+Constants File has been copied to: /tmp/build_jde_libs/service-constants.properties
+Override Jar File has been copied to: /tmp/build_jde_libs/JDEAtinaOverrideServicesConstants-1.0.0.jar
+------------------------------------------------------------------------
+PTF:[9.2.5.6]
+
 ----
 
 
@@ -754,6 +759,8 @@ JDE WS has been copied to: /tmp/build_jde_libs/StdWebService-1.0.0.jar
 ----
 build_jde_libs
       ├─ jde-lib-wrapped-1.0.0.jar
+      ├─ service-constants.properties
+      ├─ JDEAtinaOverrideServicesConstants-1.0.0.jar
       └─ StdWebService-1.0.0.jar
 ----
 
