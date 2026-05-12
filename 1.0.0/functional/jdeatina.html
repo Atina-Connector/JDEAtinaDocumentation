@@ -434,6 +434,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 #footer-text{color:rgba(0,0,0,.6);font-size:.9em}}
 @media amzn-kf8{#header,#content,#footnotes,#footer{padding:0}}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/styles/github.min.css">
 <style>
 /*! Asciidoctor Tabs | Copyright (c) 2018-present Dan Allen | MIT License */
@@ -586,7 +587,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel3">
 <li><a href="#_jde_atina_generate_configuration_files_tool_using_the_java_cli_application">JDE Atina Generate Configuration Files Tool - Using the Java CLI Application</a></li>
 <li><a href="#_jd_atina_generate_configuration_files_tool_using_the_docker_image">JD Atina Generate Configuration Files Tool - Using the Docker Image</a></li>
-<li><a href="#_notes_faq">Notes / FAQ</a></li>
+<li><a href="#_manual_ini_file_generation_from_server_manager">Manual INI file generation from Server Manager</a></li>
+<li><a href="#_migrating_from_the_previous_jde_connector">Migrating from the previous JDE connector*</a></li>
 </ul>
 </li>
 <li><a href="#_jde_atina_generate_jars_files_tool"><strong>JDE Atina Generate Jars Files Tool</strong></a>
@@ -966,7 +968,7 @@ Make sure you include the following directories from your JDE Deployment Server 
 <table>
 <tr>
 <td class="icon">
-<div class="title">Note</div>
+<i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
 <div class="paragraph">
@@ -1048,7 +1050,7 @@ Install and configure the microservice container in your environment using the D
 <table>
 <tr>
 <td class="icon">
-<div class="title">Note</div>
+<i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
 <div class="paragraph">
@@ -1126,7 +1128,7 @@ APPEND=TRUE</code></pre>
 <table>
 <tr>
 <td class="icon">
-<div class="title">Note</div>
+<i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
 <div class="paragraph">
@@ -1140,7 +1142,7 @@ APPEND=TRUE</code></pre>
 <table>
 <tr>
 <td class="icon">
-<div class="title">Important</div>
+<i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
 <div class="paragraph">
@@ -1332,7 +1334,7 @@ It connects to the JD Edwards Server Manager via REST API and automatically extr
 <table>
 <tr>
 <td class="icon">
-<div class="title">Note</div>
+<i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
 <div class="paragraph">
@@ -1492,10 +1494,49 @@ GENERATION SUCESSS
 </div>
 </div>
 <div class="sect3">
-<h4 id="_notes_faq">Notes / FAQ</h4>
+<h4 id="_manual_ini_file_generation_from_server_manager">Manual INI file generation from Server Manager</h4>
 <div class="paragraph">
-<p><strong>Migrating from the previous JDE connector</strong></p>
+<p>If you encounter any issues retrieving information from the servers, you can generate the INI files manually by obtaining the values directly from the JDE Server Manager. The video below shows where to find each value in the Server Manager interface.</p>
 </div>
+<div class="paragraph">
+<p>First, run the following command to generate the folder structure with template INI files that you will need to update manually:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">java -jar jd-create-ini-files-1.0.1.jar \
+  -e JDV920 \
+  -m Y \
+  -f /tmp/build_jde_libs</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This creates the directory structure with base INI files. You must then update these files with the correct values obtained from the Server Manager.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Version: 1.0.1
+Running with migration options
+-----------------------------------------------------------
+Creating environment folder...
+Folder : /tmp/demo/JDV920 has been cleaned
+ Processing File: jdbj.ini
+processIniFile JDBJ: File: /tmp/demo/JDV920/jdbj.ini generated
+ Processing File: jdeinterop.ini
+processIniFile INTEROP: File: /tmp/demo/JDV920/jdeinterop.ini generated
+ Processing File: jdelog.properties
+processIniFile JDELOG: File: /tmp/demo/JDV920/jdelog.properties generated
+-----------------------------------------------------------
+Creating Setting XML File...
+ Processing File: settings.xml
+ File: /tmp/demo/settings.xml generated</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><span class="icon red"><i class="fa fa-youtube-play"></i></span> <a href="https://www.youtube.com/watch?v=QihuDOyWq7c" target="_blank" rel="noopener">Watch video: Generate INI Files (includes manual Server Manager walkthrough)</a></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_migrating_from_the_previous_jde_connector">Migrating from the previous JDE connector*</h4>
 <div class="paragraph">
 <p>If you are migrating from the previous JDE connector and you already have valid configuration files (<code>jdbj.ini</code>, <code>jdeinterop.ini</code>, <code>jdelog.properties</code>, and <code>settings.xml</code>), you can reuse them. Regeneration is only required if you want to refresh values from Server Manager or if you are missing any files.</p>
 </div>
@@ -1515,7 +1556,7 @@ GENERATION SUCESSS
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">java -jar jd-create-ini-files-1.0.0.jar -m Y -e JDV920</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">java -jar jd-create-ini-files-1.0.1.jar -m Y -e JDV920</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1533,7 +1574,7 @@ GENERATION SUCESSS
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">java -jar jd-create-ini-files-1.0.0.jar -m Y -e JPY920</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">java -jar jd-create-ini-files-1.0.1.jar -m Y -e JPY920</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1581,7 +1622,7 @@ It simplifies dependency management and ensures that all necessary classes are a
 <table>
 <tr>
 <td class="icon">
-<div class="title">Note</div>
+<i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
 <div class="paragraph">
@@ -1768,7 +1809,7 @@ This optional step allows you to publish the generated JARs (<code>jde-lib-wrapp
 <table>
 <tr>
 <td class="icon">
-<div class="title">Note</div>
+<i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
 <div class="paragraph">
@@ -1822,7 +1863,7 @@ J4300010_PREFIX_1=</code></pre>
 <table>
 <tr>
 <td class="icon">
-<div class="title">Note</div>
+<i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
 <div class="title">Press <code>Ctrl + O</code>, then <code>Enter</code> to save. Press <code>Ctrl + X</code> to exit.</div>
@@ -1850,7 +1891,7 @@ J4300010_PREFIX_1=</code></pre>
 <table>
 <tr>
 <td class="icon">
-<div class="title">Note</div>
+<i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
 <div class="paragraph">
@@ -1964,7 +2005,7 @@ JDE_MICROSERVER_CODE=demo</code></pre>
 <table>
 <tr>
 <td class="icon">
-<div class="title">Note</div>
+<i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
 Each customer must use the license code provided by Atina. This value is mandatory for the service to start correctly.
@@ -2106,7 +2147,7 @@ STD_WEB_SERVICE_VERSION=1.0.0</code></pre>
 <table>
 <tr>
 <td class="icon">
-<div class="title">Note</div>
+<i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
 <div class="paragraph">
@@ -2150,7 +2191,7 @@ JDE_MICROSERVER_ENTERPRISE_DB_IP=65.52.119.187</code></pre>
 <table>
 <tr>
 <td class="icon">
-<div class="title">Important</div>
+<i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
 The database name must match the Data Source name defined in the JDE OCM. Incorrect names may lead to failed connections or incorrect environment targeting.
@@ -2177,7 +2218,7 @@ This adds entries to the container&#8217;s <code>/etc/hosts</code>.</p>
 <table>
 <tr>
 <td class="icon">
-<div class="title">Note</div>
+<i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
 <div class="paragraph">
@@ -2222,7 +2263,7 @@ This adds entries to the container&#8217;s <code>/etc/hosts</code>.</p>
 <table>
 <tr>
 <td class="icon">
-<div class="title">Important</div>
+<i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
 <div class="paragraph">
@@ -2288,7 +2329,7 @@ docker compose start</code></pre>
 <table>
 <tr>
 <td class="icon">
-<div class="title">Tip</div>
+<i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
 <div class="paragraph">
@@ -2335,7 +2376,7 @@ docker cp /tmp/build_jde_libs/StdWebService-1.0.0.jar jd-atina-microserver:/tmp/
 <table>
 <tr>
 <td class="icon">
-<div class="title">Important</div>
+<i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
 <div class="paragraph">
@@ -2806,7 +2847,7 @@ HOST_EXTRA_HOSTS_FILE=/opt/jde/config/extra-hosts.txt</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-03-19 12:11:01 -0300
+Last updated 2026-05-12 16:24:03 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
