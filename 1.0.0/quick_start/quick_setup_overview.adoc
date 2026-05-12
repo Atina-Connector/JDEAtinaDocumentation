@@ -1,0 +1,453 @@
+= *Atina JDE Connector - Quick Setup Overview*
+:keywords: jde, atina, quick start, installation, setup, microservice, docker, mulesoft
+:imagesdir: images
+:toc: macro
+:toclevels: 2
+:source-highlighter: highlightjs
+
+toc::[]
+
+== *Introduction*
+
+The MuleSoft ATINA JDE Connector requires an *Atina JDE Microservice* to work. This guide provides a streamlined, step-by-step walkthrough to get you up and running.
+
+image::qs_intro_01.png[Architecture Overview,width=800,align=center]
+
+The setup consists of four main steps:
+
+. *Generate JDE INI Files* — Create the base configuration files from your JDE Server Manager.
+. *Generate JAR Libraries* — Package JD Edwards libraries into deployable JARs.
+. *Microservice Installation* — Deploy the Atina JDE Microservice using Docker.
+. *Install Mule JDE Connector* — Add the connector to your MuleSoft project.
+
+== *Prerequisites*
+
+This setup requires:
+
+* Administrative access to your JDE environment and servers
+* JDE interoperability and network access configured for the microservice
+* *OpenJDK 8* installed
+* *Maven 3.8.1* or higher
+* *Docker* and *Docker Compose*
+* Network access and credentials to JDE Server Manager
+* Access to JDE Deployment Server
+
+[NOTE]
+====
+For detailed prerequisite information, see the link:../functional/jdeatina.html[Atina JDE Microservices Installation Guide].
+====
+
+== *Step 1: Generate INI Configuration Files*
+
+The _JDE Atina Generate Configuration Files Tool_ is a Java CLI application that generates base INI files. It retrieves all information from the JDE Enterprise Server Manager using its REST API. During execution, you will be asked to select the HTML Client instance for your environment.
+
+*Prerequisites for this step:*
+
+* OpenJDK 8 installed
+* Network access and credentials to JDE Server Manager
+
+=== *Step 1.1 - Download the Tool*
+
+*Linux:*
+
+[source,bash]
+----
+curl "https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-ini-files/1.0.0/jd-create-ini-files-1.0.0.jar" \
+  -o jd-create-ini-files-1.0.0.jar
+----
+
+*Windows PowerShell:*
+
+[source,powershell]
+----
+curl.exe "https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-ini-files/1.0.0/jd-create-ini-files-1.0.0.jar" `
+  -o "jd-create-ini-files-1.0.0.jar"
+----
+
+=== *Step 1.2 - Run the Tool*
+
+The tool is interactive — you will be asked to pick the HTML instance:
+
+[source,bash]
+----
+java -jar jd-create-ini-files-1.0.0.jar \
+  -u <jde_admin> \
+  -p <password> \
+  -s http://<server-manager-host>:8999/manage \
+  -e <ENV ex. JDV920>
+----
+
+image::qs_step1_01.png[INI Generation Output,width=500,align=center]
+
+[IMPORTANT]
+====
+Review the generated INI files to verify that the values are correct.
+====
+
+icon:youtube-play[role=red] link:++https://www.youtube.com/watch?v=QihuDOyWq7c++[Watch video: Generate INI Files,window=_blank]
+
+[NOTE]
+====
+For more details, see the section _JDE Atina Generate Configuration Files Tool_ in the link:../functional/jdeatina.html[Atina JDE Microservices Installation Guide].
+====
+
+== *Step 2: Generate JAR Libraries*
+
+This tool packages the JD Edwards libraries into deployable JAR files required by the Atina JDE Microservice. It simplifies dependency management and ensures that all necessary classes are available at runtime.
+
+*Prerequisites for this step:*
+
+* OpenJDK 8 installed
+* Maven 3.8.1 or higher
+* Access and credentials to JDE Deployment Server
+
+The tool will generate the following artifacts:
+
+* `JDEAtinaOverrideServicesConstants-1.0.0.jar` — Provides local override of web service properties, avoiding the need to modify JDE configuration.
+* `jde-lib-wrapped-1.0.0.jar` — Bundles the core JD Edwards interoperability libraries required for integration.
+* `StdWebService-1.0.0.jar` — Includes wrappers for standard JD Edwards web services.
+
+=== *Step 2.1 - Create the service-constants.properties File*
+
+In this step, you will define runtime parameters for JD Edwards Web Services by creating the `service-constants.properties` configuration file.
+
+[source,bash]
+----
+nano /tmp/build_jde_libs/service-constants.properties
+----
+
+Copy and paste the following content into the file:
+
+[source,properties]
+----
+J0100002_MAX_ROWS=10
+J0000110_MAX_ROWS=10
+J0100004_MAX_ROWS=10
+J0400002_MAX_ROWS=10
+J4200010_SOE_MBF_VERSION=
+J4200010_BYPASS_WARNINGS=2
+J4200010_PREFIX_5=ATINA
+J4200010_PREFIX_2=ATINA
+J4200050_MAX_ROWS=10
+J0100022_MAX_ROWS=10
+J0100007_MAX_ROWS=10
+J4300010_PO_MBF_VERSION=ZJDE0001
+J4300010_BYPASS_BSFN_WARNINGS=1
+J4300010_PREFIX_1=
+----
+
+=== *Step 2.2 - Download the JDEAtinaOverrideServicesConstants Library*
+
+The system requires a supporting library to override default JD Edwards service properties with the values defined in your `service-constants.properties` file. This enables more flexible and file-driven configuration without modifying JDE directly.
+
+[source,bash]
+----
+curl -L https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/JDEAtinaOverrideServicesConstants/1.0.0/JDEAtinaOverrideServicesConstants-1.0.0.jar \
+  --output /tmp/build_jde_libs/JDEAtinaOverrideServicesConstants-1.0.0.jar
+----
+
+Ensure this JAR file is located in the `/tmp/build_jde_libs/` folder along with the `service-constants.properties` file.
+
+=== *Step 2.3 - Download the JAR Creation Tool*
+
+[source,bash]
+----
+curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-jar-files/1.0.0/jd-create-jar-files-1.0.0.jar \
+  --output jd-create-jar-files-1.0.0.jar
+----
+
+=== *Step 2.4 - Create the Required Folder Structure*
+
+Create the following directory layout and populate it with the required files from the Deployment Server:
+
+image::qs_step2_01.png[Folder Structure,width=600,align=center]
+
+[source,bash]
+----
+mkdir -p /tmp/build_jde_libs/JDBC_Vendor_Drivers \
+         /tmp/build_jde_libs/system/Classes \
+         /tmp/build_jde_libs/system/JAS \
+         /tmp/build_jde_libs/system/WS
+----
+
+=== *Step 2.5 - Copy Deployment Server Files*
+
+Copy the required JDE libraries from the Deployment Server into your local directory structure:
+
+*JDBC Vendor Drivers:*
+[source,bash]
+----
+cp -rv ~/atina/E1_DeploymentServer/E920/MISC/* /tmp/build_jde_libs/JDBC_Vendor_Drivers/
+----
+
+*System/Classes:*
+[source,bash]
+----
+cp -rv ~/atina/E1_DeploymentServer/E920/system/Classes/* /tmp/build_jde_libs/system/Classes/
+----
+
+*System/JAS:*
+[source,bash]
+----
+cp -rv ~/atina/E1_DeploymentServer/E920/system/JAS/webclient.ear/webclient.war/WEB-INF/lib/* /tmp/build_jde_libs/system/JAS/
+----
+
+*System/WS:*
+[source,bash]
+----
+cp -rv ~/atina/E1_DeploymentServer/E920/DV920/java/sbfjars/* /tmp/build_jde_libs/system/WS/
+----
+
+=== *Step 2.6 - Define Local Maven Repository*
+
+Run this command to find where the current local repository is defined:
+
+[source,bash]
+----
+mvn help:evaluate -Dexpression=settings.localRepository
+----
+
+image::qs_step2_02.png[Maven Repository Output,width=500,align=center]
+
+The value returned (e.g., `/root/.m2/repository`) will be used in the next step. Make sure to copy it for reference.
+
+=== *Step 2.7 - Execute the JAR Tool*
+
+[source,bash]
+----
+java -jar jd-create-jar-files-1.0.0.jar \
+  -r /root/.m2/repository
+----
+
+This command runs the tool and specifies the Maven local repository path (identified in the previous step).
+
+Once completed, the following files will be created:
+
+image::qs_step2_03.png[Generated JARs,width=600,align=center]
+
+icon:youtube-play[role=red] link:++https://www.youtube.com/watch?v=AQNO3jjJ0EU++[Watch video: Create JARs Libraries (Part 1),window=_blank]
+
+icon:youtube-play[role=red] link:++https://www.youtube.com/watch?v=W9mLcD0gP68++[Watch video: Create JARs Libraries (Part 2),window=_blank]
+
+[NOTE]
+====
+For more details, see the section _JDE Atina Generate Jars Files Tool_ in the link:../functional/jdeatina.html[Atina JDE Microservices Installation Guide].
+====
+
+== *Step 3: Microservice Installation*
+
+This section explains how to deploy the Atina JDE Microservice using Docker and Docker Compose. You will configure environment variables, initialize the container, and run a basic test to validate connectivity with JD Edwards.
+
+*Prerequisites for this step:*
+
+* OpenJDK 8 installed
+* Maven 3.8.1 or higher
+* Docker
+
+=== *Step 3.1 - Download Docker Compose Files*
+
+[source,bash]
+----
+curl https://jfrog.atina-connection.com/artifactory/libs-release/com/atina/jd-docker-files/1.0.0/jd-docker-files-1.0.0.zip \
+  --output jd-docker-files-1.0.0.zip
+----
+
+Unzip:
+
+[source,bash]
+----
+unzip jd-docker-files-1.0.0.zip
+----
+
+=== *Step 3.2 - Configure Environment Variables*
+
+Inside the `jd-docker-files-1.0.0` folder, edit the `.env` file and set the values according to your infrastructure.
+
+*Microservice settings:*
+
+[source,env]
+----
+JDE_MICROSERVER_IP=172.28.0.2
+JDE_MICROSERVER_PORT=8077
+JDE_MICROSERVER_DEBUG_PORT=5005
+JDE_MICROSERVER_CODE=demo
+----
+
+* `JDE_MICROSERVER_CODE`: Each customer must use the license code provided by Atina. This value is mandatory for the service to start correctly.
+
+*JDE Enterprise Server settings:*
+
+[source,env]
+----
+JDE_MICROSERVER_ENTERPRISE_SERVER_NAME=JDE-ALPHA-ENT
+JDE_MICROSERVER_ENTERPRISE_SERVER_IP=138.91.73.161
+JDE_MICROSERVER_ENTERPRISE_DB_NAME=JDE-ALPHA-SQL
+JDE_MICROSERVER_ENTERPRISE_DB_IP=65.52.119.187
+----
+
+* `JDE_MICROSERVER_ENTERPRISE_SERVER_NAME`: The logical name of the JDE Enterprise Server.
+* `JDE_MICROSERVER_ENTERPRISE_SERVER_IP`: The server's IP address or DNS-resolvable name.
+* `JDE_MICROSERVER_ENTERPRISE_DB_NAME`: The name of the database as defined in JDE's OCM (Object Configuration Manager) as a Data Source.
+* `JDE_MICROSERVER_ENTERPRISE_DB_IP`: The database server's IP address or DNS-resolvable name.
+
+[IMPORTANT]
+====
+The database name must match the Data Source name defined in the JDE OCM. Incorrect names may lead to failed connections or incorrect environment targeting.
+====
+
+*Volume settings:*
+
+[source,env]
+----
+Volume_DataLogs=/home/jde/data/logs
+Volume_JDETmp=/home/jde/data/tmp
+Volume_JDELog=/home/jde/data/jdelog
+----
+
+Create the volume directories:
+
+[source,bash]
+----
+mkdir -p ~/jde/data/logs \
+         ~/jde/data/tmp \
+         ~/jde/data/jdelog
+----
+
+=== *Step 3.3 - Initialize the Container*
+
+Create the container without starting it:
+
+[source,bash]
+----
+docker-compose -f docker-compose.yml up --no-start
+----
+
+Copy the configuration and JAR files that were previously generated:
+
+[source,bash]
+----
+docker cp /tmp/build_jde_libs/service-constants.properties jd-atina-microserver:/var/jdeatinaserver
+docker cp /tmp/build_jde_libs/JPS920 jd-atina-microserver:/tmp/jde/config
+docker cp /tmp/build_jde_libs/JDV920 jd-atina-microserver:/tmp/jde/config
+docker cp /tmp/build_jde_libs/JDEAtinaOverrideServicesConstants-1.0.0.jar jd-atina-microserver:/tmp/jde
+docker cp /tmp/build_jde_libs/jde-lib-wrapped-1.0.0.jar jd-atina-microserver:/tmp/jde
+docker cp /tmp/build_jde_libs/StdWebService-1.0.0.jar jd-atina-microserver:/tmp/jde
+----
+
+Start the container:
+
+[source,bash]
+----
+docker-compose -f docker-compose.yml start
+----
+
+=== *Step 3.4 - Check the Microservice Startup Log*
+
+Verify the startup log:
+
+[source,bash]
+----
+docker exec -it jd-atina-microserver cat /tmp/start.log
+----
+
+image::qs_step3_04.png[Startup Log,width=500,align=center]
+
+Check the Docker logs to confirm the microservice started correctly:
+
+[source,bash]
+----
+docker logs jd-atina-microserver
+----
+
+image::qs_step3_05.png[Docker Logs,width=650,align=center]
+
+=== *Step 3.5 - Validate the Microservice Deployment*
+
+Once the microservice is deployed and running, you can use the _JD Atina Check Microservice Tool_ to validate that it can connect to JD Edwards and invoke a basic web service.
+
+*Download the Check Tool:*
+
+[source,bash]
+----
+curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-check-microservice/1.0.0/jd-check-microservice-1.0.0.jar \
+  --output jd-check-microservice-1.0.0.jar
+----
+
+*Run the test:*
+
+[source,bash]
+----
+java -jar jd-check-microservice-1.0.0.jar \
+  -u JDE \
+  -w XXXXXX \
+  -e JDV920 \
+  -r *ALL \
+  -s localhost \
+  -p 8077 \
+  -m TestLoggindAndGetAddressBookWS \
+  -a 28 \
+  -n "Prueba - Argentina - 28                 "
+----
+
+If everything is correctly configured, you will see output like the following:
+
+image::qs_step3_06.png[Validation Output,width=500,align=center]
+
+icon:youtube-play[role=red] link:++https://www.youtube.com/watch?v=fdG26ixIOkg++[Watch video: Microservice Installation,window=_blank]
+
+[NOTE]
+====
+For more details, see the section _JDE Atina microservices - Installation_ in the link:../functional/jdeatina.html[Atina JDE Microservices Installation Guide].
+====
+
+== *Step 4: Install Mule JDE Connector*
+
+=== *Step 4.1 - Configure Maven Repository*
+
+After creating your MuleSoft project, add the Atina repository to your `pom.xml` (within `<repositories>`):
+
+[source,xml]
+----
+<repository>
+    <id>atina-central</id>
+    <name>libs-release</name>
+    <url>https://jfrog.atina-connection.com/artifactory/libs-release</url>
+</repository>
+----
+
+image::qs_step4_01.png[pom.xml Repository,width=540,align=center]
+
+=== *Step 4.2 - Declare the Connector Dependency*
+
+Inside the `<dependencies>` section of your `pom.xml`, add:
+
+[source,xml]
+----
+<dependency>
+    <groupId>com.atina-connection</groupId>
+    <artifactId>mule-jde-atina-connector</artifactId>
+    <version>1.0.0-RC1</version>
+    <classifier>mule-plugin</classifier>
+</dependency>
+----
+
+image::qs_step4_02.png[pom.xml Dependency,width=570,align=center]
+
+=== *Step 4.3 - Define the Global Connector Configuration*
+
+In your Mule project, create or open a flow file (e.g., `jde-demo.xml`), then:
+
+. Open *Global Configuration Elements* and click *Create*.
+. Under *Connector Configuration*, select *JDE Atina Config*.
+
+image::qs_step4_03.png[Choose Global Type,width=400,align=center]
+
+[start=3]
+. Configure the connection parameters:
+
+image::qs_step4_04.png[JDE Atina Config,width=350,align=center]
+
+[NOTE]
+====
+For more details, see the section _Preliminary Setup_ in the link:../functional/jde.html[Atina JDE Connector User Guide].
+====

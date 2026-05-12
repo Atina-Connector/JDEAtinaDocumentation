@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(open:*)"
+      "Bash(open:*)",
+      "Bash(python3:*)",
+      "Read(//private/tmp/**)",
+      "Bash(unzip -q /Users/franciscogodinoconte/_atina/projects/JDEAtinaJDEMuleConnectorDoc4/1.0.0/quick_start/quick_setup_overview.pptx -d pptx_extract)",
+      "Bash(pip3 install:*)",
+      "Bash(gem list:*)",
+      "Bash(brew list:*)",
+      "Bash(asciidoctor --version)",
+      "Bash(gem install:*)",
+      "Bash(brew install:*)",
+      "Bash(asciidoctor quick_setup_overview.adoc)"
     ]
   }
 }
