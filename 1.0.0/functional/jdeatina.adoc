@@ -545,7 +545,7 @@ Example:
 
 [source,bash]
 ----
-java -jar jd-create-ini-files-1.0.0.jar -m Y -e JDV920
+java -jar jd-create-ini-files-1.0.1.jar -m Y -e JDV920
 ----
 
 This will generate the base structure:
@@ -561,7 +561,7 @@ Repeat the same step for any additional environments you want to include (for ex
 
 [source,bash]
 ----
-java -jar jd-create-ini-files-1.0.0.jar -m Y -e JPY920
+java -jar jd-create-ini-files-1.0.1.jar -m Y -e JPY920
 ----
 
 After generating the empty structure for each environment, copy the configuration files from your previous connector setup into the corresponding environment folder (one set of files per environment).

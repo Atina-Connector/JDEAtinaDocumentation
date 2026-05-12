@@ -4,6 +4,7 @@
 :toc: macro
 :toclevels: 2
 :source-highlighter: highlightjs
+:icons: font
 
 toc::[]
 
@@ -52,16 +53,16 @@ The _JDE Atina Generate Configuration Files Tool_ is a Java CLI application that
 
 [source,bash]
 ----
-curl "https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-ini-files/1.0.0/jd-create-ini-files-1.0.0.jar" \
-  -o jd-create-ini-files-1.0.0.jar
+curl "https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-ini-files/1.0.0/jd-create-ini-files-1.0.1.jar" \
+  -o jd-create-ini-files-1.0.1.jar
 ----
 
 *Windows PowerShell:*
 
 [source,powershell]
 ----
-curl.exe "https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-ini-files/1.0.0/jd-create-ini-files-1.0.0.jar" `
-  -o "jd-create-ini-files-1.0.0.jar"
+curl.exe "https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-ini-files/1.0.0/jd-create-ini-files-1.0.1.jar" `
+  -o "jd-create-ini-files-1.0.1.jar"
 ----
 
 === *Step 1.2 - Run the Tool*
@@ -70,7 +71,7 @@ The tool is interactive — you will be asked to pick the HTML instance:
 
 [source,bash]
 ----
-java -jar jd-create-ini-files-1.0.0.jar \
+java -jar jd-create-ini-files-1.0.1.jar \
   -u <jde_admin> \
   -p <password> \
   -s http://<server-manager-host>:8999/manage \
@@ -84,7 +85,41 @@ image::qs_step1_01.png[INI Generation Output,width=500,align=center]
 Review the generated INI files to verify that the values are correct.
 ====
 
-icon:youtube-play[role=red] link:++https://www.youtube.com/watch?v=QihuDOyWq7c++[Watch video: Generate INI Files,window=_blank]
+==== *Manual Alternative*
+
+If you encounter any issues retrieving information from the servers, you can generate the INI files manually by obtaining the values directly from the JDE Server Manager. The video below shows where to find each value in the Server Manager interface.
+
+First, run the following command to generate the folder structure with template INI files that you will need to update manually:
+
+[source,bash]
+----
+java -jar jd-create-ini-files-1.0.1.jar \
+  -e JDV920 \
+  -m Y \
+  -f /tmp/build_jde_libs
+----
+
+This creates the directory structure with base INI files. You must then update these files with the correct values obtained from the Server Manager.
+
+----
+Version: 1.0.1
+Running with migration options
+-----------------------------------------------------------
+Creating environment folder...
+Folder : /tmp/demo/JDV920 has been cleaned
+ Processing File: jdbj.ini
+processIniFile JDBJ: File: /tmp/demo/JDV920/jdbj.ini generated
+ Processing File: jdeinterop.ini
+processIniFile INTEROP: File: /tmp/demo/JDV920/jdeinterop.ini generated
+ Processing File: jdelog.properties
+processIniFile JDELOG: File: /tmp/demo/JDV920/jdelog.properties generated
+-----------------------------------------------------------
+Creating Setting XML File...
+ Processing File: settings.xml
+ File: /tmp/demo/settings.xml generated
+----
+
+icon:youtube-play[role=red] link:++https://www.youtube.com/watch?v=QihuDOyWq7c++[Watch video: Generate INI Files (includes manual Server Manager walkthrough),window=_blank]
 
 [NOTE]
 ====
