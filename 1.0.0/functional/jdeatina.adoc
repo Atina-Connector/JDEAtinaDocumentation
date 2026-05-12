@@ -702,7 +702,7 @@ Run the tool:
 
 [source,bash]
 ----
-Usage: java -jar jd-create-jar-files-1.0.0.jar OPTIONS
+Usage: java -jar jd-create-jar-files-1.2.0.jar OPTIONS
 
 Options category 'startup':
   --accion [-a] (a string; default: "3")

@@ -187,8 +187,8 @@ Ensure this JAR file is located in the `/tmp/build_jde_libs/` folder along with 
 
 [source,bash]
 ----
-curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-jar-files/1.0.0/jd-create-jar-files-1.0.0.jar \
-  --output jd-create-jar-files-1.0.0.jar
+curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-jar-files/1.0.0/jd-create-jar-files-1.2.0.jar \
+  --output jd-create-jar-files-1.2.0.jar
 ----
 
 === *Step 2.4 - Create the Required Folder Structure*
@@ -265,7 +265,7 @@ The value returned (e.g., `/root/.m2/repository`) will be used in the next step.
 
 [source,bash]
 ----
-java -jar jd-create-jar-files-1.0.0.jar \
+java -jar jd-create-jar-files-1.2.0.jar \
   -r /root/.m2/repository
 ----
 
