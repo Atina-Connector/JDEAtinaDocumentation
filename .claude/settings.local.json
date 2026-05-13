@@ -11,7 +11,10 @@
       "Bash(asciidoctor --version)",
       "Bash(gem install:*)",
       "Bash(brew install:*)",
-      "Bash(asciidoctor quick_setup_overview.adoc)"
+      "Bash(asciidoctor quick_setup_overview.adoc)",
+      "Bash(asciidoctor release-notes-jd-create-jar-files.adoc)",
+      "Bash(asciidoctor release-notes-jd-create-ini-files.adoc)",
+      "Bash(ls:*)"
     ]
   }
 }

@@ -130,6 +130,11 @@ For more details, see the section _JDE Atina Generate Configuration Files Tool_ 
 
 This tool packages the JD Edwards libraries into deployable JAR files required by the Atina JDE Microservice. It simplifies dependency management and ensures that all necessary classes are available at runtime.
 
+[TIP]
+====
+A web-based tool is also available for JAR generation at link:++https://builder.atina-connection.com/++[builder.atina-connection.com,window=_blank]. If you are a new customer, click the *New Customer* button, enter your corporate email, and you will receive instructions by email.
+====
+
 *Prerequisites for this step:*
 
 * OpenJDK 8 installed
@@ -139,6 +144,7 @@ This tool packages the JD Edwards libraries into deployable JAR files required b
 The tool will generate the following artifacts:
 
 * `JDEAtinaOverrideServicesConstants-1.0.0.jar` — Provides local override of web service properties, avoiding the need to modify JDE configuration.
+* `service-constants.properties` — Contains configuration properties for the microservice.
 * `jde-lib-wrapped-1.0.0.jar` — Bundles the core JD Edwards interoperability libraries required for integration.
 * `StdWebService-1.0.0.jar` — Includes wrappers for standard JD Edwards web services.
 
@@ -277,20 +283,19 @@ This section explains how to deploy the Atina JDE Microservice using Docker and 
 
 [source,bash]
 ----
-curl https://jfrog.atina-connection.com/artifactory/libs-release/com/atina/jd-docker-files/1.0.0/jd-docker-files-1.0.0.zip \
-  --output jd-docker-files-1.0.0.zip
+curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/acqua/jde-docker-files/1.0.1/jde-docker-files-1.0.1.zip --output jd-docker-files.zip
 ----
 
 Unzip:
 
 [source,bash]
 ----
-unzip jd-docker-files-1.0.0.zip
+unzip jd-docker-files.zip
 ----
 
 === *Step 3.2 - Configure Environment Variables*
 
-Inside the `jd-docker-files-1.0.0` folder, edit the `.env` file and set the values according to your infrastructure.
+Edit the `.env` file and set the values according to your infrastructure.
 
 *Microservice settings:*
 

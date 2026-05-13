@@ -1,0 +1,50 @@
+= JD Atina Create INI Files Tool - Release Notes
+:keywords: JDE, JDEdwards, EnterpriseOne, Oracle, JD Edwards, ATINA, INI, configuration
+
+This document describes changes to the *JD Atina Create INI Files Tool* (`jd-create-ini-files`).
+This tool generates base INI configuration files by retrieving information from the JDE Enterprise Server Manager REST API.
+
+== JD Atina Create INI Files Tool Version 1.0.1 - May 13, 2026
+
+=== Initial Release
+
+This is the first public release of the JD Atina Create INI Files Tool.
+
+==== Features
+
+* Connects to the JDE Server Manager REST API to retrieve environment configuration.
+* Interactively prompts the user to select the HTML Client instance for the target environment.
+* Generates the following configuration files:
+** `jdbj.ini` — JDBC database configuration.
+** `jdeinterop.ini` — JDE interoperability settings.
+** `jdelog.properties` — Logging configuration.
+** `settings.xml` — Additional settings file.
+* Supports manual migration mode (`-m Y`) for environments where automatic retrieval from Server Manager is not possible. In this mode, the tool generates the folder structure with template INI files that must be updated manually with values obtained from the Server Manager.
+
+==== Usage
+
+*Automatic mode (connects to Server Manager):*
+
+[source,bash]
+----
+java -jar jd-create-ini-files-1.0.1.jar \
+  -u <jde_admin> \
+  -p <password> \
+  -s http://<server-manager-host>:8999/manage \
+  -e <ENV ex. JDV920>
+----
+
+*Manual migration mode (generates template files):*
+
+[source,bash]
+----
+java -jar jd-create-ini-files-1.0.1.jar \
+  -e <ENV ex. JDV920> \
+  -m Y \
+  -f <output_folder>
+----
+
+==== Prerequisites
+
+* OpenJDK 8 installed
+* Network access and credentials to JDE Server Manager (for automatic mode)

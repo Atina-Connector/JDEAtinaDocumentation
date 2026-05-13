@@ -813,6 +813,20 @@ Creating Setting XML File...
 <div class="paragraph">
 <p>This tool packages the JD Edwards libraries into deployable JAR files required by the Atina JDE Microservice. It simplifies dependency management and ensures that all necessary classes are available at runtime.</p>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>A web-based tool is also available for JAR generation at <a href="https://builder.atina-connection.com/" target="_blank" rel="noopener">builder.atina-connection.com</a>. If you are a new customer, click the <strong>New Customer</strong> button, enter your corporate email, and you will receive instructions by email.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p><strong>Prerequisites for this step:</strong></p>
 </div>
@@ -836,6 +850,9 @@ Creating Setting XML File...
 <ul>
 <li>
 <p><code>JDEAtinaOverrideServicesConstants-1.0.0.jar</code> — Provides local override of web service properties, avoiding the need to modify JDE configuration.</p>
+</li>
+<li>
+<p><code>service-constants.properties</code> — Contains configuration properties for the microservice.</p>
 </li>
 <li>
 <p><code>jde-lib-wrapped-1.0.0.jar</code> — Bundles the core JD Edwards interoperability libraries required for integration.</p>
@@ -974,9 +991,26 @@ Creating Setting XML File...
 <div class="paragraph">
 <p>Once completed, the following files will be created:</p>
 </div>
-<div class="imageblock text-center">
+<div class="listingblock">
 <div class="content">
-<img src="images/qs_step2_03.png" alt="Generated JARs" width="600">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">------------------------------------------------------------------------
+GENERATION SUCESSS
+------------------------------------------------------------------------
+JDE Library bundle has been copied to: /tmp/build_jde_libs/jde-lib-wrapped-1.0.0.jar
+JDE WS has been copied to:             /tmp/build_jde_libs/StdWebService-1.0.0.jar
+Constants File has been copied to:     /tmp/build_jde_libs/service-constants.properties
+Override Jar File has been copied to:  /tmp/build_jde_libs/JDEAtinaOverrideServicesConstants-1.0.0.jar
+------------------------------------------------------------------------
+PTF:[9.2.5.6]</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">build_jde_libs
+      ├─ jde-lib-wrapped-1.0.0.jar
+      ├─ service-constants.properties
+      ├─ JDEAtinaOverrideServicesConstants-1.0.0.jar
+      └─ StdWebService-1.0.0.jar</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1342,7 +1376,7 @@ docker cp /tmp/build_jde_libs/StdWebService-1.0.0.jar jd-atina-microserver:/tmp/
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-05-12 17:43:07 -0300
+Last updated 2026-05-13 14:57:48 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
