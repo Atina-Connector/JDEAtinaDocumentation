@@ -307,26 +307,39 @@ JDE_MICROSERVER_DEBUG_PORT=5005
 JDE_MICROSERVER_CODE=demo
 ----
 
-* `JDE_MICROSERVER_CODE`: Each customer must use the license code provided by Atina. This value is mandatory for the service to start correctly.
-
-*JDE Enterprise Server settings:*
-
-[source,env]
-----
-JDE_MICROSERVER_ENTERPRISE_SERVER_NAME=JDE-ALPHA-ENT
-JDE_MICROSERVER_ENTERPRISE_SERVER_IP=138.91.73.161
-JDE_MICROSERVER_ENTERPRISE_DB_NAME=JDE-ALPHA-SQL
-JDE_MICROSERVER_ENTERPRISE_DB_IP=65.52.119.187
-----
-
-* `JDE_MICROSERVER_ENTERPRISE_SERVER_NAME`: The logical name of the JDE Enterprise Server.
-* `JDE_MICROSERVER_ENTERPRISE_SERVER_IP`: The server's IP address or DNS-resolvable name.
-* `JDE_MICROSERVER_ENTERPRISE_DB_NAME`: The name of the database as defined in JDE's OCM (Object Configuration Manager) as a Data Source.
-* `JDE_MICROSERVER_ENTERPRISE_DB_IP`: The database server's IP address or DNS-resolvable name.
+* `JDE_MICROSERVER_PORT`: Port exposed by the microservice. If you need to expose a different port (e.g., to avoid conflicts with other services), change this value.
+* `JDE_MICROSERVER_CODE`: Unique license code assigned to the customer by Atina. This value is mandatory for the service to start correctly.
 
 [IMPORTANT]
 ====
 The database name must match the Data Source name defined in the JDE OCM. Incorrect names may lead to failed connections or incorrect environment targeting.
+====
+
+*Hostname resolution inside the container (extra-hosts file):*
+
+The microservice supports injecting host mappings into the container's `/etc/hosts` using a mounted file. This is useful when the container needs to reach JDE Enterprise Servers and Database hosts that are not resolvable via Docker's default DNS.
+
+Edit `extra-hosts.txt` file with the required hostname-to-IP mappings:
+
+[source,text]
+----
+# IP            HOSTNAME
+138.91.73.161   JDE-ALPHA-ENT
+65.52.119.187   JDE-ALPHA-SQL
+# END HOSTS
+----
+
+Add the following to your `.env`:
+
+[source,env]
+----
+HOST_EXTRA_HOSTS_FILE=/absolute/path/to/extra-hosts.txt
+----
+
+
+[IMPORTANT]
+====
+The hosts file must use *Unix line endings (LF)*, not Windows CRLF. Ensure it ends with `# END HOSTS` and a final newline.
 ====
 
 *Volume settings:*
@@ -336,46 +349,63 @@ The database name must match the Data Source name defined in the JDE OCM. Incorr
 Volume_DataLogs=/home/jde/data/logs
 Volume_JDETmp=/home/jde/data/tmp
 Volume_JDELog=/home/jde/data/jdelog
+JDE_LIBS_ROOT=/tmp/build_jde_libs
 ----
+
+* `Volume_DataLogs`: General microservice logs.
+* `Volume_JDETmp`: Temporary files.
+* `Volume_JDELog`: Logs specific to JDE libraries.
+* `JDE_LIBS_ROOT`: Path to the folder containing the generated JDE JARs and configuration files. This is used by Docker Compose to mount the artifacts as volumes into the container, replacing the need for manual `docker cp` commands.
 
 Create the volume directories:
 
 [source,bash]
 ----
-mkdir -p ~/jde/data/logs \
-         ~/jde/data/tmp \
-         ~/jde/data/jdelog
+mkdir -p /home/jde/data/logs \
+         /home/jde/data/tmp \
+         /home/jde/data/jdelog
 ----
 
-=== *Step 3.3 - Initialize the Container*
+=== *Step 3.3 - Configure Volume Mounts in docker-compose.yml*
 
-Create the container without starting it:
+The container reads JDE configuration and library files from host-mounted volumes. Update your `docker-compose.yml` to mount the required files:
+
+[source,yaml]
+----
+services:
+  jd-atina-microserver:
+    volumes:
+      # JDE environment configuration folders
+      - ${JDE_LIBS_ROOT}/JDV920:/tmp/jde/config/JDV920:ro
+      - ${JDE_LIBS_ROOT}/JPS920:/tmp/jde/config/JPS920:ro
+
+      # JDE library JARs
+      - ${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar:/tmp/jde/jde-lib-wrapped-1.0.0.jar
+      - ${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar:/tmp/jde/StdWebService-1.0.0.jar
+      - ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar:/tmp/jde/JDEAtinaOverrideServicesConstants-1.0.0.jar
+
+      # Service configuration
+      - ${JDE_LIBS_ROOT}/service-constants.properties:/var/jdeatinaserver/service-constants.properties:ro
+----
+
+[NOTE]
+====
+The `JDE_LIBS_ROOT` variable defined in your `.env` is used by Docker Compose for path interpolation. This approach replaces the previous `docker cp` workflow, making deployments more reliable and compatible with container recreation (`--force-recreate`) without losing files.
+====
+
+=== *Step 3.4 - Start the Container*
 
 [source,bash]
 ----
-docker-compose -f docker-compose.yml up --no-start
+docker compose --env-file .env up -d --force-recreate
 ----
 
-Copy the configuration and JAR files that were previously generated:
+[NOTE]
+====
+Use: docker compose down -v to stop and remove the container along with its volumes for any changes to take effect on the next startup.
+====
 
-[source,bash]
-----
-docker cp /tmp/build_jde_libs/service-constants.properties jd-atina-microserver:/var/jdeatinaserver
-docker cp /tmp/build_jde_libs/JPS920 jd-atina-microserver:/tmp/jde/config
-docker cp /tmp/build_jde_libs/JDV920 jd-atina-microserver:/tmp/jde/config
-docker cp /tmp/build_jde_libs/JDEAtinaOverrideServicesConstants-1.0.0.jar jd-atina-microserver:/tmp/jde
-docker cp /tmp/build_jde_libs/jde-lib-wrapped-1.0.0.jar jd-atina-microserver:/tmp/jde
-docker cp /tmp/build_jde_libs/StdWebService-1.0.0.jar jd-atina-microserver:/tmp/jde
-----
-
-Start the container:
-
-[source,bash]
-----
-docker-compose -f docker-compose.yml start
-----
-
-=== *Step 3.4 - Check the Microservice Startup Log*
+=== *Step 3.5 - Check the Microservice Startup Log*
 
 Verify the startup log:
 
@@ -393,9 +423,21 @@ Check the Docker logs to confirm the microservice started correctly:
 docker logs jd-atina-microserver
 ----
 
-image::qs_step3_05.png[Docker Logs,width=650,align=center]
+[source,bash]
+----
+17:51:11.114 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer -           Last Build = [2026-05-13 13:40]
+17:51:11.116 [main] INFO  c.acqua.jde.jdeconnectorserver.JDEConnectorServer - Cleanning Temporal Folder: /tmp/jde
+17:51:11.117 [main] INFO  c.acqua.jde.jdeconnectorserver.JDEConnectorServer - Clean Done
+17:51:11.117 [main] INFO  c.acqua.jde.jdeconnectorserver.JDEConnectorServer - Created SessionsCleanerTask for 60 minutes
+17:51:11.117 [main] INFO  c.acqua.jde.jdeconnectorserver.JDEConnectorServer - Created CleannerUtil for 60 minutes
+17:51:11.126 [main] INFO  c.acqua.jde.jdeconnectorserver.JDEConnectorServer - Iniciando JDE Service Impl con JAVA [1, 8, 0-jdk8u322-b04]
+17:51:11.297 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *---------------------------------------*
+17:51:11.298 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *   Starting JDE Microservice 1.0.6     *
+17:51:11.343 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *   JDE Microservice started!           *
+17:51:11.343 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *---------------------------------------*
+----
 
-=== *Step 3.5 - Validate the Microservice Deployment*
+=== *Step 3.6 - Validate the Microservice Deployment*
 
 Once the microservice is deployed and running, you can use the _JD Atina Check Microservice Tool_ to validate that it can connect to JD Edwards and invoke a basic web service.
 
@@ -415,13 +457,16 @@ java -jar jd-check-microservice-1.0.0.jar \
   -u JDE \
   -w XXXXXX \
   -e JDV920 \
-  -r *ALL \
+  -r "*ALL" \
   -s localhost \
   -p 8077 \
   -m TestLoggindAndGetAddressBookWS \
   -a 28 \
   -n "Prueba - Argentina - 28                 "
 ----
+
+* `-a`: Address Book number of an existing record in your JDE environment.
+* `-n`: Name of the Address Book record corresponding to the number specified in `-a`.
 
 If everything is correctly configured, you will see output like the following:
 
