@@ -705,6 +705,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/create-ini-files.png" alt="Architecture Overview" width="800">
+</div>
+</div>
 <div class="sect2">
 <h3 id="_step_1_1_download_the_tool"><strong>Step 1.1 - Download the Tool</strong></h3>
 <div class="paragraph">
@@ -877,6 +882,11 @@ Creating Setting XML File...
 <p><code>StdWebService-1.0.0.jar</code> — Includes wrappers for standard JD Edwards web services.</p>
 </li>
 </ul>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/create-jars-files.png" alt="Architecture Overview" width="800">
+</div>
 </div>
 <div class="sect2">
 <h3 id="_step_2_1_download_the_jar_creation_tool"><strong>Step 2.1 - Download the JAR Creation Tool</strong></h3>
@@ -1079,6 +1089,11 @@ PTF:[9.2.5.6]</code></pre>
 </li>
 </ul>
 </div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/create-microservice.png" alt="Architecture Overview" width="800">
+</div>
+</div>
 <div class="sect2">
 <h3 id="_step_3_1_download_docker_compose_files"><strong>Step 3.1 - Download Docker Compose Files</strong></h3>
 <div class="listingblock">
@@ -1114,7 +1129,13 @@ JDE_MICROSERVER_CODE=demo</code></pre>
 <div class="ulist">
 <ul>
 <li>
-<p><code>JDE_MICROSERVER_PORT</code>: Port exposed by the microservice. If you need to expose a different port (e.g., to avoid conflicts with other services), change this value.</p>
+<p><code>JDE_MICROSERVER_IP</code>: Informational value used to indicate the IP address through which the microservice is exposed. This value does not affect the internal runtime configuration of the service.</p>
+</li>
+<li>
+<p><code>JDE_MICROSERVER_PORT</code>: Port exposed by the microservice. Change this value if you need to use a different port, for example to avoid conflicts with other services.</p>
+</li>
+<li>
+<p><code>JDE_MICROSERVER_DEBUG_PORT</code>: Debug port exposed by the microservice for remote debugging.</p>
 </li>
 <li>
 <p><code>JDE_MICROSERVER_CODE</code>: Unique license code assigned to the customer by Atina. This value is mandatory for the service to start correctly.</p>
@@ -1282,9 +1303,61 @@ JDE_LIBS_ROOT=/tmp/build_jde_libs</code></pre>
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker exec -it jd-atina-microserver cat /tmp/start.log</code></pre>
 </div>
 </div>
-<div class="imageblock text-center">
+<div class="listingblock">
 <div class="content">
-<img src="images/qs_step3_04.png" alt="Startup Log" width="500">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">-JAVA Image--------------------------------------------
+   javaJDKImage:  j2sdk-image-x86_64-u322-b04-20221122.tar.bz2
+   DEBUG_ACTIVO:  false
+-SERVICE--------------------------------------------
+   Name:  172.28.0.2
+   Port:  8077
+-MOCKING------------------------------------------
+   JDE_MICROSERVER_MOCKING:  0
+-REPOSITORY-----------------------------------------
+   Customer:  https://jfrog.atina-connection.com/artifactory/libs-release
+   Atina:     https://jfrog.atina-connection.com/artifactory/libs-release
+-ATINA services------------------------------------------
+   JDEAtinaServer Version 1.0.6
+   JDEAtinaOverrideServicesConstants Version 1.0.0
+-LIBRARIES------------------------------------------
+   StdWebService Version  1.0.0
+   jde-lib-wrapped Version 1.0.0
+-LICENSE--------------------------------------------
+   Code:  demo
+-MICROSERVER----------------------------------------
+   JDE_MICROSERVER_TOKEN_EXPIRATION:  3000000
+   JDE_MICROSERVER_MOCKING:  0
+----------------------------------------------------
+-JVM---------------------------------------------
+   JDE_JAVA_XMS: 2G
+   JDE_JAVA_XMX: 4G
+   JDE_JAVA_HEAP_DUMP_ON_OOM: true
+   JDE_JAVA_HEAP_DUMP_PATH: /tmp/jde/jvm-dumps
+   JDE_JAVA_ERROR_FILE: /tmp/jde/jvm-dumps/hs_err_pid%p.log
+   JDE_JAVA_EXTRA_OPTS:
+   JAVA_OPTS: -Xms2G -Xmx4G -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/jde/jvm-dumps -XX:ErrorFile=/tmp/jde/jvm-dumps/hs_err_pid%p.log
+----------------------------------------------------
+ADDITIONAL SCRIPT: /etc/hosts entries
+Added host: 52.183.27.36 JDE-ALPHA-ENT
+Added host: 40.125.78.136 JDE-ALPHA-SQL
+Cat /etc/hosts:
+127.0.0.1	localhost
+::1	localhost ip6-localhost ip6-loopback
+fe00::	ip6-localnet
+ff00::	ip6-mcastprefix
+ff02::1	ip6-allnodes
+ff02::2	ip6-allrouters
+172.19.0.2	1d064a6ec7e2
+52.183.27.36 JDE-ALPHA-ENT
+40.125.78.136 JDE-ALPHA-SQL
+----------------------------------------------------
+----------------------------------------------------
+ Check log cat /tmp/jde/JDEConnectorServerLog/jde_atina_server_2026-05-14.0.log
+ Debug false
+ Debug 5005
+------------------------------------------------------------------------------------
+Starting....:
+------------------------------------------------------------------------------------</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1297,16 +1370,30 @@ JDE_LIBS_ROOT=/tmp/build_jde_libs</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">17:51:11.114 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer -           Last Build = [2026-05-13 13:40]
-17:51:11.116 [main] INFO  c.acqua.jde.jdeconnectorserver.JDEConnectorServer - Cleanning Temporal Folder: /tmp/jde
-17:51:11.117 [main] INFO  c.acqua.jde.jdeconnectorserver.JDEConnectorServer - Clean Done
-17:51:11.117 [main] INFO  c.acqua.jde.jdeconnectorserver.JDEConnectorServer - Created SessionsCleanerTask for 60 minutes
-17:51:11.117 [main] INFO  c.acqua.jde.jdeconnectorserver.JDEConnectorServer - Created CleannerUtil for 60 minutes
-17:51:11.126 [main] INFO  c.acqua.jde.jdeconnectorserver.JDEConnectorServer - Iniciando JDE Service Impl con JAVA [1, 8, 0-jdk8u322-b04]
-17:51:11.297 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *---------------------------------------*
-17:51:11.298 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *   Starting JDE Microservice 1.0.6     *
-17:51:11.343 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *   JDE Microservice started!           *
-17:51:11.343 [main] INFO  c.a.jde.jdeconnectorserver.server.JDERestServer - *---------------------------------------*</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">JDERestServer - *------------------------------------------------------*
+JDERestServer - Working Directory: /var/jdeatinaserver
+JDERestServer - Tmp Directory: /tmp/jde
+JDERestServer - JDE Connector Version: 1.0.6
+JDERestServer - JDE Atina Override Services Constants: 1.0.0
+JDERestServer - ------------------------------------------------------
+JDERestServer - Configuration:
+JDERestServer -        SERVICE:
+JDERestServer -           IP = [172.28.0.2]
+JDERestServer -           Port = [8077]
+JDERestServer -           Local IP = [0.0.0.0]
+JDERestServer -           Token Expirtation = [3000000]
+JDERestServer -           Mocking = [false]
+JDERestServer -           Last Build = [2020-08-31-004]
+JDERestServer -           Last Build = [2026-05-13 13:40]
+JEConnectorServer - Cleanning Temporal Folder: /tmp/jde
+JDEConnectorServer - Clean Done
+JDEConnectorServer - Created SessionsCleanerTask for 60 minutes
+JDEConnectorServer - Created CleannerUtil for 60 minutes
+JDEConnectorServer - Iniciando JDE Service Impl con JAVA [1, 8, 0-jdk8u322-b04]
+JDERestServer - *---------------------------------------*
+JDERestServer - *   Starting JDE Microservice 1.0.6     *
+JDERestServer - *   JDE Microservice started!           *
+JDERestServer - *---------------------------------------*</code></pre>
 </div>
 </div>
 </div>
@@ -1314,6 +1401,11 @@ JDE_LIBS_ROOT=/tmp/build_jde_libs</code></pre>
 <h3 id="_step_3_6_validate_the_microservice_deployment"><strong>Step 3.6 - Validate the Microservice Deployment</strong></h3>
 <div class="paragraph">
 <p>Once the microservice is deployed and running, you can use the <em>JD Atina Check Microservice Tool</em> to validate that it can connect to JD Edwards and invoke a basic web service.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/create-test-server.png" alt="Architecture Overview" width="800">
+</div>
 </div>
 <div class="paragraph">
 <p><strong>Download the Check Tool:</strong></p>
@@ -1480,7 +1572,7 @@ JDE_LIBS_ROOT=/tmp/build_jde_libs</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-05-14 11:57:54 -0300
+Last updated 2026-05-14 16:12:06 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
