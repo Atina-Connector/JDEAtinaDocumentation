@@ -16,6 +16,8 @@ image::qs_intro_01.png[Architecture Overview,width=800,align=center]
 
 The setup consists of four main steps:
 
+image::steps.png[Architecture Overview,width=800,align=center]
+
 . *Generate JDE INI Files* — Create the base configuration files from your JDE Server Manager.
 . *Generate JAR Libraries* — Package JD Edwards libraries into deployable JARs.
 . *Microservice Installation* — Deploy the Atina JDE Microservice using Docker.
@@ -41,6 +43,8 @@ For detailed prerequisite information, see the link:../functional/jdeatina.html[
 == *Step 1: Generate INI Configuration Files*
 
 The _JDE Atina Generate Configuration Files Tool_ is a Java CLI application that generates base INI files. It retrieves all information from the JDE Enterprise Server Manager using its REST API. During execution, you will be asked to select the HTML Client instance for your environment.
+
+image::step01.png[Architecture Overview,width=800,align=center]
 
 *Prerequisites for this step:*
 
@@ -129,6 +133,8 @@ For more details, see the section _JDE Atina Generate Configuration Files Tool_ 
 == *Step 2: Generate JAR Libraries*
 
 This tool packages the JD Edwards libraries into deployable JAR files required by the Atina JDE Microservice. It simplifies dependency management and ensures that all necessary classes are available at runtime.
+
+image::step02.png[Architecture Overview,width=800,align=center]
 
 [TIP]
 ====
@@ -272,6 +278,8 @@ For more details, see the section _JDE Atina Generate Jars Files Tool_ in the li
 == *Step 3: Microservice Installation*
 
 This section explains how to deploy the Atina JDE Microservice using Docker and Docker Compose. You will configure environment variables, initialize the container, and run a basic test to validate connectivity with JD Edwards.
+
+image::step03.png[Architecture Overview,width=800,align=center]
 
 *Prerequisites for this step:*
 
@@ -480,6 +488,8 @@ For more details, see the section _JDE Atina microservices - Installation_ in th
 ====
 
 == *Step 4: Install Mule JDE Connector*
+
+image::step04.png[Architecture Overview,width=800,align=center]
 
 === *Step 4.1 - Configure Maven Repository*
 
