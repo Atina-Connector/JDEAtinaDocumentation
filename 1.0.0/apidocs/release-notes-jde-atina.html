@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
 <meta name="keywords" content="JDE, JDEdwards, EnterpriseOne, Oracle, JD Edwards, ATINA">
-<title>Atina JD Edwards™ Connector Release Notes</title>
+<title>Atina JD Edwards™ Micorservices Release Notes</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -549,13 +549,304 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article">
 <div id="header">
-<h1>Atina JD Edwards™ Connector Release Notes</h1>
+<h1>Atina JD Edwards™ Micorservices Release Notes</h1>
 </div>
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
 <p>Atina JDE Microservices are Docker-based components designed to interact directly with Oracle’s JD Edwards EnterpriseOne™. They serve as a modern intermediary that improves upon legacy integration methods.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_atina_jde_edwards_microservice_1_0_7_june_08_2026">Atina JDE Edwards Microservice 1.0.7 - June 08, 2026</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_version_1_0_7_fixed_in_this_release">Version 1.0.7 Fixed in this Release</h3>
+<div class="sect3">
+<h4 id="_1_jde_host_mapping_validation">1. JDE Host Mapping Validation</h4>
+<div class="paragraph">
+<p>The service now validates the optional <code>JDE_EXTRA_HOSTS_FILE</code> configuration during startup.</p>
+</div>
+<div class="paragraph">
+<p>This helps identify configuration issues earlier when custom JDE host mappings are required. The startup log now includes the configured file path, whether the file exists, whether it is a valid file, the file content, and the detected line ending format.</p>
+</div>
+<div class="paragraph">
+<p>A warning is logged if Windows-style line endings are detected, since Linux <code>LF</code> line endings are recommended for container deployments.</p>
+</div>
+<div class="sect4">
+<h5 id="_impact">Impact</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>Helps detect incorrect host mapping configuration earlier during startup.</p>
+</li>
+<li>
+<p>Improves troubleshooting for JDE host resolution issues in container deployments.</p>
+</li>
+<li>
+<p>Helps identify files created with Windows-style line endings before they cause runtime issues.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_2_improved_support_for_jde_media_objects">2. Improved Support for JDE Media Objects</h4>
+<div class="paragraph">
+<p>Added a new environment variable, <code>ATINA_GRPC_MAX_INBOUND_MESSAGE_SIZE</code>, to configure the maximum inbound gRPC message size accepted by the Atina service.</p>
+</div>
+<div class="paragraph">
+<p>This allows larger JDE payloads to be received, especially when retrieving Media Objects or other operations that may return large responses.</p>
+</div>
+<div class="paragraph">
+<p>The default value remains <code>4 MB</code> if the environment variable is not configured.</p>
+</div>
+<div class="sect4">
+<h5 id="_new_env_configuration">New .Env configuration</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="env"># ====================================
+# gRPC Maximum Inbound Message Size
+# ====================================
+#
+# Defines the maximum inbound gRPC message size accepted by the Atina service.
+# Value is expressed in MB.
+# Default: 4
+#
+# This is useful for operations that may return large payloads, such as
+# JDE Media Objects.
+#
+ATINA_GRPC_MAX_INBOUND_MESSAGE_SIZE=20</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_new_docker_compose_yml_configuration">New Docker-Compose.yml configuration</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yaml">    <span style="color:#606">environment</span>:
+      <span style="color:#F00;background-color:#FAA">...</span>
+      <span style="color:#606">ATINA_GRPC_MAX_INBOUND_MESSAGE_SIZE</span>: <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#D20">${ATINA_GRPC_MAX_INBOUND_MESSAGE_SIZE}</span></span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_impact_2">Impact</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>Enables larger responses from JDE to be received by the microservice.</p>
+</li>
+<li>
+<p>Improves support for JDE Media Object operations.</p>
+</li>
+<li>
+<p>Helps prevent <code>RESOURCE_EXHAUSTED: gRPC message exceeds maximum size</code> errors when large payloads are returned.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_deployment">Deployment</h5>
+<div class="paragraph">
+<p>After updating the <code>.env</code>, update the <code>docker-compose.yml</code> if needed and restart/redeploy the container for the change to take effect.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_3_prevent_session_cleanup_during_active_operations">3. Prevent Session Cleanup During Active Operations</h4>
+<div class="paragraph">
+<p>The session cleanup logic now skips JDE sessions that are currently executing an operation.</p>
+</div>
+<div class="paragraph">
+<p>This prevents long-running JDE calls from being disconnected by the <code>SessionsCleanerTask</code> while they are still in progress, improving stability for large queries, BSFN executions, and Media Object operations.</p>
+</div>
+<div class="sect4">
+<h5 id="_impact_3">Impact</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>Prevents active JDE operations from being interrupted by the session cleanup process.</p>
+</li>
+<li>
+<p>Improves stability for long-running operations.</p>
+</li>
+<li>
+<p>Reduces unexpected disconnections during large queries, BSFN calls, and Media Object processing.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_deployment_2">Deployment</h5>
+<div class="paragraph">
+<p>No additional configuration is required.
+Redeploy the container to apply the update.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_4_improved_jde_session_validation">4. Improved JDE Session Validation</h4>
+<div class="paragraph">
+<p>Updated the internal session validation logic to ensure that the JDE session status is validated directly through the JDE Dynamic Java Connector.</p>
+</div>
+<div class="paragraph">
+<p>This is an internal stability improvement and does not change the public API behavior.</p>
+</div>
+<div class="sect4">
+<h5 id="_impact_4">Impact</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>Improves consistency of JDE session validation.</p>
+</li>
+<li>
+<p>Reduces ambiguity in the internal connector invocation path.</p>
+</li>
+<li>
+<p>Does not require any client-side API changes.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_deployment_3">Deployment</h5>
+<div class="paragraph">
+<p>No additional configuration is required.
+Redeploy the container to apply the update.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_5_improved_concurrency_for_bsfn_calls">5. Improved Concurrency for BSFN Calls</h4>
+<div class="paragraph">
+<p>Removed unnecessary synchronization from BSFN call methods, allowing independent BSFN requests to execute concurrently instead of being serialized.</p>
+</div>
+<div class="paragraph">
+<p>This improves performance and scalability under concurrent workloads without changing the public API behavior.</p>
+</div>
+<div class="sect4">
+<h5 id="_impact_5">Impact</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>Improves throughput when multiple BSFN calls are processed concurrently.</p>
+</li>
+<li>
+<p>Reduces unnecessary waiting time between independent requests.</p>
+</li>
+<li>
+<p>Improves scalability for MuleSoft and API-driven workloads with concurrent users.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_deployment_4">Deployment</h5>
+<div class="paragraph">
+<p>No additional configuration is required.
+Redeploy the container to apply the update.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_6_improved_connection_cleanup_during_bsfn_execution">6. Improved Connection Cleanup During BSFN Execution</h4>
+<div class="paragraph">
+<p>Added a control to avoid removing JDE connections while a <code>CALL BSFN</code> operation is in progress.</p>
+</div>
+<div class="paragraph">
+<p>This prevents active BSFN calls from being interrupted by the cleanup process and improves reliability for long-running and concurrent operations.</p>
+</div>
+<div class="sect4">
+<h5 id="_impact_6">Impact</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>Prevents active BSFN executions from being interrupted by connection cleanup.</p>
+</li>
+<li>
+<p>Improves reliability for long-running BSFN calls.</p>
+</li>
+<li>
+<p>Improves stability under concurrent execution.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_deployment_5">Deployment</h5>
+<div class="paragraph">
+<p>No additional configuration is required.
+Redeploy the container to apply the update.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_7_improved_reliability_for_bsfn_calls">7. Improved Reliability for BSFN Calls</h4>
+<div class="paragraph">
+<p>Added retry logic for <code>CALL BSFN</code> operations to reduce intermittent failures caused by transient JDE communication or connection issues.</p>
+</div>
+<div class="paragraph">
+<p>This improves the reliability of BSFN execution in scenarios where temporary network, session, or connector issues may occur.</p>
+</div>
+<div class="sect4">
+<h5 id="_impact_7">Impact</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>Reduces intermittent BSFN failures caused by transient communication issues.</p>
+</li>
+<li>
+<p>Improves resiliency of JDE operations.</p>
+</li>
+<li>
+<p>Helps avoid unnecessary failures when a retry can successfully complete the operation.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_deployment_6">Deployment</h5>
+<div class="paragraph">
+<p>No additional configuration is required.
+Redeploy the container to apply the update.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_8_session_handling_improvements">8. Session Handling Improvements</h4>
+<div class="paragraph">
+<p>Improved the internal logic used to identify and reuse existing JDE sessions.</p>
+</div>
+<div class="paragraph">
+<p>This helps reduce unnecessary reconnects and improves overall connection stability.</p>
+</div>
+<div class="sect4">
+<h5 id="_impact_8">Impact</h5>
+<div class="ulist">
+<ul>
+<li>
+<p>Improves JDE session reuse behavior.</p>
+</li>
+<li>
+<p>Reduces unnecessary reconnects.</p>
+</li>
+<li>
+<p>Improves overall connection stability.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_deployment_7">Deployment</h5>
+<div class="paragraph">
+<p>No additional configuration is required.
+Redeploy the container to apply the update.</p>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -592,7 +883,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect4">
-<h5 id="_new_env_configuration">New .Env configuration</h5>
+<h5 id="_new_env_configuration_2">New .Env configuration</h5>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="env"># ====================================
@@ -625,7 +916,7 @@ CLEANING_LOG_TIME=1440
 </div>
 </div>
 <div class="sect4">
-<h5 id="_new_docker_compose_yml_configuration">New Docker-Compose.yml configuration</h5>
+<h5 id="_new_docker_compose_yml_configuration_2">New Docker-Compose.yml configuration</h5>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="env">    environment:
@@ -635,7 +926,7 @@ CLEANING_LOG_TIME=1440
 </div>
 </div>
 <div class="sect4">
-<h5 id="_impact">Impact</h5>
+<h5 id="_impact_9">Impact</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -657,7 +948,7 @@ CLEANING_LOG_TIME=1440
 </div>
 </div>
 <div class="sect4">
-<h5 id="_deployment">Deployment</h5>
+<h5 id="_deployment_8">Deployment</h5>
 <div class="paragraph">
 <p>After updating the .env, update the docker-compose.yml if needed and restart/redeploy the container for the change to take effect.</p>
 </div>
@@ -699,7 +990,7 @@ To make this easier for customers, the microservice now includes preconfigured l
 </div>
 </div>
 <div class="sect4">
-<h5 id="_new_env_configuration_2">New .Env configuration</h5>
+<h5 id="_new_env_configuration_3">New .Env configuration</h5>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="env"># ====================================
@@ -757,7 +1048,7 @@ JDE_LOG_PROPERTIES_TARGET=/var/jdeatinaserver/jdelog.properties
 </div>
 </div>
 <div class="sect4">
-<h5 id="_new_docker_compose_yml_configuration_2">New Docker-Compose.yml configuration</h5>
+<h5 id="_new_docker_compose_yml_configuration_3">New Docker-Compose.yml configuration</h5>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="env">    environment:
@@ -774,7 +1065,7 @@ JDE_LOG_PROPERTIES_TARGET=/var/jdeatinaserver/jdelog.properties
 </div>
 </div>
 <div class="sect4">
-<h5 id="_impact_2">Impact</h5>
+<h5 id="_impact_10">Impact</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -815,7 +1106,7 @@ JDE_LOG_PROPERTIES_TARGET=/var/jdeatinaserver/jdelog.properties
 </div>
 </div>
 <div class="sect4">
-<h5 id="_deployment_2">Deployment</h5>
+<h5 id="_deployment_9">Deployment</h5>
 <div class="paragraph">
 <p>After updating the .env, update the docker-compose.yml if needed and restart/redeploy the container for the change to take effect.</p>
 </div>
@@ -854,7 +1145,7 @@ JDE_LOG_PROPERTIES_TARGET=/var/jdeatinaserver/jdelog.properties
 </div>
 </div>
 <div class="sect4">
-<h5 id="_impact_3">Impact</h5>
+<h5 id="_impact_11">Impact</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -876,7 +1167,7 @@ JDE_LOG_PROPERTIES_TARGET=/var/jdeatinaserver/jdelog.properties
 </div>
 </div>
 <div class="sect4">
-<h5 id="_deployment_3">Deployment</h5>
+<h5 id="_deployment_10">Deployment</h5>
 <div class="paragraph">
 <p>No additional configuration is required.
 Redeploy the container to apply the update.</p>
@@ -911,7 +1202,7 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_impact_4">Impact</h5>
+<h5 id="_impact_12">Impact</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -936,7 +1227,7 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_deployment_4">Deployment</h5>
+<h5 id="_deployment_11">Deployment</h5>
 <div class="paragraph">
 <p>No additional configuration is required.
 Redeploy the container to apply the update.</p>
@@ -968,7 +1259,7 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_impact_5">Impact</h5>
+<h5 id="_impact_13">Impact</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -993,7 +1284,7 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_deployment_5">Deployment</h5>
+<h5 id="_deployment_12">Deployment</h5>
 <div class="paragraph">
 <p>No additional configuration is required.
 Redeploy the container to apply the update.</p>
@@ -1037,7 +1328,7 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_impact_6">Impact</h5>
+<h5 id="_impact_14">Impact</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -1060,7 +1351,7 @@ If an error occurs, it will now be visible in the response, making it easier to 
 </div>
 </div>
 <div class="sect4">
-<h5 id="_deployment_6">Deployment</h5>
+<h5 id="_deployment_13">Deployment</h5>
 <div class="paragraph">
 <p>No additional configuration is required.
 Redeploy the container to apply the update.</p>
@@ -1094,15 +1385,15 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_new_env_configuration_3">New .Env configuration</h5>
+<h5 id="_new_env_configuration_4">New .Env configuration</h5>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="env">UBE_SUBMISSION_USER_CONTEXT=true</code></pre>
+<pre class="CodeRay highlight"><code data-lang="env">SUBMIT_UBE_USER_LOGGED=true</code></pre>
 </div>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_new_docker_compose_yml_configuration_3">New Docker-Compose.yml configuration</h5>
+<h5 id="_new_docker_compose_yml_configuration_4">New Docker-Compose.yml configuration</h5>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="env">    environment:
@@ -1115,7 +1406,7 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_impact_7">Impact</h5>
+<h5 id="_impact_15">Impact</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -1134,7 +1425,7 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_deployment_7">Deployment</h5>
+<h5 id="_deployment_14">Deployment</h5>
 <div class="paragraph">
 <p>After updating the .env, restart/redeploy the container for the change to take effect.</p>
 </div>
@@ -1175,7 +1466,7 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_impact_8">Impact</h5>
+<h5 id="_impact_16">Impact</h5>
 <div class="ulist">
 <ul>
 <li>
@@ -1286,7 +1577,7 @@ Redeploy the container to apply the update.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_deployment_8">Deployment</h5>
+<h5 id="_deployment_15">Deployment</h5>
 <div class="paragraph">
 <p>After updating the .env, restart/redeploy the container for the change to take effect.</p>
 </div>
@@ -1385,7 +1676,7 @@ Fully tested with Docker Desktop.</p></td>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-05-01 15:09:35 -0300
+Last updated 2026-06-08 16:48:18 -0300
 </div>
 </div>
 <script>
