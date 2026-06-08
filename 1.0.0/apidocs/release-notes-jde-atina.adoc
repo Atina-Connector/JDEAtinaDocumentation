@@ -3,6 +3,172 @@
 
 Atina JDE Microservices are Docker-based components designed to interact directly with Oracle’s JD Edwards EnterpriseOne™. They serve as a modern intermediary that improves upon legacy integration methods.
 
+
+== Atina JDE Edwards Microservice 1.0.7 - June 08, 2026
+
+=== Version 1.0.7 Fixed in this Release
+
+==== 1. JDE Host Mapping Validation
+
+The service now validates the optional `JDE_EXTRA_HOSTS_FILE` configuration during startup.
+
+This helps identify configuration issues earlier when custom JDE host mappings are required. The startup log now includes the configured file path, whether the file exists, whether it is a valid file, the file content, and the detected line ending format.
+
+A warning is logged if Windows-style line endings are detected, since Linux `LF` line endings are recommended for container deployments.
+
+===== Impact
+
+* Helps detect incorrect host mapping configuration earlier during startup.
+* Improves troubleshooting for JDE host resolution issues in container deployments.
+* Helps identify files created with Windows-style line endings before they cause runtime issues.
+
+==== 2. Improved Support for JDE Media Objects
+
+Added a new environment variable, `ATINA_GRPC_MAX_INBOUND_MESSAGE_SIZE`, to configure the maximum inbound gRPC message size accepted by the Atina service.
+
+This allows larger JDE payloads to be received, especially when retrieving Media Objects or other operations that may return large responses.
+
+The default value remains `4 MB` if the environment variable is not configured.
+
+===== New .Env configuration
+
+[source,env]
+----
+# ====================================
+# gRPC Maximum Inbound Message Size
+# ====================================
+#
+# Defines the maximum inbound gRPC message size accepted by the Atina service.
+# Value is expressed in MB.
+# Default: 4
+#
+# This is useful for operations that may return large payloads, such as
+# JDE Media Objects.
+#
+ATINA_GRPC_MAX_INBOUND_MESSAGE_SIZE=20
+----
+
+===== New Docker-Compose.yml configuration
+
+[source,yaml]
+----
+    environment:
+      ...
+      ATINA_GRPC_MAX_INBOUND_MESSAGE_SIZE: ${ATINA_GRPC_MAX_INBOUND_MESSAGE_SIZE}
+----
+
+===== Impact
+
+* Enables larger responses from JDE to be received by the microservice.
+* Improves support for JDE Media Object operations.
+* Helps prevent `RESOURCE_EXHAUSTED: gRPC message exceeds maximum size` errors when large payloads are returned.
+
+===== Deployment
+
+After updating the `.env`, update the `docker-compose.yml` if needed and restart/redeploy the container for the change to take effect.
+
+==== 3. Prevent Session Cleanup During Active Operations
+
+The session cleanup logic now skips JDE sessions that are currently executing an operation.
+
+This prevents long-running JDE calls from being disconnected by the `SessionsCleanerTask` while they are still in progress, improving stability for large queries, BSFN executions, and Media Object operations.
+
+===== Impact
+
+* Prevents active JDE operations from being interrupted by the session cleanup process.
+* Improves stability for long-running operations.
+* Reduces unexpected disconnections during large queries, BSFN calls, and Media Object processing.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+==== 4. Improved JDE Session Validation
+
+Updated the internal session validation logic to ensure that the JDE session status is validated directly through the JDE Dynamic Java Connector.
+
+This is an internal stability improvement and does not change the public API behavior.
+
+===== Impact
+
+* Improves consistency of JDE session validation.
+* Reduces ambiguity in the internal connector invocation path.
+* Does not require any client-side API changes.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+==== 5. Improved Concurrency for BSFN Calls
+
+Removed unnecessary synchronization from BSFN call methods, allowing independent BSFN requests to execute concurrently instead of being serialized.
+
+This improves performance and scalability under concurrent workloads without changing the public API behavior.
+
+===== Impact
+
+* Improves throughput when multiple BSFN calls are processed concurrently.
+* Reduces unnecessary waiting time between independent requests.
+* Improves scalability for MuleSoft and API-driven workloads with concurrent users.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+==== 6. Improved Connection Cleanup During BSFN Execution
+
+Added a control to avoid removing JDE connections while a `CALL BSFN` operation is in progress.
+
+This prevents active BSFN calls from being interrupted by the cleanup process and improves reliability for long-running and concurrent operations.
+
+===== Impact
+
+* Prevents active BSFN executions from being interrupted by connection cleanup.
+* Improves reliability for long-running BSFN calls.
+* Improves stability under concurrent execution.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+==== 7. Improved Reliability for BSFN Calls
+
+Added retry logic for `CALL BSFN` operations to reduce intermittent failures caused by transient JDE communication or connection issues.
+
+This improves the reliability of BSFN execution in scenarios where temporary network, session, or connector issues may occur.
+
+===== Impact
+
+* Reduces intermittent BSFN failures caused by transient communication issues.
+* Improves resiliency of JDE operations.
+* Helps avoid unnecessary failures when a retry can successfully complete the operation.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+==== 8. Session Handling Improvements
+
+Improved the internal logic used to identify and reuse existing JDE sessions.
+
+This helps reduce unnecessary reconnects and improves overall connection stability.
+
+===== Impact
+
+* Improves JDE session reuse behavior.
+* Reduces unnecessary reconnects.
+* Improves overall connection stability.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
 == Atina JDE Edwards Microservice 1.0.6 - April 30, 2026
 
 === Version 1.0.6 Fixed in this Release
