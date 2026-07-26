@@ -677,7 +677,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>By running inside the client’s network, these microservices overcome key issues commonly found in WAN or cloud-based integrations—particularly those stemming from the use of socket-based communication in the original JDE libraries. This deployment approach improves performance, reduces latency, and avoids DNS resolution problems.</p>
 </div>
 <div class="paragraph">
-<p>Furthermore, the microservices expose a gRPC-based API (using HTTP/2), eliminating the dependency on Java 8-only Oracle libraries. This ensures compatibility with newer Java versions (such as Java 17), aligning with <em>MuleSoft™</em>'s roadmap of deprecating older Java support.</p>
+<p>Furthermore, the microservices expose a gRPC-based API (using HTTP/2), eliminating the dependency on Java 8-only Oracle libraries. This ensures compatibility with newer Java versions (such as Java 17), aligning with any middleware roadmap of deprecating older Java support.</p>
 </div>
 <div class="paragraph">
 <p><span class="image"><img src="images/atina_images/atina_image00.png" alt="image"></span></p>
@@ -1279,7 +1279,7 @@ XMLKernelReply7=1</code></pre>
 </ul>
 </div>
 <div class="paragraph">
-<p>When there is a firewall between the Mulesoft ESB and the Enterprise Server, set the PredfinedJDENETPorts setting to 1 in the JDE.INI file of the Enterprise Server. This setting enables JDENET network process to use a predefined range of TCP/IP ports. This port range starts at the port number that is specified by serviceNameListen and ends at the port that is calculated by the equation serviceNameListen = maxNetProcesses - 1. You must open these ports in a firewall setup to successfully connect the Mulesoft ESB to the Enterprise Server.</p>
+<p>When there is a firewall between the Middlerware and the Enterprise Server, set the PredfinedJDENETPorts setting to 1 in the JDE.INI file of the Enterprise Server. This setting enables JDENET network process to use a predefined range of TCP/IP ports. This port range starts at the port number that is specified by serviceNameListen and ends at the port that is calculated by the equation serviceNameListen = maxNetProcesses - 1. You must open these ports in a firewall setup to successfully connect the Middleware to the Enterprise Server.</p>
 </div>
 <div class="paragraph">
 <p>Please refer to <strong>JD Edwards EnterpriseOne Tools Security Administration Guide</strong> to check updates.</p>
@@ -2903,7 +2903,7 @@ HOST_EXTRA_HOSTS_FILE=/opt/jde/config/extra-hosts.txt</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-05-13 14:58:08 -0300
+Last updated 2026-07-26 16:28:04 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

@@ -111,7 +111,7 @@ This improves performance and scalability under concurrent workloads without cha
 
 * Improves throughput when multiple BSFN calls are processed concurrently.
 * Reduces unnecessary waiting time between independent requests.
-* Improves scalability for MuleSoft and API-driven workloads with concurrent users.
+* Improves scalability for any Middleware and API-driven workloads with concurrent users.
 
 ===== Deployment
 
@@ -636,4 +636,4 @@ None
 None
 
 === Support Resources
-* For more information on the Atina JDE Microservices - User Guide, visit its link:https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/functional/jdeatina.html[User Guide].
+* For more information on the Atina JDE Microservices - User Guide, visit its link:link:1.0.0/functional/jde.html[User Guide].
