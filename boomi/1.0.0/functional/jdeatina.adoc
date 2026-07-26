@@ -18,7 +18,7 @@ _Atina JDE Microservices_ are Docker-based components designed to interact direc
 
 By running inside the client’s network, these microservices overcome key issues commonly found in WAN or cloud-based integrations—particularly those stemming from the use of socket-based communication in the original JDE libraries. This deployment approach improves performance, reduces latency, and avoids DNS resolution problems.
 
-Furthermore, the microservices expose a gRPC-based API (using HTTP/2), eliminating the dependency on Java 8-only Oracle libraries. This ensures compatibility with newer Java versions (such as Java 17), aligning with _MuleSoft™_'s roadmap of deprecating older Java support.
+Furthermore, the microservices expose a gRPC-based API (using HTTP/2), eliminating the dependency on Java 8-only Oracle libraries. This ensures compatibility with newer Java versions (such as Java 17), aligning with any middleware roadmap of deprecating older Java support.
 
 image:atina_images/atina_image00.png[image]
 
@@ -363,7 +363,7 @@ XMLKernelReply7=1
 
 * Enable Predefined JDENET Ports in JDE.INI
 
-When there is a firewall between the Mulesoft ESB and the Enterprise Server, set the PredfinedJDENETPorts setting to 1 in the JDE.INI file of the Enterprise Server. This setting enables JDENET network process to use a predefined range of TCP/IP ports. This port range starts at the port number that is specified by serviceNameListen and ends at the port that is calculated by the equation serviceNameListen = maxNetProcesses - 1. You must open these ports in a firewall setup to successfully connect the Mulesoft ESB to the Enterprise Server.
+When there is a firewall between the Middlerware and the Enterprise Server, set the PredfinedJDENETPorts setting to 1 in the JDE.INI file of the Enterprise Server. This setting enables JDENET network process to use a predefined range of TCP/IP ports. This port range starts at the port number that is specified by serviceNameListen and ends at the port that is calculated by the equation serviceNameListen = maxNetProcesses - 1. You must open these ports in a firewall setup to successfully connect the Middleware to the Enterprise Server.
 
 Please refer to *JD Edwards EnterpriseOne Tools Security Administration Guide* to check updates.
 
