@@ -1,0 +1,38 @@
+<svg width="1000" height="400" xmlns="http://www.w3.org/2000/svg">
+    <style>
+        .box { fill:#eef2f7; stroke:#2c3e50; stroke-width:2; rx:10; }
+        .title { font-family:Arial; font-size:16px; font-weight:bold; fill:#2c3e50; }
+        .text { font-family:Arial; font-size:13px; fill:#2c3e50; }
+        .arrow { stroke:#34495e; stroke-width:2; marker-end:url(#arrowhead); }
+        .label { font-family:Arial; font-size:12px; fill:#34495e; }
+    </style>
+
+    <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7"
+                refX="10" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+        </marker>
+    </defs>
+
+    <!-- Client -->
+    <rect x="50" y="140" width="180" height="80" class="box"/>
+    <text x="90" y="170" class="title">Client</text>
+    <text x="65" y="195" class="text">(MuleSoft / grpcurl)</text>
+
+    <!-- Caddy -->
+    <rect x="380" y="100" width="200" height="100" class="box"/>
+    <text x="440" y="135" class="title">Caddy</text>
+    <text x="410" y="165" class="text">TLS Termination</text>
+
+    <!-- Microservice -->
+    <rect x="720" y="160" width="240" height="90" class="box"/>
+    <text x="750" y="195" class="title">Atina Microservice</text>
+    <text x="760" y="220" class="text">(Mocking 8078)</text>
+
+    <!-- Arrows -->
+    <line x1="230" y1="180" x2="380" y2="150" class="arrow"/>
+    <text x="260" y="140" class="label">HTTPS (8079)</text>
+
+    <line x1="580" y1="150" x2="720" y2="200" class="arrow"/>
+    <text x="600" y="140" class="label">HTTP/2 (gRPC h2c)</text>
+</svg>

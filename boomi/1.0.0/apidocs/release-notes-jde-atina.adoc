@@ -1,0 +1,639 @@
+= Atina JD Edwards™ Micorservices Release Notes
+:keywords: JDE, JDEdwards, EnterpriseOne, Oracle, JD Edwards, ATINA
+
+Atina JDE Microservices are Docker-based components designed to interact directly with Oracle’s JD Edwards EnterpriseOne™. They serve as a modern intermediary that improves upon legacy integration methods.
+
+
+== Atina JDE Edwards Microservice 1.0.7 - June 08, 2026
+
+=== Version 1.0.7 Fixed in this Release
+
+==== 1. JDE Host Mapping Validation
+
+The service now validates the optional `JDE_EXTRA_HOSTS_FILE` configuration during startup.
+
+This helps identify configuration issues earlier when custom JDE host mappings are required. The startup log now includes the configured file path, whether the file exists, whether it is a valid file, the file content, and the detected line ending format.
+
+A warning is logged if Windows-style line endings are detected, since Linux `LF` line endings are recommended for container deployments.
+
+===== Impact
+
+* Helps detect incorrect host mapping configuration earlier during startup.
+* Improves troubleshooting for JDE host resolution issues in container deployments.
+* Helps identify files created with Windows-style line endings before they cause runtime issues.
+
+==== 2. Improved Support for JDE Media Objects
+
+Added a new environment variable, `ATINA_GRPC_MAX_INBOUND_MESSAGE_SIZE`, to configure the maximum inbound gRPC message size accepted by the Atina service.
+
+This allows larger JDE payloads to be received, especially when retrieving Media Objects or other operations that may return large responses.
+
+The default value remains `4 MB` if the environment variable is not configured.
+
+===== New .Env configuration
+
+[source,env]
+----
+# ====================================
+# gRPC Maximum Inbound Message Size
+# ====================================
+#
+# Defines the maximum inbound gRPC message size accepted by the Atina service.
+# Value is expressed in MB.
+# Default: 4
+#
+# This is useful for operations that may return large payloads, such as
+# JDE Media Objects.
+#
+ATINA_GRPC_MAX_INBOUND_MESSAGE_SIZE=20
+----
+
+===== New Docker-Compose.yml configuration
+
+[source,yaml]
+----
+    environment:
+      ...
+      ATINA_GRPC_MAX_INBOUND_MESSAGE_SIZE: ${ATINA_GRPC_MAX_INBOUND_MESSAGE_SIZE}
+----
+
+===== Impact
+
+* Enables larger responses from JDE to be received by the microservice.
+* Improves support for JDE Media Object operations.
+* Helps prevent `RESOURCE_EXHAUSTED: gRPC message exceeds maximum size` errors when large payloads are returned.
+
+===== Deployment
+
+After updating the `.env`, update the `docker-compose.yml` if needed and restart/redeploy the container for the change to take effect.
+
+==== 3. Prevent Session Cleanup During Active Operations
+
+The session cleanup logic now skips JDE sessions that are currently executing an operation.
+
+This prevents long-running JDE calls from being disconnected by the `SessionsCleanerTask` while they are still in progress, improving stability for large queries, BSFN executions, and Media Object operations.
+
+===== Impact
+
+* Prevents active JDE operations from being interrupted by the session cleanup process.
+* Improves stability for long-running operations.
+* Reduces unexpected disconnections during large queries, BSFN calls, and Media Object processing.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+==== 4. Improved JDE Session Validation
+
+Updated the internal session validation logic to ensure that the JDE session status is validated directly through the JDE Dynamic Java Connector.
+
+This is an internal stability improvement and does not change the public API behavior.
+
+===== Impact
+
+* Improves consistency of JDE session validation.
+* Reduces ambiguity in the internal connector invocation path.
+* Does not require any client-side API changes.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+==== 5. Improved Concurrency for BSFN Calls
+
+Removed unnecessary synchronization from BSFN call methods, allowing independent BSFN requests to execute concurrently instead of being serialized.
+
+This improves performance and scalability under concurrent workloads without changing the public API behavior.
+
+===== Impact
+
+* Improves throughput when multiple BSFN calls are processed concurrently.
+* Reduces unnecessary waiting time between independent requests.
+* Improves scalability for MuleSoft and API-driven workloads with concurrent users.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+==== 6. Improved Connection Cleanup During BSFN Execution
+
+Added a control to avoid removing JDE connections while a `CALL BSFN` operation is in progress.
+
+This prevents active BSFN calls from being interrupted by the cleanup process and improves reliability for long-running and concurrent operations.
+
+===== Impact
+
+* Prevents active BSFN executions from being interrupted by connection cleanup.
+* Improves reliability for long-running BSFN calls.
+* Improves stability under concurrent execution.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+==== 7. Improved Reliability for BSFN Calls
+
+Added retry logic for `CALL BSFN` operations to reduce intermittent failures caused by transient JDE communication or connection issues.
+
+This improves the reliability of BSFN execution in scenarios where temporary network, session, or connector issues may occur.
+
+===== Impact
+
+* Reduces intermittent BSFN failures caused by transient communication issues.
+* Improves resiliency of JDE operations.
+* Helps avoid unnecessary failures when a retry can successfully complete the operation.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+==== 8. Session Handling Improvements
+
+Improved the internal logic used to identify and reuse existing JDE sessions.
+
+This helps reduce unnecessary reconnects and improves overall connection stability.
+
+===== Impact
+
+* Improves JDE session reuse behavior.
+* Reduces unnecessary reconnects.
+* Improves overall connection stability.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+== Atina JDE Edwards Microservice 1.0.6 - April 30, 2026
+
+=== Version 1.0.6 Fixed in this Release
+
+==== 1. Cleaning Process Enhancement
+
+Previously, the cleanup process was fixed to a 60 days. This has now been improved so that the customer can define how often the cleanup process should run.
+
+In addition, the cleanup process now also covers log files generated by the JDE libraries themselves, helping keep the runtime environment cleaner over time.
+
+===== What changed
+
+* The cleanup interval is now configurable through the microservice environment settings.
+* The cleanup process now removes old log files generated by the JDE libraries as well.
+* The cleanup behavior remains date-based, so only files older than the configured threshold are considered.
+* Files that are still in use are safely skipped without interrupting the cleanup process.
+
+===== New .Env configuration
+
+```env
+# ====================================
+# Configure Cleaning Process
+# ====================================
+#
+# Defines the cleanup interval, in minutes, for temporary files and old log files.
+#
+# Cleanup targets:
+# - Temporary directory: ${java.io.tmpdir}
+# - Atina logs directory: /tmp/jde/JDEConnectorServerLog
+# - JDE logs directory: /tmp/jdelog
+#
+# Only files older than the configured threshold will be deleted.
+# Files currently in use will be skipped safely.
+# Note:
+#
+# The JDE logs directory must remain aligned with the paths defined in jdelog.properties.
+# For example, if jdelog.properties contains entries such as:
+#   FILE=/tmp/jdelog/jderoot.log
+#   FILE=/tmp/jdelog/jas.log
+#   FILE=/tmp/jdelog/jasdebug.log
+# then the cleanup configuration must point to the same base directory: /tmp/jdelog
+#
+# Ex: 1 day = 1440 minutes
+#
+CLEANING_LOG_TIME=1440
+#
+```
+
+===== New Docker-Compose.yml configuration
+
+```env
+    environment:
+      ...
+      CLEANING_LOG_TIME: ${CLEANING_LOG_TIME}
+```
+
+===== Impact
+	•	Improves housekeeping flexibility by allowing customers to define how often cleanup should run.
+	•	Reduces the accumulation of old runtime and JDE-generated log files.
+	•	Helps reduce unnecessary disk usage and operational maintenance overhead.
+
+===== Notes / Recommendation
+
+This improvement is especially useful in environments where log generation is high or where longer-running executions may accumulate unnecessary files over time.
+
+===== Deployment
+
+After updating the .env, update the docker-compose.yml if needed and restart/redeploy the container for the change to take effect.
+
+==== 2. Logging Optimization and Simplified Configuration
+
+We simplified the process for defining the application logging level and the JDE logging template used at startup.
+To make this easier for customers, the microservice now includes preconfigured logging templates and configurable application log levels.
+
+===== What changed
+•	Java application log levels can now be configured more easily through environment variables.
+•	Two base JDE logging templates are now provided:
+** link:resources/jdelog-info.properties[jdelog-info.properties,window=_blank]
+** link:resources/jdelog-debug.properties[jdelog-debug.properties,window=_blank]
+•	The microservice can automatically copy one of these templates at startup depending on the selected mode.
+•	Customers who prefer to manage their own jdelog.properties file manually can disable this automatic copy process.
+
+===== New .Env configuration
+
+```env
+# ====================================
+# Java Application Logging Levels
+# ====================================
+#
+# Optional log levels for the Atina Java server.
+# If any of these properties are not defined, the application will use the
+# default value configured in JDEConnectorServerBootstrap (DEBUG).
+#
+# Valid values typically include:
+# TRACE, DEBUG, INFO, WARN, ERROR
+#
+JDE_CONNECTOR_SERVER_LEVEL=INFO
+JDE_REST_SERVER_LEVEL=INFO
+JDE_CONNECTOR_SERVICE_LEVEL=INFO
+JDE_HANDLER_LEVEL=INFO
+JDE_SINGLE_WS_CLIENT_LEVEL=INFO
+JDE_SINGLE_WS_CONNECTION_LEVEL=INFO
+
+# ====================================
+# JDE Logging Properties Template
+# ====================================
+#
+# Controls whether the application automatically copies a JDE logging
+# properties template from the classpath to the working area at startup.
+#
+# Valid values:
+# - NONE  : do not copy any file (default behavior)
+# - INFO  : copy src/main/resources/jdelog-info.properties
+# - DEBUG : copy src/main/resources/jdelog-debug.properties
+#
+# The file will be copied to:
+#   ${user.dir}/jdelog.properties
+#
+# This is useful when the customer wants the application to prepare a default
+# jdelog.properties file automatically.
+# If the customer prefers to manage the file manually, use NONE.
+#
+# If the customer wants to use their own custom jdelog.properties file, they
+# should copy it into the container manually (for example with `docker cp`)
+# and set JDE_DEBUG_MODE=NONE to prevent the application from overwriting it.
+#
+# Example:
+# docker cp ./jdelog.properties jd-atina-microserver:/var/jdeatinaserver/jdelog.properties
+#
+JDE_DEBUG_MODE=DEBUG
+#
+# Target path for the copied jdelog.properties file.
+# Default: ${user.dir}/jdelog.properties
+#
+JDE_LOG_PROPERTIES_TARGET=/var/jdeatinaserver/jdelog.properties
+#
+
+```
+
+===== New Docker-Compose.yml configuration
+
+```env
+    environment:
+      ...
+      JDE_CONNECTOR_SERVER_LEVEL: ${JDE_CONNECTOR_SERVER_LEVEL}
+      JDE_REST_SERVER_LEVEL: ${JDE_REST_SERVER_LEVEL}
+      JDE_CONNECTOR_SERVICE_LEVEL: ${JDE_CONNECTOR_SERVICE_LEVEL}
+      JDE_HANDLER_LEVEL: ${JDE_HANDLER_LEVEL}
+      JDE_SINGLE_WS_CLIENT_LEVEL: ${JDE_SINGLE_WS_CLIENT_LEVEL}
+      JDE_SINGLE_WS_CONNECTION_LEVEL: ${JDE_SINGLE_WS_CONNECTION_LEVEL}
+      JDE_DEBUG_MODE: ${JDE_DEBUG_MODE}
+      JDE_LOG_PROPERTIES_TARGET: ${JDE_LOG_PROPERTIES_TARGET}
+```
+
+===== Impact
+	•	Simplifies logging setup for customers.
+	•	Reduces the need for manual changes to logging configuration files.
+	•	Improves maintainability by providing predefined logging templates.
+	•	Improves runtime performance when running at INFO level instead of DEBUG.
+
+===== Notes / Recommendation
+
+We achieved a significant improvement in response times when running with logging at INFO level rather than DEBUG.
+
+If the customer wants to use their own custom jdelog.properties file, they should copy it into the container manually and set:
+
+```env
+JDE_DEBUG_MODE=NONE
+```
+
+and use docker copy:
+
+```bash
+docker cp ./jdelog.properties jd-atina-microserver:/var/jdeatinaserver/jdelog.properties
+```
+
+===== Deployment
+
+After updating the .env, update the docker-compose.yml if needed and restart/redeploy the container for the change to take effect.
+
+== Atina JDE Edwards Microservice 1.0.5 - April 9, 2026
+
+=== Version 1.0.5 Fixed in this Release
+
+==== 1. Session Concurrency Handling During Re-Login
+
+We identified a concurrency issue during the JDE re-login/session validation flow. While the microservice was checking the list of existing JDE sessions before opening a new one, another thread could modify that same session collection at the same time.
+
+Under parallel execution, this could lead to intermittent failures such as `ConcurrentModificationException` during session reuse or re-login validation.
+
+===== What changed
+
+* The session validation flow was updated to avoid iterating directly over a live shared session collection.
+* The microservice now works with a safer session snapshot/retry approach during re-login validation.
+* This reduces the risk of intermittent failures when multiple requests are processed concurrently.
+
+===== Impact
+
+* Improves stability under parallel execution.
+* Prevents intermittent re-login/session validation failures caused by concurrent updates to the session list.
+* Reduces the risk of unexpected connector errors during high-concurrency scenarios.
+
+===== Notes / Recommendation
+
+This fix is especially relevant in environments where multiple concurrent requests may trigger JDE session validation or re-login logic at the same time.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+==== 2. Safe Shutdown Execution During Connection Pool Cleanup
+
+We identified an issue in the shutdown flow where `connector.shutDown()` could be triggered while the connection pool cleanup process was still active.
+
+To prevent inconsistent shutdown behavior, the shutdown call had been temporarily disabled while a proper fix was being implemented.
+
+===== What changed
+
+* The microservice now checks the number of active sessions before executing `connector.shutDown()`.
+* A safe session snapshot/retry mechanism is used to determine whether open sessions still exist.
+* `connector.shutDown()` is now executed only when there are no remaining active sessions.
+* If active sessions are still present, the shutdown is skipped and the condition is logged.
+
+===== Impact
+
+* Prevents shutdown from running while sessions are still active.
+* Improves connection pool stability during cleanup operations.
+* Reduces the risk of incomplete shutdown sequences or unintended side effects during session cleanup.
+
+===== Notes / Recommendation
+
+This fix restores the shutdown behavior in a safer way by ensuring that shutdown is only executed when no active sessions remain.
+
+If active sessions are still open, the microservice will skip the shutdown and continue logging the condition for traceability.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+==== 3. JDE Session Resolution and `jdeinterop.ini` Context Handling
+
+We identified a JD Edwards session resolution issue where the underlying JDE session lookup could return stale session information associated with the first logged-in session, even when a different session ID was provided.
+
+As a result, operations that depend on the resolved user session could end up loading `jdeinterop.ini` values from the wrong session context, including the Enterprise Server host and port configuration.
+
+===== What changed
+
+* The microservice was updated to better handle this JD Edwards session resolution behavior.
+* Additional safeguards were added around the session-dependent loading of `jdeinterop.ini` values.
+* This reduces the risk of using host and port information associated with the wrong JDE session context.
+
+===== Impact
+
+* Prevents incorrect reuse of session-related configuration data.
+* Reduces the risk of loading `jdeinterop.ini` values from the wrong session.
+* Improves stability when multiple JDE sessions are active in the same runtime.
+
+===== Notes / Recommendation
+
+Based on our analysis, the root cause appears to be in the underlying JD Edwards session resolution behavior, where the session lookup may return stale data from the first logged-in session.
+
+This fix adds protection on the microservice side to reduce the impact of that behavior during runtime.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+ 
+== Atina JDE Edwards Microservice 1.0.4 - April 7, 2026
+
+=== Version 1.0.4 Fixed in this Release
+
+==== 1. Submit UBE XML Request - Error Handling and Cache Validation
+
+We identified a scenario where error responses returned by JD Edwards (such as invalid credentials or malformed requests) could be mistakenly stored in the cache, leading to repeated failures in subsequent executions.
+
+===== What changed
+
+•	The microservice now detects error responses in the XML payload
+
+If an error is detected:
+
+•	The error is returned immediately to the caller
+•	The XML is not stored in the cache
+
+===== Impact
+
+•	Prevents invalid or error responses from being cached
+•	Avoids persistent failures caused by corrupted cache entries
+•	Improves troubleshooting by exposing the actual JDE error response
+
+===== Notes / Recommendation
+
+This change ensures that only valid XML definitions are cached.
+If an error occurs, it will now be visible in the response, making it easier to diagnose configuration or credential issues.
+
+===== Deployment
+
+No additional configuration is required.
+Redeploy the container to apply the update.
+
+== Atina JDE Edwards Microservice 1.0.3 - April 7, 2026
+
+=== Version 1.0.3 Fixed in this Release
+
+==== 1. UBE Submission User Context
+
+We identified an issue where UBE submissions were executed using the security (bootstrap) user instead of the logged-in user, which could lead to unexpected behavior depending on customer configurations and permissions.
+
+===== What changed
+
+•	UBE submissions now use the logged-in user by default.
+•	A new configuration property allows switching back to the security (bootstrap) user if required.
+
+===== New .Env configuration
+
+```env
+SUBMIT_UBE_USER_LOGGED=true
+```
+
+===== New Docker-Compose.yml configuration
+
+```env
+    environment:
+      ...
+      JDE_EXTRA_HOSTS_FILE: /tmp/extra-hosts.txt
+      SUBMIT_UBE_USER_LOGGED: ${SUBMIT_UBE_USER_LOGGED}
+    container_name: jd-atina-microserver
+      ...
+```
+
+===== Impact
+
+•	Ensures consistency with user context and permissions during UBE execution
+•	Prevents discrepancies between interactive and integration-based executions
+
+===== Notes / Recommendation
+
+The default behavior (true) is recommended for most scenarios, as it aligns UBE execution with the authenticated user context.
+
+===== Deployment
+
+After updating the .env, restart/redeploy the container for the change to take effect.
+
+== Atina JDE Edwards Microservice 1.0.2 - March 25, 2026
+
+=== Version 1.0.2 Fixed in this Release
+
+We identified and fixed an issue where the SessionsCleanerTask, while removing an expired session, could trigger an unintended shutdown/disconnect path that impacted the entire connection pool.
+
+As a result, sessions that were still active (including sessions being used by an in-flight BSFN call) could be terminated unexpectedly, leading to errors such as:
+
+•	Cannot find the user session with session ID ... please (re)login
+
+===== What changed
+
+•	The cleanup flow now ensures that only the targeted expired session is disconnected.
+•	The cleanup process includes an additional safety control to prevent it from interrupting ongoing operations.
+
+===== Impact
+
+•	Prevents unexpected logoffs of active sessions.
+•	Improves stability when multiple concurrent sessions are in use.
+
+== Atina JDE Edwards Microservice 1.0.1 - March 8, 2026
+
+=== Version 1.0.1 Fixed in this Release
+
+==== 1. Kernel Recycling
+
+We added an **optional kernel recycling step** to the cleanup flow to help mitigate scenarios where JDE Enterprise Server resources are not released correctly (for example, when CallObject kernels become stuck/zombie and prevent proper recycling).
+
+This feature allows the microservice to trigger recycling as part of the cleanup process, helping the server free up kernels and restore capacity.
+
+====== KERNEL_RECICLYING
+
+Enable/disable via the Atina microservice Docker `.env` file:
+```env
+KERNEL_RECICLYING=true
+```
+
+	•	true: kernel recycling is executed during cleanup
+	•	false (or not set): recycling is skipped (default behavior)
+
+====== When to use
+
+•	Intermittent COSE#1000 / “Unable to obtain an environment”
+•	Kernel exhaustion or zombie CallObject kernel symptoms
+•	Temporary mitigation while investigating the root cause
+
+====== KERNEL_RECICLYING_BY_USER
+
+```env
+KERNEL_RECICLYING_BY_USER=true
+```
+
+======  When to use:
+
+•	KERNEL_RECICLYING is true
+•	Recycling should only be triggered by user logoff rather than automatically during every cleanup cycle.
+
+
+====== SESSION_EXPIRATION_TIME
+
+```env
+SESSION_EXPIRATION_TIME=5
+```
+
+===== When to use:
+
+•	Enable this setting to have the microservice automatically log off users after a specified minutes of inactivity, helping to free up resources and prevent stale sessions.
+
+===== Notes / Recommendation
+
+This is intended as a workaround/mitigation, not a permanent fix. If the underlying issue is caused by custom BSFNs leaving resources open (e.g., “OPEN TABLE NOT CLOSED”), that custom code should still be corrected to prevent leaks.
+
+===== Deployment
+After updating the .env, restart/redeploy the container for the change to take effect.
+
+
+== Atina JDE Edwards Microservice 1.0.0 - August 10, 2025
+
+=== Version 1.0.0 Compatibility
+
+[width="100%", cols=",", options="header"]
+|===
+|Software Component | Compatible Versions
+
+|Docker Runtime
+|Docker Engine 20.10+ or any OCI-compliant container runtime.
+Fully tested with Docker Desktop.
+
+|Oracle JD Edwards EnterpriseOne™
+|Oracle’s JD Edwards EnterpriseOne™ Tools Release 8.98 Update 4 and onwards. For Web Services we recomend Tool Release 9.2.x and onwards due limitations for previous versions.
+|===
+
+=== Features
+
+* Authentication methods, including Log in JD Edwards EnterpriseOne™ with JDE User Credentials or Tokens.
+
+* Invoke JD Edwards EnterpriseOne™ web services.
+
+* Submitting UBE by name and version processes, including data selection to filter records, override Processing Options and passing Report Interconnect (RI) parameter. The user can override the Batch Queue too.
+
+* Check a UBE call’s status asynchronously.
+
+* Invoking Business Functions (BSFNs) on the JDE server with parameters and Transaction Processing handling.
+
+* Polling for Master Business Function (MBF) events
+
+* Metadata APIs to retrieve lists of available web services, input/output parameters, and payload templates.
+
+* Monitoring APIs to view open connections and retrieve logs by transaction ID
+
+* Token APIs for creating and parsing tokens.
+
+=== Version 1.0.0 Fixed in this Release
+
+None
+
+=== Version 1.0.0 Known Issues
+
+None
+
+=== Support Resources
+* For more information on the Atina JDE Microservices - User Guide, visit its link:https://atina-connector.github.io/JDEAtinaJDEMuleConnectorDoc4/1.0.0/functional/jdeatina.html[User Guide].

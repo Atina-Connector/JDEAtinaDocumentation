@@ -1,0 +1,37 @@
+= JD Atina Create JAR Files Tool - Release Notes
+:keywords: JDE, JDEdwards, EnterpriseOne, Oracle, JD Edwards, ATINA, JAR, libraries
+
+This document describes changes to the *JD Atina Create JAR Files Tool* (`jd-create-jar-files`).
+This tool packages the JD Edwards libraries into deployable JAR files required by the Atina JDE Microservice.
+
+== JD Atina Create JAR Files Tool Version 1.2.0 - May 13, 2026
+
+=== Initial Release
+
+This is the first public release of the JD Atina Create JAR Files Tool.
+
+==== Features
+
+* Packages JD Edwards interoperability libraries from the Deployment Server into deployable JAR bundles.
+* Generates the following artifacts:
+** `jde-lib-wrapped-1.0.0.jar` — Bundles the core JD Edwards interoperability libraries required for integration.
+** `StdWebService-1.0.0.jar` — Includes wrappers for standard JD Edwards web services.
+** `JDEAtinaOverrideServicesConstants-1.0.0.jar` — Provides local override of web service properties, avoiding the need to modify JDE configuration.
+** `service-constants.properties` — Contains configuration properties for the microservice.
+* Reads the Maven local repository path via the `-r` parameter to install generated artifacts.
+* Scans the required folder structure (`JDBC_Vendor_Drivers`, `system/Classes`, `system/JAS`, `system/WS`) and validates the presence of necessary files before packaging.
+
+==== Usage
+
+[source,bash]
+----
+java -jar jd-create-jar-files-1.2.0.jar \
+  -r <maven_local_repository_path>
+----
+
+==== Prerequisites
+
+* OpenJDK 8 installed
+* Maven 3.8.1 or higher
+* Access to the JDE Deployment Server
+* Required folder structure populated with JDE libraries (see Quick Setup Overview)
