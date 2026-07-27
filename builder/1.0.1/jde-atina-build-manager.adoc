@@ -16,6 +16,8 @@ The Build Manager generates:
 
 * `jde-lib-wrapped-{version}.jar` — core JD Edwards interoperability libraries
 * `StdWebService-{version}.jar` — standard JD Edwards web service wrappers
+* `JDEAtinaOverrideServicesConstants-{version}.jar` — local override of web service properties, avoiding the need to modify JDE configuration
+* `service-constants.properties` — configuration properties for the microservice
 * IntelliJ Workspace — a Maven project with organized Web Service sources, for development
 
 image::01-home-new-customer.png[New Customer button on the Build Manager home page,width=800,align=center]
