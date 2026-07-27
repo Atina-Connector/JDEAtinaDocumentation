@@ -36,7 +36,6 @@ September 2026 Runtime Release
 * Invoke a UBE by name / version. It allows use of data selection using SQL syntax
 * Retrieve UBE Job Status.
 * Poll MBF Events transactions.
-* Invoke Web Services
 
 === Breaking Changes
 
