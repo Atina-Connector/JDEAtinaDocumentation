@@ -14,7 +14,8 @@
       "Bash(asciidoctor quick_setup_overview.adoc)",
       "Bash(asciidoctor release-notes-jd-create-jar-files.adoc)",
       "Bash(asciidoctor release-notes-jd-create-ini-files.adoc)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(asciidoctor jde-atina-build-manager.adoc)"
     ]
   }
 }

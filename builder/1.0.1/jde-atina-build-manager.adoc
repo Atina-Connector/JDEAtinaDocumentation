@@ -1,0 +1,148 @@
+= *JDE Atina Build Manager - User Guide*
+:keywords: jde, atina, build manager, jar, web service, jde-lib-wrapped, stdwebservice
+:imagesdir: images
+:toc: macro
+:toclevels: 2
+:source-highlighter: highlightjs
+:icons: font
+
+toc::[]
+
+== *Introduction*
+
+The *JDE Atina Build Manager* is a web-based tool that generates the JD Edwards library artifacts required by the Atina JDE Microservice, directly from your browser. It replaces the `jd-create-jar-files-1.2.0.jar` command-line tool: instead of running a CLI on your own machine, you upload your JDE Deployment Server files to the tool and it builds the artifacts for you.
+
+The Build Manager generates:
+
+* `jde-lib-wrapped-{version}.jar` — core JD Edwards interoperability libraries
+* `StdWebService-{version}.jar` — standard JD Edwards web service wrappers
+* IntelliJ Workspace — a Maven project with organized Web Service sources, for development
+
+image::01-home-new-customer.png[New Customer button on the Build Manager home page,width=800,align=center]
+
+== *Getting Started*
+
+=== *Step 1 - Request Access*
+
+. Go to link:++https://builder.atina-connection.com/++[builder.atina-connection.com,window=_blank]
+. If you are a new customer, click *New Customer*.
+. Enter your *Company Name* and your *corporate email address*, then submit the form.
+
+image::02-new-customer-form.png[New Customer request form,width=300,align=center]
+
+You will see the following confirmation message:
+
+[quote]
+Your request has been submitted. You will receive access instructions by email once approved.
+
+=== *Step 2 - Wait for Approval*
+
+Once Atina approves your request, you will receive a *Welcome email* confirming that your account is ready to use. This email includes your personal *access link*, for example:
+
+[source,text]
+----
+http://builder.atina-connection.com/c/2c017799-08d7-8936-ae4d-Xbbbb5615304
+----
+
+[IMPORTANT]
+====
+This link is permanent and unique to your account — bookmark it, as it is how you will access your dashboard every time.
+====
+
+=== *Already Have Access But Lost Your Link?*
+
+If you already have an approved account but cannot find your access link, go back to link:++https://builder.atina-connection.com/++[builder.atina-connection.com,window=_blank], enter your *email address* in the field provided, and click *Send Access Link*. You will receive your link again by email.
+
+image::03-send-access-link.png[Send Access Link field on the Build Manager home page,width=600,align=center]
+
+== *Using Your Dashboard*
+
+Open your access link to reach your personal dashboard. No separate login or password is required — the link itself identifies your account.
+
+image::04-dashboard-overview.png[Build Manager dashboard overview,width=300,align=center]
+
+=== *Step 1 - Upload Your Files*
+
+Upload the JAR files from your JDE Deployment Server into the matching section of the dashboard:
+
+[%header%autowidth.spread]
+|===
+|Section |Where to find it on the Deployment Server
+
+|*JDBC Vendor Drivers*
+|`//Deployment Server/E920/MISC/`
+
+|*System Classes*
+|`//Deployment Server/E920/system/Classes/`
+
+|*System JAS*
+|`//Deployment Server/E920/system/JAS/webclient.ear/webclient.war/WEB-INF/lib/`
+
+|*Web Services (sbfjars)*
+|`//Deployment Server/E920/DV920/java/sbfjars/`
+|===
+
+You can upload files in multiple batches. Each uploaded file appears in a list, where you can remove it using the *x* button if needed.
+
+image::05-A-dashboard-upload.png[Uploading files into a dashboard section,width=300,align=center]
+
+image::05-B-dashboard-upload.png[Uploading files into a dashboard section,width=300,align=center]
+
+image::05-C-dashboard-upload.png[Uploading files into a dashboard section,width=300,align=center]
+
+image::05-D-dashboard-upload.png[Uploading files into a dashboard section,width=300,align=center]
+
+=== *Step 2 - Run a Build*
+
+Once your files are uploaded, click one of the build action buttons:
+
+[%header%autowidth.spread]
+|===
+|Button |What it creates
+
+|*Generate Bundle*
+|The JDE library bundle (`jde-lib-wrapped`)
+
+|*Generate WS*
+|The Web Service artifact (`StdWebService`)
+
+|*Generate Both*
+|Both artifacts in a single run _(recommended)_
+
+|*Generate Workspace*
+|A Web Service workspace for development
+|===
+
+image::06-build-actions.png[Build action buttons,width=800,align=center]
+
+After clicking, you are taken to the *build progress screen*:
+
+* A spinner shows that the build is running.
+* The build log refreshes automatically every few seconds.
+* When the build finishes, a *SUCCESS* or *FAILED* badge appears.
+
+image::07-build-progress.png[Build progress screen with live log,width=500,align=center]
+
+=== *Step 3 - Download Your Output*
+
+Once the build finishes successfully, download links appear on the screen. You can:
+
+* Download each generated file individually, or
+* Click *Download All* to get everything as a single ZIP file.
+
+The build log is also available for download for reference.
+
+image::08-download-results.png[Download links after a successful build,width=500,align=center]
+
+== *Reprocessing (When Needed)*
+
+If you apply a JDE Tools Release or update your Deployment Server, you will need to regenerate the artifacts:
+
+. Open your access link again.
+. Upload only the files that changed — files you uploaded previously are kept and reused automatically.
+. Click the build action you need.
+. Download the new output.
+
+== *Support*
+
+If you have any questions or need assistance, contact *support@atina-connection.com*.
