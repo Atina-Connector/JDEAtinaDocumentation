@@ -136,15 +136,10 @@ This tool packages the JD Edwards libraries into deployable JAR files required b
 
 image::step02.png[Architecture Overview,width=800,align=center]
 
-[TIP]
-====
-A web-based tool is also available for JAR generation at link:++https://builder.atina-connection.com/++[builder.atina-connection.com,window=_blank]. If you are a new customer, click the *New Customer* button, enter your corporate email, and you will receive instructions by email.
-====
+This step is now performed through the *JDE Atina Build Manager*, a web-based tool available at link:++https://builder.atina-connection.com/++[builder.atina-connection.com,window=_blank]. There is no need to download a CLI tool, create a folder structure, or configure a local Maven repository — you upload your Deployment Server files through the browser and the tool builds the artifacts for you.
 
 *Prerequisites for this step:*
 
-* OpenJDK 8 installed
-* Maven 3.8.1 or higher
 * Access and credentials to JDE Deployment Server
 
 The tool will generate the following artifacts:
@@ -156,121 +151,9 @@ The tool will generate the following artifacts:
 
 image::create-jars-files.png[Architecture Overview,width=800,align=center]
 
-=== *Step 2.1 - Download the JAR Creation Tool*
+If you are a new customer, click *New Customer* on the Build Manager home page, enter your company name and corporate email, and you will receive access instructions by email once approved.
 
-[source,bash]
-----
-curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/atina/jd-create-jar-files/1.0.0/jd-create-jar-files-1.2.0.jar \
-  --output jd-create-jar-files-1.2.0.jar
-----
-
-=== *Step 2.2 - Create the Required Folder Structure*
-
-Create the following directory layout and populate it with the required files from the Deployment Server:
-
-image::qs_step2_01.png[Folder Structure,width=600,align=center]
-
-[source,bash]
-----
-mkdir -p /tmp/build_jde_libs/JDBC_Vendor_Drivers \
-         /tmp/build_jde_libs/system/Classes \
-         /tmp/build_jde_libs/system/JAS \
-         /tmp/build_jde_libs/system/WS
-----
-
-=== *Step 2.3 - Copy Deployment Server Files*
-
-Copy the required JDE libraries from the Deployment Server into your local directory structure:
-
-*JDBC Vendor Drivers:*
-[source,bash]
-----
-cp -rv ~/atina/E1_DeploymentServer/E920/MISC/* /tmp/build_jde_libs/JDBC_Vendor_Drivers/
-----
-
-*System/Classes:*
-[source,bash]
-----
-cp -rv ~/atina/E1_DeploymentServer/E920/system/Classes/* /tmp/build_jde_libs/system/Classes/
-----
-
-*System/JAS:*
-[source,bash]
-----
-cp -rv ~/atina/E1_DeploymentServer/E920/system/JAS/webclient.ear/webclient.war/WEB-INF/lib/* /tmp/build_jde_libs/system/JAS/
-----
-[NOTE]
-.Technical note
-====
-In newer JD Edwards releases, the JAS / HTML Server libraries may not be located under the traditional Deployment Server path:
-
-`system/JAS/webclient.ear/webclient.war/WEB-INF/lib`
-
-In environments managed by **Server Manager**, these libraries may instead be located under the corresponding **Agent / Instance** deployment path.
-
-Example:
-
-`D:\jde_home_agent\SCFHA\targets\CA15A2660_DV_HTML_01\owl_deployment\webclient.ear\app\webclient.war\WEB-INF\lib`
-
-If the standard `system/JAS` path is not available, or does not contain the expected JAR files, locate the active HTML Server instance managed by Server Manager and copy the required libraries from that deployment location instead.
-====
-
-*System/WS:*
-[source,bash]
-----
-cp -rv ~/atina/E1_DeploymentServer/E920/DV920/java/sbfjars/* /tmp/build_jde_libs/system/WS/
-----
-
-=== *Step 2.4 - Define Local Maven Repository*
-
-Run this command to find where the current local repository is defined:
-
-[source,bash]
-----
-mvn help:evaluate -Dexpression=settings.localRepository
-----
-
-image::qs_step2_02.png[Maven Repository Output,width=500,align=center]
-
-The value returned (e.g., `/root/.m2/repository`) will be used in the next step. Make sure to copy it for reference.
-
-=== *Step 2.5 - Execute the JAR Tool*
-
-[source,bash]
-----
-java -jar jd-create-jar-files-1.2.0.jar \
-  -r /root/.m2/repository
-----
-
-This command runs the tool and specifies the Maven local repository path (identified in the previous step).
-
-Once completed, the following files will be created:
-
-[source,bash]
-----
-------------------------------------------------------------------------
-GENERATION SUCESSS
-------------------------------------------------------------------------
-JDE Library bundle has been copied to: /tmp/build_jde_libs/jde-lib-wrapped-1.0.0.jar
-JDE WS has been copied to:             /tmp/build_jde_libs/StdWebService-1.0.0.jar
-Constants File has been copied to:     /tmp/build_jde_libs/service-constants.properties
-Override Jar File has been copied to:  /tmp/build_jde_libs/JDEAtinaOverrideServicesConstants-1.0.0.jar
-------------------------------------------------------------------------
-PTF:[9.2.5.6]
-----
-
-[source,bash]
-----
-build_jde_libs
-      ├─ jde-lib-wrapped-1.0.0.jar
-      ├─ service-constants.properties
-      ├─ JDEAtinaOverrideServicesConstants-1.0.0.jar
-      └─ StdWebService-1.0.0.jar
-----
-
-icon:youtube-play[role=red] link:++https://www.youtube.com/watch?v=AQNO3jjJ0EU++[Watch video: Create JARs Libraries (Part 1),window=_blank]
-
-icon:youtube-play[role=red] link:++https://www.youtube.com/watch?v=W9mLcD0gP68++[Watch video: Create JARs Libraries (Part 2),window=_blank]
+For the full step-by-step guide — requesting access, uploading your Deployment Server files, running the build, and downloading the generated artifacts — see the link:../../../builder/1.0.1/jde-atina-build-manager.html[JDE Atina Build Manager - User Guide].
 
 [NOTE]
 ====
