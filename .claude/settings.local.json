@@ -15,7 +15,9 @@
       "Bash(asciidoctor release-notes-jd-create-jar-files.adoc)",
       "Bash(asciidoctor release-notes-jd-create-ini-files.adoc)",
       "Bash(ls:*)",
-      "Bash(asciidoctor jde-atina-build-manager.adoc)"
+      "Bash(asciidoctor jde-atina-build-manager.adoc)",
+      "Bash(mkdir -p /Users/franciscogodinoconte/_atina/projects/JDEAtinaDocumentation/panelmanager/1.0.0/images)",
+      "Bash(asciidoctor jde-atina-panel-manager.adoc)"
     ]
   }
 }

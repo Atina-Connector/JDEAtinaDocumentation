@@ -1,0 +1,196 @@
+= *JDE Atina Panel Manager - User Guide*
+:keywords: jde, atina, panel manager, monitoring, incident, diagnostics, bsfn, web service
+:imagesdir: images
+:toc: macro
+:toclevels: 2
+:source-highlighter: highlightjs
+:icons: font
+
+toc::[]
+
+== *Introduction*
+
+The *JDE Atina Panel Manager* is a client-side tool that runs alongside the Atina JDE Microservice. It provides a browser-based dashboard to:
+
+* Check the status of the Atina JDE Microservice
+* View active connections in real time
+* Capture logs and configuration files needed to open a support incident
+* Run basic validation tests against the microservice (BSFN and Web Services)
+
+*Requirements:*
+
+* Java 8 or higher (JRE or JDK)
+* Docker running, with the `jd-atina-microserver` container active
+* Network access to the JDE Atina Microservice (gRPC)
+
+== *Installing the Application*
+
+. Download the ZIP distribution provided by Atina (`JDEAtinaPanelManager-1.0.0.zip`).
+. Unzip it into a folder on the machine where you will run the tool. It contains:
++
+[%header%autowidth.spread]
+|===
+|File |Description
+
+|`JDEAtinaPanelManager.jar`
+|The application
+
+|`start.sh`
+|Startup script for Linux/Mac
+
+|`start.bat`
+|Startup script for Windows
+
+|`README.txt`
+|Quick reference (parameters and troubleshooting)
+|===
+
+. Run `start.sh` (Linux/Mac) or `start.bat` (Windows), or launch the JAR directly with `java -jar JDEAtinaPanelManager.jar` as described below.
+
+== *Starting the Application*
+
+The Panel Manager can be started in three ways, depending on how much information you provide on the command line.
+
+=== *Option 1 - No Parameters*
+
+[source,bash]
+----
+java -jar JDEAtinaPanelManager.jar
+----
+
+Since no microservice address was provided, the Panel opens in the browser and first asks for the connection details: *Host*, *Port*, and whether *TLS* should be enabled.
+
+image::01-connection-form.png[Connection form asking for Host, Port and TLS Enable,width=500,align=center]
+
+=== *Option 2 - Specifying the Microservice Address*
+
+[source,bash]
+----
+java -jar JDEAtinaPanelManager.jar --panel-port 8060 --host localhost --port 8077
+----
+
+Since the microservice address is already known, the Panel skips the connection form and goes straight to the *login screen*.
+
+image::02-login-screen.png[Login screen,width=500,align=center]
+
+Enter your JDE credentials (*User*, *Password*, *Environment*, *Role*):
+
+image::03-login-form-filled.png[Login form with credentials entered,width=500,align=center]
+
+Once logged in, the dashboard is displayed:
+
+image::04-logged-in.png[Panel Manager dashboard after login,width=500,align=center]
+
+=== *Option 3 - Passing All Parameters (Scripting)*
+
+All parameters can be passed on the command line, including credentials, so the Panel starts already logged in. This is useful for scripts and automated startup.
+
+[source,bash]
+----
+java -jar JDEAtinaPanelManager.jar \
+  --panel-port 8080 --host localhost --port 8077 \
+  --tlsEnable --user JDE --password XXXXXX \
+  --environment JDV920 --role "*ALL" \
+  --wsConnection false --open-browser true
+----
+
+[NOTE]
+====
+If `--open-browser true` is set, the browser opens automatically once the application is ready. Otherwise, open it manually at `http://localhost:<panel-port>` (`http://localhost:8080` by default).
+====
+
+*Available parameters:*
+
+[%header%autowidth.spread]
+|===
+|Parameter |Description
+
+|`--panel-port <port>`
+|Panel web port (default: `8080`)
+
+|`--host <hostname>`
+|Microservice host (default: `localhost`)
+
+|`--port <port>`
+|Microservice gRPC port (default: `8077`)
+
+|`--tlsEnable <true\|false>`
+|Enable TLS for the gRPC connection (default: `false`)
+
+|`--user <user>`
+|JDE user, for auto-login
+
+|`--password <password>`
+|JDE password, for auto-login
+
+|`--environment <env>`
+|JDE environment, for auto-login
+
+|`--role <role>`
+|JDE role, for auto-login
+
+|`--wsConnection <true\|false>`
+|Log in with Web Services connection mode (default: `false`)
+
+|`--open-browser <true\|false>`
+|Open the Panel in the browser on startup (default: `true`)
+|===
+
+[IMPORTANT]
+====
+Auto-login requires all four credential parameters together: `--user`, `--password`, `--environment`, and `--role`. If any of them is missing, the Panel falls back to the manual login screen.
+====
+
+== *Reporting an Incident*
+
+The *Report Incident* option collects everything needed to open a support incident into a single ZIP file — no need to manually gather logs or configuration files.
+
+image::05-report-incident-form.png[Report Incident form,width=400,align=center]
+
+image::06-report-incident-generate.png[Generating the incident report,width=400,align=center]
+
+The ZIP includes:
+
+* The incident description you entered
+* Container files: `/tmp/jde`, `/tmp/jdelog`, `extra-hosts.txt`
+* A file listing of `/var/jdeatinaserver`
+
+Once generated, download the file. It is named:
+
+[source,text]
+----
+atina-report.zip
+----
+
+Send this file to the Atina support team along with your incident description.
+
+== *Validating the Microservice*
+
+The *Validate* option lets you invoke a test *BSFN* and/or a test *Web Service* against the microservice, to confirm connectivity end to end.
+
+image::07-validate-bsfn.png[Validate BSFN operation,width=400,align=center]
+
+image::08-validate-ws.png[Validate Web Service operation,width=400,align=center]
+
+[IMPORTANT]
+====
+To validate a *Web Service*, you must be logged in with the *WS Connection* option enabled.
+
+If the Panel shows *NON WS* instead, it means the current session is not in Web Services mode:
+====
+
+image::09-non-ws-warning.png[NON WS warning message,width=500,align=center]
+
+In that case, log out and log back in selecting the *WS* connection mode:
+
+image::10-logout.png[Logging out,width=500,align=center]
+
+image::11-login-ws-mode.png[Login form with WS connection mode selected,width=300,align=center]
+
+image::12-validate-ws-success.png[Successful Web Service validation,width=500,align=center]
+
+image::13-validate-ws-success.png[Successful Web Service validation,width=500,align=center]
+
+== *Support*
+
+If you have any questions or need assistance, contact *support@atina-connection.com*.
