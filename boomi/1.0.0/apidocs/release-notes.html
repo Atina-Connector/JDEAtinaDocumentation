@@ -553,7 +553,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_atina_jde_enterpriseone_partner_connector_1_0_0_september_01_2026">Atina JDE EnterpriseOne — Partner Connector 1.0.0 - September 01, 2026</a></li>
+<li><a href="#_atina_jde_enterpriseone_partner_connector_1_0_0_september_2026">Atina JDE EnterpriseOne — Partner Connector 1.0.0 - September 2026</a></li>
 </ul>
 </div>
 </div>
@@ -561,16 +561,27 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>The Atina’s <em>Atina JDE EnterpriseOne — Partner Connector _ aims to provide integration from and to Oracle’s _JD Edwards™ EnterpriseOne™</em>.
-It leverages the power of Oracle&#8217;s Web Services, Java Dynamic Connector and XML List to provide interoperability with Oracle’s <em>JD Edwards EnterpriseOne™</em> and external systems.</p>
+<p>The Atina™  JDE EnterpriseOne — Partner Connector enables native integration between Boomi™ and Oracle JD Edwards EnterpriseOne™ through the Atina JDE Microservice. The connector provides a simplified interface for invoking JD Edwards EnterpriseOne business logic without requiring direct communication between the Boomi Atom and the JD Edwards environment.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_atina_jde_enterpriseone_partner_connector_1_0_0_september_01_2026">Atina JDE EnterpriseOne — Partner Connector 1.0.0 - September 01, 2026</h2>
+<h2 id="_atina_jde_enterpriseone_partner_connector_1_0_0_september_2026">Atina JDE EnterpriseOne — Partner Connector 1.0.0 - September 2026</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_version_1_0_0_compatibility">Version 1.0.0 Compatibility</h3>
+<h3 id="_release_type">Release Type</h3>
+<div class="paragraph">
+<p>Initial General Availability (GA) Release</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_target_platform_release">Target Platform Release:</h3>
+<div class="paragraph">
+<p>September 2026 Runtime Release</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_compatibility">Compatibility</h3>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 50%;">
@@ -595,7 +606,10 @@ It leverages the power of Oracle&#8217;s Web Services, Java Dynamic Connector an
 <div class="ulist">
 <ul>
 <li>
-<p>Log into <em>JD Edwards EnterpriseOne™</em>. Authentication over <em>EnterpriseOne Security Server</em>.</p>
+<p>Authenticate using JD Edwards credentials or an existing session token.</p>
+</li>
+<li>
+<p>Logout from a JD Edwards session.</p>
 </li>
 <li>
 <p>Discover BSFNs by name.</p>
@@ -607,39 +621,39 @@ It leverages the power of Oracle&#8217;s Web Services, Java Dynamic Connector an
 <p>Cache BSFN &amp; UBE definitions locally in xml format.</p>
 </li>
 <li>
-<p>Invoke a Business Function (BSFN) on the server by passing it parameters.</p>
+<p>Invoke JD Edwards EnterpriseOne Business Functions (BSFN).</p>
 </li>
 <li>
-<p>Invoke a Business Function (BSFN) on the server using Transaction Processing.</p>
+<p>Invoke JD Edwards EnterpriseOne Business Services (Web Services).</p>
+</li>
+<li>
+<p>Manage transactions for BSFN (Start, Commit, and Rollback).</p>
 </li>
 <li>
 <p>Invoke a UBE by name / version. It allows use of data selection using SQL syntax</p>
 </li>
 <li>
-<p>Check for UBEs status</p>
+<p>Retrieve UBE Job Status.</p>
 </li>
 <li>
-<p>Poll MBF Events.</p>
+<p>Poll MBF Events transactions.</p>
 </li>
 <li>
 <p>Invoke Web Services</p>
-</li>
-<li>
-<p>Log out.</p>
 </li>
 </ul>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_version_1_0_0_fixed_in_this_release">Version 1.0.0 Fixed in this Release</h3>
+<h3 id="_breaking_changes">Breaking Changes</h3>
 <div class="paragraph">
 <p>None</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_version_1_0_0_known_issues">Version 1.0.0 Known Issues</h3>
+<h3 id="_resolved_issues">Resolved Issues</h3>
 <div class="paragraph">
-<p>None</p>
+<p>Not applicable for the initial release.</p>
 </div>
 </div>
 <div class="sect2">
@@ -647,7 +661,7 @@ It leverages the power of Oracle&#8217;s Web Services, Java Dynamic Connector an
 <div class="ulist">
 <ul>
 <li>
-<p>For more information on the Atina JDE EnterpriseOne — Partner Connector for Boomi - User Guide, visit its <a href="1.0.0/functional/jde.html">User Guide</a>.</p>
+<p>For more information on the Atina JDE EnterpriseOne — Partner Connector for Boomi - User Guide, visit its <a href="https://atina-connector.github.io/JDEAtinaDocumentation/boomi/1.0.0/functional/jde.html">User Guide</a>.</p>
 </li>
 </ul>
 </div>
@@ -657,7 +671,7 @@ It leverages the power of Oracle&#8217;s Web Services, Java Dynamic Connector an
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-07-26 16:38:06 -0300
+Last updated 2026-07-27 10:17:53 -0300
 </div>
 </div>
 <script>
