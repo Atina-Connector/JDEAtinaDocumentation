@@ -409,8 +409,14 @@ JDERestServer - *---------------------------------------*
 
 === *Step 3.6 - Validate the Microservice Deployment*
 
-Once the microservice is deployed and running, you can use the _JD Atina Check Microservice Tool_ to validate that it can connect to JD Edwards and invoke a basic web service.
+Once the microservice is deployed and running, you can validate that it can connect to JD Edwards and invoke a basic web service.
 
+[TIP]
+====
+The easiest way to validate the deployment is the *JDE Atina Panel Manager*, a browser-based tool that lets you check the microservice status, view active connections, and run BSFN / Web Service validation tests without installing anything extra. See the link:../../../panelmanager/1.0.0/jde-atina-panel-manager.html[JDE Atina Panel Manager - User Guide].
+====
+
+Alternatively, you can validate the deployment from the command line using the _JD Atina Check Microservice Tool_.
 
 image::create-test-server.png[Architecture Overview,width=800,align=center]
 
