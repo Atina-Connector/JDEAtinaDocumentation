@@ -26,6 +26,10 @@ The *JDE Atina Panel Manager* is a client-side tool that runs alongside the Atin
 == *Installing the Application*
 
 . Download the ZIP distribution provided by Atina (`JDEAtinaPanelManager-1.0.0.zip`).
+
+image::00-Download.png[Download,width=500,align=center]
+
+
 . Unzip it into a folder on the machine where you will run the tool. It contains:
 +
 [%header%autowidth.spread]

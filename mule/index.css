@@ -236,3 +236,23 @@ ol, ul { list-style: none; }
   color: #6fa0e9;
   background: #e7f0f7;
 }
+
+.panel-manager-table {
+    table-layout: fixed;
+}
+
+.panel-manager-table th.version,
+.panel-manager-table td.version {
+    width: 33.33%;
+}
+
+.panel-manager-table th.apidoc,
+.panel-manager-table td.apidoc {
+    width: 33.33%;
+}
+
+.panel-manager-table th.download,
+.panel-manager-table td.download {
+    width: 33.33%;
+    text-align: center;
+}
