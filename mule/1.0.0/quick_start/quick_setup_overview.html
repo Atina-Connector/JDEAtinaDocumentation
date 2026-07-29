@@ -570,9 +570,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_step_2_generate_jar_libraries"><strong>Step 2: Generate JAR Libraries</strong></a></li>
 <li><a href="#_step_3_microservice_installation"><strong>Step 3: Microservice Installation</strong></a>
 <ul class="sectlevel2">
-<li><a href="#_step_3_1_download_docker_compose_files"><strong>Step 3.1 - Download Docker Compose Files</strong></a></li>
-<li><a href="#_step_3_2_configure_environment_variables"><strong>Step 3.2 - Configure Environment Variables</strong></a></li>
-<li><a href="#_step_3_3_configure_volume_mounts_in_docker_compose_yml"><strong>Step 3.3 - Configure Volume Mounts in docker-compose.yml</strong></a></li>
 <li><a href="#_step_3_4_start_the_container"><strong>Step 3.4 - Start the Container</strong></a></li>
 <li><a href="#_step_3_5_check_the_microservice_startup_log"><strong>Step 3.5 - Check the Microservice Startup Log</strong></a></li>
 <li><a href="#_step_3_6_validate_the_microservice_deployment"><strong>Step 3.6 - Validate the Microservice Deployment</strong></a></li>
@@ -889,7 +886,7 @@ Creating Setting XML File...
 <h2 id="_step_3_microservice_installation"><strong>Step 3: Microservice Installation</strong></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This section explains how to deploy the Atina JDE Microservice using Docker and Docker Compose. You will configure environment variables, initialize the container, and run a basic test to validate connectivity with JD Edwards.</p>
+<p>This section explains how to deploy the Atina JDE Microservice using Docker and Docker Compose.</p>
 </div>
 <div class="imageblock text-center">
 <div class="content">
@@ -897,16 +894,13 @@ Creating Setting XML File...
 </div>
 </div>
 <div class="paragraph">
+<p>This step is now performed through the <strong>JDE Atina Build Manager</strong>, the same web-based tool you already used in Step 2. From your customer dashboard, click <strong>Download Docker File Definition</strong>, upload the INI configuration files generated in Step 1, fill in a few parameters (installation path, port, and server hostnames), and click <strong>Generate &amp; Download</strong> — the tool downloads the Docker Compose distribution and fills in <code>.env</code>, <code>extra-hosts.txt</code> and the <code>docker-compose.yml</code> volume mounts for you, ready to deploy.</p>
+</div>
+<div class="paragraph">
 <p><strong>Prerequisites for this step:</strong></p>
 </div>
 <div class="ulist">
 <ul>
-<li>
-<p>OpenJDK 8 installed</p>
-</li>
-<li>
-<p>Maven 3.8.1 or higher</p>
-</li>
 <li>
 <p>Docker</p>
 </li>
@@ -917,167 +911,8 @@ Creating Setting XML File...
 <img src="images/create-microservice.png" alt="Architecture Overview" width="800">
 </div>
 </div>
-<div class="sect2">
-<h3 id="_step_3_1_download_docker_compose_files"><strong>Step 3.1 - Download Docker Compose Files</strong></h3>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/acqua/jde-docker-files/1.0.1/jde-docker-files-1.0.1.zip --output jd-docker-files.zip</code></pre>
-</div>
-</div>
 <div class="paragraph">
-<p>Unzip:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">unzip jd-docker-files.zip</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_step_3_2_configure_environment_variables"><strong>Step 3.2 - Configure Environment Variables</strong></h3>
-<div class="paragraph">
-<p>Edit the <code>.env</code> file and set the values according to your infrastructure.</p>
-</div>
-<div class="paragraph">
-<p><strong>Microservice settings:</strong></p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-env hljs" data-lang="env">JDE_MICROSERVER_IP=172.28.0.2
-JDE_MICROSERVER_PORT=8077
-JDE_MICROSERVER_DEBUG_PORT=5005
-JDE_MICROSERVER_CODE=demo</code></pre>
-</div>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>JDE_MICROSERVER_IP</code>: Informational value used to indicate the IP address through which the microservice is exposed. This value does not affect the internal runtime configuration of the service.</p>
-</li>
-<li>
-<p><code>JDE_MICROSERVER_PORT</code>: Port exposed by the microservice. Change this value if you need to use a different port, for example to avoid conflicts with other services.</p>
-</li>
-<li>
-<p><code>JDE_MICROSERVER_DEBUG_PORT</code>: Debug port exposed by the microservice for remote debugging.</p>
-</li>
-<li>
-<p><code>JDE_MICROSERVER_CODE</code>: Unique license code assigned to the customer by Atina. This value is mandatory for the service to start correctly.</p>
-</li>
-</ul>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-important" title="Important"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>The database name must match the Data Source name defined in the JDE OCM. Incorrect names may lead to failed connections or incorrect environment targeting.</p>
-</div>
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p><strong>Hostname resolution inside the container (extra-hosts file):</strong></p>
-</div>
-<div class="paragraph">
-<p>The microservice supports injecting host mappings into the container&#8217;s <code>/etc/hosts</code> using a mounted file. This is useful when the container needs to reach JDE Enterprise Servers and Database hosts that are not resolvable via Docker&#8217;s default DNS.</p>
-</div>
-<div class="paragraph">
-<p>Edit <code>extra-hosts.txt</code> file with the required hostname-to-IP mappings:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text"># IP            HOSTNAME
-138.91.73.161   JDE-ALPHA-ENT
-65.52.119.187   JDE-ALPHA-SQL
-# END HOSTS</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Add the following to your <code>.env</code>:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-env hljs" data-lang="env">HOST_EXTRA_HOSTS_FILE=/absolute/path/to/extra-hosts.txt</code></pre>
-</div>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-important" title="Important"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>The hosts file must use <strong>Unix line endings (LF)</strong>, not Windows CRLF. Ensure it ends with <code># END HOSTS</code> and a final newline.</p>
-</div>
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p><strong>Volume settings:</strong></p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-env hljs" data-lang="env">Volume_DataLogs=/home/jde/data/logs
-Volume_JDETmp=/home/jde/data/tmp
-Volume_JDELog=/home/jde/data/jdelog
-JDE_LIBS_ROOT=/tmp/build_jde_libs</code></pre>
-</div>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>Volume_DataLogs</code>: General microservice logs.</p>
-</li>
-<li>
-<p><code>Volume_JDETmp</code>: Temporary files.</p>
-</li>
-<li>
-<p><code>Volume_JDELog</code>: Logs specific to JDE libraries.</p>
-</li>
-<li>
-<p><code>JDE_LIBS_ROOT</code>: Path to the folder containing the generated JDE JARs and configuration files. This is used by Docker Compose to mount the artifacts as volumes into the container, replacing the need for manual <code>docker cp</code> commands.</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>Create the volume directories:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">mkdir -p /home/jde/data/logs \
-         /home/jde/data/tmp \
-         /home/jde/data/jdelog</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_step_3_3_configure_volume_mounts_in_docker_compose_yml"><strong>Step 3.3 - Configure Volume Mounts in docker-compose.yml</strong></h3>
-<div class="paragraph">
-<p>The container reads JDE configuration and library files from host-mounted volumes. Update your <code>docker-compose.yml</code> to mount the required files:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">services:
-  jd-atina-microserver:
-    volumes:
-      # JDE environment configuration folders
-      - ${JDE_LIBS_ROOT}/JDV920:/tmp/jde/config/JDV920:ro
-      - ${JDE_LIBS_ROOT}/JPS920:/tmp/jde/config/JPS920:ro
-
-      # JDE library JARs
-      - ${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar:/tmp/jde/jde-lib-wrapped-1.0.0.jar
-      - ${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar:/tmp/jde/StdWebService-1.0.0.jar
-      - ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar:/tmp/jde/JDEAtinaOverrideServicesConstants-1.0.0.jar
-
-      # Service configuration
-      - ${JDE_LIBS_ROOT}/service-constants.properties:/var/jdeatinaserver/service-constants.properties:ro</code></pre>
-</div>
+<p>For the full step-by-step guide, see the <a href="../../../builder/1.0.1/jde-atina-build-manager-install-microservice.html">JDE Atina Build Manager - Microservice Docker Setup Guide</a>.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1087,12 +922,11 @@ JDE_LIBS_ROOT=/tmp/build_jde_libs</code></pre>
 </td>
 <td class="content">
 <div class="paragraph">
-<p>The <code>JDE_LIBS_ROOT</code> variable defined in your <code>.env</code> is used by Docker Compose for path interpolation. This approach replaces the previous <code>docker cp</code> workflow, making deployments more reliable and compatible with container recreation (<code>--force-recreate</code>) without losing files.</p>
+<p>For more details, or to configure <code>.env</code>, <code>extra-hosts.txt</code> and <code>docker-compose.yml</code> by hand instead, see the section <em>JDE Atina microservices - Installation</em> in the <a href="../functional/jdeatina.html">Atina JDE Microservices Installation Guide</a>.</p>
 </div>
 </td>
 </tr>
 </table>
-</div>
 </div>
 <div class="sect2">
 <h3 id="_step_3_4_start_the_container"><strong>Step 3.4 - Start the Container</strong></h3>
@@ -1412,7 +1246,7 @@ JDERestServer - *---------------------------------------*</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-07-27 14:47:16 -0300
+Last updated 2026-07-28 19:12:09 -0300
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

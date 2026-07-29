@@ -1,9 +1,12 @@
 = Microservice Docker Setup Guide
 :toc: left
+:keywords: jde, atina, build manager, jar, web service, jde-lib-wrapped, stdwebservice
+:imagesdir: images
+:toc: macro
 :toclevels: 2
+:source-highlighter: highlightjs
 :icons: font
-:source-highlighter: rouge
-:experimental:
+toc::[]
 
 This guide documents the *Download Docker File Definition* self-service screen in the
 JDE Atina Build Manager. It replaces the manual steps described in
@@ -21,20 +24,12 @@ covered by the rest of the Quick Start guide.
 The library build for this customer must have completed successfully before the setup
 screen is usable.
 
-[NOTE]
-====
-The *Download Docker File Definition* button only appears on the customer dashboard
-(`/c/{token}`) once the build status is `BUILD_OK`. If you land on the setup screen
-directly with an older or failed build, it shows a blocking banner and the *Generate &
-Download* action is rejected server-side even if you bypass the UI.
-====
-
 == Step 1: Upload Environment Configuration Files
 
 Each JDE environment you want the microservice to talk to (for example `JDV920`,
 `JPS920`) needs its own folder containing at least `jdbj.ini` and `jdeinterop.ini`
 (as produced by the Quick Start's "Generate INI Configuration Files" step). The setup
-screen offers three ways to get them in -- use whichever is most convenient:
+screen offers two ways to get them in -- use whichever is most convenient:
 
 [cols="1,3", options="header"]
 |===
@@ -51,30 +46,30 @@ screen offers three ways to get them in -- use whichever is most convenient:
   environment, e.g. `JPS920.zip` (the environment name is then taken from the zip's own
   file name). A single zip may also contain multiple environment folders as siblings; each
   one is uploaded separately.
-
-| *C. Add files one by one*
-| Type the environment name first, then choose the files and click *Upload Files*. Order
-  matters: the name field must be filled in before you pick files, since it determines
-  which folder they land in.
 |===
 
-[IMPORTANT]
-====
-macOS zip artifacts (`__MACOSX/`, `.DS_Store`, AppleDouble `._*` files) are filtered out
-automatically for options A and B, so compressing a folder from Finder is safe.
-====
 
 Uploaded files land on the server under:
 
-[source]
-----
-{customers-dir}/{customer-id}/configs/{ENVIRONMENT}/*.ini
-----
+image::B01-Upload.png[width=500,align=center]
+
+image::B02-Upload.png[width=500,align=center]
+
+image::B03-Upload.png[width=500,align=center]
+
+image::B04-Upload.png[width=500,align=center]
+
+At this point, the JDV920 environment configuration has been uploaded. The system automatically analyzes the configuration and generates the extra-hosts.txt file, which is used by the Docker containers to resolve the JDE server hostnames to their corresponding IP addresses.
 
 Each uploaded environment is listed as a card with its files; use the small *x* next to a
 file, or *Remove Environment* on the card header, to delete what you no longer need. A
 red banner lists any environment still missing `jdbj.ini` or `jdeinterop.ini` -- both are
 required before you can generate the installation files.
+
+Repeat this process for each additional JDE environment (for example, JPS920, JPD920, etc.). Each uploaded environment configuration will be analyzed, and the corresponding server entries will be added to the extra-hosts.txt file automatically.
+
+image::B05-Upload.png[width=500,align=center]
+
 
 == Step 2: Parameters
 
@@ -86,6 +81,9 @@ required before you can generate the installation files.
   to `/home/installation/jde`.
 * `JDE_MICROSERVER_PORT` -- the port the microservice container exposes. Defaults to
   `8077`; change it if that port is already in use on the target host.
+
+image::B06-Upload.png[width=500,align=center]
+
 
 === Servers (extra-hosts)
 
@@ -150,6 +148,8 @@ automatically:
 . Adds a `README.txt` with the next steps (see below).
 . Zips everything and downloads it to your browser.
 
+image::B07-Generate.png[width=500,align=center]
+
 A progress overlay is shown while this runs (it involves a network download, so it can
 take a few seconds). If validation fails -- build not OK, a required INI file missing, or
 the distribution couldn't be downloaded -- a dialog explains what to fix; nothing is
@@ -177,10 +177,17 @@ when you regenerate for an unrelated reason (e.g. adding another environment).
 Expand the zip into the folder you set as `JDE_MICROSERVER_PATH` on the target host. The
 zip includes a `README.txt` with the next steps:
 
+image::B08-Download.png[width=500,align=center]
+
+image::B09-WorkingDir.png[width=500,align=center]
+
+
 [source,bash]
 ----
 docker compose --env-file .env up -d --force-recreate
 ----
+
+image::B10-CreateDocker.png[width=500,align=center]
 
 If you change any configuration afterwards, stop and remove the container along with its
 volumes so the change takes effect on next startup:

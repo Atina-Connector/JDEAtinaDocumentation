@@ -164,133 +164,23 @@ For more details, see the section _JDE Atina Generate Jars Files Tool_ in the li
 
 == *Step 3: Microservice Installation*
 
-This section explains how to deploy the Atina JDE Microservice using Docker and Docker Compose. You will configure environment variables, initialize the container, and run a basic test to validate connectivity with JD Edwards.
+This section explains how to deploy the Atina JDE Microservice using Docker and Docker Compose.
 
 image::step03.png[Architecture Overview,width=800,align=center]
 
+This step is now performed through the *JDE Atina Build Manager*, the same web-based tool you already used in Step 2. From your customer dashboard, click *Download Docker File Definition*, upload the INI configuration files generated in Step 1, fill in a few parameters (installation path, port, and server hostnames), and click *Generate & Download* — the tool downloads the Docker Compose distribution and fills in `.env`, `extra-hosts.txt` and the `docker-compose.yml` volume mounts for you, ready to deploy.
+
 *Prerequisites for this step:*
 
-* OpenJDK 8 installed
-* Maven 3.8.1 or higher
 * Docker
 
 image::create-microservice.png[Architecture Overview,width=800,align=center]
 
-
-=== *Step 3.1 - Download Docker Compose Files*
-
-[source,bash]
-----
-curl https://jfrog.atina-connection.com/artifactory/libs-release-local/com/acqua/jde-docker-files/1.0.1/jde-docker-files-1.0.1.zip --output jd-docker-files.zip
-----
-
-Unzip:
-
-[source,bash]
-----
-unzip jd-docker-files.zip
-----
-
-=== *Step 3.2 - Configure Environment Variables*
-
-Edit the `.env` file and set the values according to your infrastructure.
-
-*Microservice settings:*
-
-[source,env]
-----
-JDE_MICROSERVER_IP=172.28.0.2
-JDE_MICROSERVER_PORT=8077
-JDE_MICROSERVER_DEBUG_PORT=5005
-JDE_MICROSERVER_CODE=demo
-----
-
-* `JDE_MICROSERVER_IP`: Informational value used to indicate the IP address through which the microservice is exposed. This value does not affect the internal runtime configuration of the service.
-* `JDE_MICROSERVER_PORT`: Port exposed by the microservice. Change this value if you need to use a different port, for example to avoid conflicts with other services.
-* `JDE_MICROSERVER_DEBUG_PORT`: Debug port exposed by the microservice for remote debugging.
-* `JDE_MICROSERVER_CODE`: Unique license code assigned to the customer by Atina. This value is mandatory for the service to start correctly.
-
-[IMPORTANT]
-====
-The database name must match the Data Source name defined in the JDE OCM. Incorrect names may lead to failed connections or incorrect environment targeting.
-====
-
-*Hostname resolution inside the container (extra-hosts file):*
-
-The microservice supports injecting host mappings into the container's `/etc/hosts` using a mounted file. This is useful when the container needs to reach JDE Enterprise Servers and Database hosts that are not resolvable via Docker's default DNS.
-
-Edit `extra-hosts.txt` file with the required hostname-to-IP mappings:
-
-[source,text]
-----
-# IP            HOSTNAME
-138.91.73.161   JDE-ALPHA-ENT
-65.52.119.187   JDE-ALPHA-SQL
-# END HOSTS
-----
-
-Add the following to your `.env`:
-
-[source,env]
-----
-HOST_EXTRA_HOSTS_FILE=/absolute/path/to/extra-hosts.txt
-----
-
-
-[IMPORTANT]
-====
-The hosts file must use *Unix line endings (LF)*, not Windows CRLF. Ensure it ends with `# END HOSTS` and a final newline.
-====
-
-*Volume settings:*
-
-[source,env]
-----
-Volume_DataLogs=/home/jde/data/logs
-Volume_JDETmp=/home/jde/data/tmp
-Volume_JDELog=/home/jde/data/jdelog
-JDE_LIBS_ROOT=/tmp/build_jde_libs
-----
-
-* `Volume_DataLogs`: General microservice logs.
-* `Volume_JDETmp`: Temporary files.
-* `Volume_JDELog`: Logs specific to JDE libraries.
-* `JDE_LIBS_ROOT`: Path to the folder containing the generated JDE JARs and configuration files. This is used by Docker Compose to mount the artifacts as volumes into the container, replacing the need for manual `docker cp` commands.
-
-Create the volume directories:
-
-[source,bash]
-----
-mkdir -p /home/jde/data/logs \
-         /home/jde/data/tmp \
-         /home/jde/data/jdelog
-----
-
-=== *Step 3.3 - Configure Volume Mounts in docker-compose.yml*
-
-The container reads JDE configuration and library files from host-mounted volumes. Update your `docker-compose.yml` to mount the required files:
-
-[source,yaml]
-----
-services:
-  jd-atina-microserver:
-    volumes:
-      # JDE environment configuration folders
-      - ${JDE_LIBS_ROOT}/JDV920:/tmp/jde/config/JDV920:ro
-      - ${JDE_LIBS_ROOT}/JPS920:/tmp/jde/config/JPS920:ro
-
-      # JDE library JARs
-      - ${JDE_LIBS_ROOT}/jde-lib-wrapped-1.0.0.jar:/tmp/jde/jde-lib-wrapped-1.0.0.jar
-      - ${JDE_LIBS_ROOT}/StdWebService-1.0.0.jar:/tmp/jde/StdWebService-1.0.0.jar
-      - ${JDE_LIBS_ROOT}/JDEAtinaOverrideServicesConstants-1.0.0.jar:/tmp/jde/JDEAtinaOverrideServicesConstants-1.0.0.jar
-
-      # Service configuration
-      - ${JDE_LIBS_ROOT}/service-constants.properties:/var/jdeatinaserver/service-constants.properties:ro
-----
+For the full step-by-step guide, see the link:../../../builder/1.0.1/jde-atina-build-manager-install-microservice.html[JDE Atina Build Manager - Microservice Docker Setup Guide].
 
 [NOTE]
 ====
-The `JDE_LIBS_ROOT` variable defined in your `.env` is used by Docker Compose for path interpolation. This approach replaces the previous `docker cp` workflow, making deployments more reliable and compatible with container recreation (`--force-recreate`) without losing files.
+For more details, or to configure `.env`, `extra-hosts.txt` and `docker-compose.yml` by hand instead, see the section _JDE Atina microservices - Installation_ in the link:../functional/jdeatina.html[Atina JDE Microservices Installation Guide].
 ====
 
 === *Step 3.4 - Start the Container*

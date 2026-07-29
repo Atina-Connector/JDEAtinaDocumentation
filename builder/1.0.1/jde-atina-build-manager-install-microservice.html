@@ -5,6 +5,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
+<meta name="keywords" content="jde, atina, build manager, jar, web service, jde-lib-wrapped, stdwebservice">
+<meta name="author" content="toc::[]">
 <title>Microservice Docker Setup Guide</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
@@ -434,221 +436,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 @media amzn-kf8{#header,#content,#footnotes,#footer{padding:0}}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<style>
-pre.rouge table td { padding: 5px; }
-pre.rouge table pre { margin: 0; }
-pre.rouge .cm {
-  color: #999988;
-  font-style: italic;
-}
-pre.rouge .cp {
-  color: #999999;
-  font-weight: bold;
-}
-pre.rouge .c1 {
-  color: #999988;
-  font-style: italic;
-}
-pre.rouge .cs {
-  color: #999999;
-  font-weight: bold;
-  font-style: italic;
-}
-pre.rouge .c, pre.rouge .ch, pre.rouge .cd, pre.rouge .cpf {
-  color: #999988;
-  font-style: italic;
-}
-pre.rouge .err {
-  color: #a61717;
-  background-color: #e3d2d2;
-}
-pre.rouge .gd {
-  color: #000000;
-  background-color: #ffdddd;
-}
-pre.rouge .ge {
-  color: #000000;
-  font-style: italic;
-}
-pre.rouge .gr {
-  color: #aa0000;
-}
-pre.rouge .gh {
-  color: #999999;
-}
-pre.rouge .gi {
-  color: #000000;
-  background-color: #ddffdd;
-}
-pre.rouge .go {
-  color: #888888;
-}
-pre.rouge .gp {
-  color: #555555;
-}
-pre.rouge .gs {
-  font-weight: bold;
-}
-pre.rouge .gu {
-  color: #aaaaaa;
-}
-pre.rouge .gt {
-  color: #aa0000;
-}
-pre.rouge .kc {
-  color: #000000;
-  font-weight: bold;
-}
-pre.rouge .kd {
-  color: #000000;
-  font-weight: bold;
-}
-pre.rouge .kn {
-  color: #000000;
-  font-weight: bold;
-}
-pre.rouge .kp {
-  color: #000000;
-  font-weight: bold;
-}
-pre.rouge .kr {
-  color: #000000;
-  font-weight: bold;
-}
-pre.rouge .kt {
-  color: #445588;
-  font-weight: bold;
-}
-pre.rouge .k, pre.rouge .kv {
-  color: #000000;
-  font-weight: bold;
-}
-pre.rouge .mf {
-  color: #009999;
-}
-pre.rouge .mh {
-  color: #009999;
-}
-pre.rouge .il {
-  color: #009999;
-}
-pre.rouge .mi {
-  color: #009999;
-}
-pre.rouge .mo {
-  color: #009999;
-}
-pre.rouge .m, pre.rouge .mb, pre.rouge .mx {
-  color: #009999;
-}
-pre.rouge .sa {
-  color: #000000;
-  font-weight: bold;
-}
-pre.rouge .sb {
-  color: #d14;
-}
-pre.rouge .sc {
-  color: #d14;
-}
-pre.rouge .sd {
-  color: #d14;
-}
-pre.rouge .s2 {
-  color: #d14;
-}
-pre.rouge .se {
-  color: #d14;
-}
-pre.rouge .sh {
-  color: #d14;
-}
-pre.rouge .si {
-  color: #d14;
-}
-pre.rouge .sx {
-  color: #d14;
-}
-pre.rouge .sr {
-  color: #009926;
-}
-pre.rouge .s1 {
-  color: #d14;
-}
-pre.rouge .ss {
-  color: #990073;
-}
-pre.rouge .s, pre.rouge .dl {
-  color: #d14;
-}
-pre.rouge .na {
-  color: #008080;
-}
-pre.rouge .bp {
-  color: #999999;
-}
-pre.rouge .nb {
-  color: #0086B3;
-}
-pre.rouge .nc {
-  color: #445588;
-  font-weight: bold;
-}
-pre.rouge .no {
-  color: #008080;
-}
-pre.rouge .nd {
-  color: #3c5d5d;
-  font-weight: bold;
-}
-pre.rouge .ni {
-  color: #800080;
-}
-pre.rouge .ne {
-  color: #990000;
-  font-weight: bold;
-}
-pre.rouge .nf, pre.rouge .fm {
-  color: #990000;
-  font-weight: bold;
-}
-pre.rouge .nl {
-  color: #990000;
-  font-weight: bold;
-}
-pre.rouge .nn {
-  color: #555555;
-}
-pre.rouge .nt {
-  color: #000080;
-}
-pre.rouge .vc {
-  color: #008080;
-}
-pre.rouge .vg {
-  color: #008080;
-}
-pre.rouge .vi {
-  color: #008080;
-}
-pre.rouge .nv, pre.rouge .vm {
-  color: #008080;
-}
-pre.rouge .ow {
-  color: #000000;
-  font-weight: bold;
-}
-pre.rouge .o {
-  color: #000000;
-  font-weight: bold;
-}
-pre.rouge .w {
-  color: #bbbbbb;
-}
-pre.rouge {
-  background-color: #f8f8f8;
-}
-</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/styles/github.min.css">
 <style>
 /*! Asciidoctor Tabs | Copyright (c) 2018-present Dan Allen | MIT License */
 .tabs {
@@ -762,24 +550,11 @@ pre.rouge {
 }
 </style>
 </head>
-<body class="article toc2 toc-left">
+<body class="article">
 <div id="header">
 <h1>Microservice Docker Setup Guide</h1>
-<div id="toc" class="toc2">
-<div id="toctitle">Table of Contents</div>
-<ul class="sectlevel1">
-<li><a href="#_prerequisites">Prerequisites</a></li>
-<li><a href="#_step_1_upload_environment_configuration_files">Step 1: Upload Environment Configuration Files</a></li>
-<li><a href="#_step_2_parameters">Step 2: Parameters</a>
-<ul class="sectlevel2">
-<li><a href="#_jde_microserver_path_and_jde_microserver_port">JDE_MICROSERVER_PATH and JDE_MICROSERVER_PORT</a></li>
-<li><a href="#_servers_extra_hosts">Servers (extra-hosts)</a></li>
-</ul>
-</li>
-<li><a href="#_step_3_generate_download">Step 3: Generate &amp; Download</a></li>
-<li><a href="#_step_4_edit_generated_files_optional">Step 4: Edit Generated Files (optional)</a></li>
-<li><a href="#_after_downloading">After Downloading</a></li>
-</ul>
+<div class="details">
+<span id="author" class="author">toc::[]</span><br>
 </div>
 </div>
 <div id="content">
@@ -807,23 +582,6 @@ covered by the rest of the Quick Start guide.</p>
 <p>The library build for this customer must have completed successfully before the setup
 screen is usable.</p>
 </div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>The <strong>Download Docker File Definition</strong> button only appears on the customer dashboard
-(<code>/c/{token}</code>) once the build status is <code>BUILD_OK</code>. If you land on the setup screen
-directly with an older or failed build, it shows a blocking banner and the <strong>Generate &amp;
-Download</strong> action is rejected server-side even if you bypass the UI.</p>
-</div>
-</td>
-</tr>
-</table>
-</div>
 </div>
 </div>
 <div class="sect1">
@@ -833,7 +591,7 @@ Download</strong> action is rejected server-side even if you bypass the UI.</p>
 <p>Each JDE environment you want the microservice to talk to (for example <code>JDV920</code>,
 <code>JPS920</code>) needs its own folder containing at least <code>jdbj.ini</code> and <code>jdeinterop.ini</code>
 (as produced by the Quick Start&#8217;s "Generate INI Configuration Files" step). The setup
-screen offers three ways to get them in&#8201;&#8212;&#8201;use whichever is most convenient:</p>
+screen offers two ways to get them in&#8201;&#8212;&#8201;use whichever is most convenient:</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -861,42 +619,47 @@ screen offers three ways to get them in&#8201;&#8212;&#8201;use whichever is mos
   file name). A single zip may also contain multiple environment folders as siblings; each
   one is uploaded separately.</p></td>
 </tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>C. Add files one by one</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Type the environment name first, then choose the files and click <strong>Upload Files</strong>. Order
-  matters: the name field must be filled in before you pick files, since it determines
-  which folder they land in.</p></td>
-</tr>
 </tbody>
 </table>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-important" title="Important"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>macOS zip artifacts (<code><em>_MACOSX/</code>, <code>.DS_Store</code>, AppleDouble <code>.</em>*</code> files) are filtered out
-automatically for options A and B, so compressing a folder from Finder is safe.</p>
-</div>
-</td>
-</tr>
-</table>
-</div>
 <div class="paragraph">
 <p>Uploaded files land on the server under:</p>
 </div>
-<div class="listingblock">
+<div class="imageblock text-center">
 <div class="content">
-<pre class="rouge highlight"><code>{customers-dir}/{customer-id}/configs/{ENVIRONMENT}/*.ini</code></pre>
+<img src="images/B01-Upload.png" alt="B01 Upload" width="500">
 </div>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/B02-Upload.png" alt="B02 Upload" width="500">
+</div>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/B03-Upload.png" alt="B03 Upload" width="500">
+</div>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/B04-Upload.png" alt="B04 Upload" width="500">
+</div>
+</div>
+<div class="paragraph">
+<p>At this point, the JDV920 environment configuration has been uploaded. The system automatically analyzes the configuration and generates the extra-hosts.txt file, which is used by the Docker containers to resolve the JDE server hostnames to their corresponding IP addresses.</p>
 </div>
 <div class="paragraph">
 <p>Each uploaded environment is listed as a card with its files; use the small <strong>x</strong> next to a
 file, or <strong>Remove Environment</strong> on the card header, to delete what you no longer need. A
 red banner lists any environment still missing <code>jdbj.ini</code> or <code>jdeinterop.ini</code>&#8201;&#8212;&#8201;both are
 required before you can generate the installation files.</p>
+</div>
+<div class="paragraph">
+<p>Repeat this process for each additional JDE environment (for example, JPS920, JPD920, etc.). Each uploaded environment configuration will be analyzed, and the corresponding server entries will be added to the extra-hosts.txt file automatically.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/B05-Upload.png" alt="B05 Upload" width="500">
+</div>
 </div>
 </div>
 </div>
@@ -918,6 +681,11 @@ to <code>/home/installation/jde</code>.</p>
 <code>8077</code>; change it if that port is already in use on the target host.</p>
 </li>
 </ul>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/B06-Upload.png" alt="B06 Upload" width="500">
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -1042,6 +810,11 @@ match the environments you uploaded in Step 1.</p>
 </li>
 </ol>
 </div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/B07-Generate.png" alt="B07 Generate" width="500">
+</div>
+</div>
 <div class="paragraph">
 <p>A progress overlay is shown while this runs (it involves a network download, so it can
 take a few seconds). If validation fails&#8201;&#8212;&#8201;build not OK, a required INI file missing, or
@@ -1087,9 +860,24 @@ when you regenerate for an unrelated reason (e.g. adding another environment).</
 <p>Expand the zip into the folder you set as <code>JDE_MICROSERVER_PATH</code> on the target host. The
 zip includes a <code>README.txt</code> with the next steps:</p>
 </div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/B08-Download.png" alt="B08 Download" width="500">
+</div>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/B09-WorkingDir.png" alt="B09 WorkingDir" width="500">
+</div>
+</div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">docker compose <span class="nt">--env-file</span> .env up <span class="nt">-d</span> <span class="nt">--force-recreate</span></code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker compose --env-file .env up -d --force-recreate</code></pre>
+</div>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="images/B10-CreateDocker.png" alt="B10 CreateDocker" width="500">
 </div>
 </div>
 <div class="paragraph">
@@ -1098,7 +886,7 @@ volumes so the change takes effect on next startup:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">docker compose down <span class="nt">-v</span></code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker compose down -v</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1112,9 +900,16 @@ or follow
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-07-28 18:04:24 -0300
+Last updated 2026-07-28 22:50:29 -0300
 </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
+<script>
+if (!hljs.initHighlighting.called) {
+  hljs.initHighlighting.called = true
+  ;[].slice.call(document.querySelectorAll('pre.highlight > code[data-lang]')).forEach(function (el) { hljs.highlightBlock(el) })
+}
+</script>
 <script>
 ;(function () { /*! Asciidoctor Tabs | Copyright (c) 2018-present Dan Allen | MIT License */
   'use strict'
