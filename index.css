@@ -1,0 +1,163 @@
+html, body, div, span, h1, h2, p, a, ul, li, i {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+  outline: none;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Ubuntu, sans-serif;
+  line-height: 1.4;
+  background-color: #ffffff;
+  padding-bottom: 65px;
+}
+
+a {
+  text-decoration: none;
+}
+
+/* Hero banner */
+
+.hero-banner {
+  text-align: center;
+  padding: 50px 20px 40px;
+  background: linear-gradient(135deg, #108CDD 0%, #0b6fb3 100%);
+  color: #fff;
+}
+
+.hero-logo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #fff;
+  padding: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.hero-title {
+  margin-top: 22px;
+  font-size: 2.4em;
+  font-weight: bold;
+  color: #fff;
+}
+
+.hero-subtitle {
+  margin-top: 12px;
+  font-size: 1.15em;
+  color: #eaf4fc;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Page content */
+
+.page-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 45px 40px;
+}
+
+/* Option grid */
+
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+.option-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 36px 20px;
+  background: #f5f5f5;
+  border: 2px solid #E2E2E2;
+  border-radius: 10px;
+  color: #108CDD;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.option-card:hover {
+  background-color: #108CDD;
+  border-color: #108CDD;
+  color: #fff;
+  transform: translateY(-3px);
+}
+
+.option-card .fa {
+  font-size: 2.4em;
+}
+
+.option-title {
+  font-size: 1.3em;
+  font-weight: bold;
+  text-align: center;
+}
+
+.option-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #FF7A50;
+  color: #fff;
+  font-size: 0.7em;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+/* Notice page (e.g. Agent - documentation in development) */
+
+.notice-page {
+  max-width: 640px;
+  margin: 80px auto;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.notice-icon {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: #fff;
+  padding: 5px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  margin-bottom: 20px;
+}
+
+.notice-title {
+  color: #108CDD;
+  font-size: 1.9em;
+  font-weight: bold;
+  margin-bottom: 14px;
+}
+
+.notice-text {
+  color: #555;
+  font-size: 1.15em;
+  margin-bottom: 30px;
+}
+
+.notice-back {
+  display: inline-block;
+  padding: 12px 28px;
+  background-color: #108CDD;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.notice-back:hover {
+  background-color: #0b6fb3;
+}

@@ -17,7 +17,18 @@
       "Bash(ls:*)",
       "Bash(asciidoctor jde-atina-build-manager.adoc)",
       "Bash(mkdir -p /Users/franciscogodinoconte/_atina/projects/JDEAtinaDocumentation/panelmanager/1.0.0/images)",
-      "Bash(asciidoctor jde-atina-panel-manager.adoc)"
+      "Bash(asciidoctor jde-atina-panel-manager.adoc)",
+      "Bash(sips -g pixelWidth -g pixelHeight mule/icon.png boomi/icon.png mule/Header.png boomi/Header.png mule/index.png)",
+      "Bash(sips -g pixelWidth -g pixelHeight boomi/favicon.png)",
+      "Bash(qlmanage -t -s 600 -o . /Users/franciscogodinoconte/_atina/projects/JDEAtinaDocumentation/mule/AtinaIcon.svg)",
+      "Bash(osascript -e 'tell application \"Safari\" to activate' -e 'tell application \"Safari\" to open location \"http://localhost:8791/index.html\"')",
+      "Bash(screencapture -x /private/tmp/claude-501/-Users-franciscogodinoconte--atina-projects-JDEAtinaDocumentation/9154d855-a031-4935-99e3-d2d12b944594/scratchpad/shots/home.png)",
+      "Bash(osascript -e 'tell application \"Safari\" to activate')",
+      "Bash(osascript -e 'tell application \"Safari\" to set bounds of front window to {0, 0, 1400, 1000}')",
+      "Bash(screencapture -x -R0,0,1400,1000 /private/tmp/claude-501/-Users-franciscogodinoconte--atina-projects-JDEAtinaDocumentation/9154d855-a031-4935-99e3-d2d12b944594/scratchpad/shots/home2.png)",
+      "Bash(pkill -f \"http.server 8791\")",
+      "Bash(pip3 list *)",
+      "Bash(curl *)"
     ]
   }
 }
