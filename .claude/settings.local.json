@@ -28,7 +28,11 @@
       "Bash(screencapture -x -R0,0,1400,1000 /private/tmp/claude-501/-Users-franciscogodinoconte--atina-projects-JDEAtinaDocumentation/9154d855-a031-4935-99e3-d2d12b944594/scratchpad/shots/home2.png)",
       "Bash(pkill -f \"http.server 8791\")",
       "Bash(pip3 list *)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless=new --disable-gpu --no-sandbox --window-size=1400,1000 --virtual-time-budget=8000 --screenshot=/private/tmp/claude-501/-Users-franciscogodinoconte--atina-projects-JDEAtinaDocumentation/9154d855-a031-4935-99e3-d2d12b944594/scratchpad/shots/home3.png http://localhost:8791/index.html)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless=new --disable-gpu --no-sandbox --window-size=1400,1400 --virtual-time-budget=8000 --screenshot=/private/tmp/claude-501/-Users-franciscogodinoconte--atina-projects-JDEAtinaDocumentation/9154d855-a031-4935-99e3-d2d12b944594/scratchpad/shots/mulesoft.png http://localhost:8791/mulesoft.html)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
